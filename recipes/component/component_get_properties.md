@@ -85,15 +85,15 @@ internal class CommandScript : IRunCommand
                 try 
                 { 
                     var val = ReadPropertyValueSafely(comp, p);
-                    { result.SetResult(new { 
+                    return new { 
                         name = p.Name, 
                         type = p.PropertyType.Name, 
                         fullType = p.PropertyType.FullName,
                         value = FormatValue(val),
                         canWrite = p.CanWrite
-                    }); return; } 
+                    }; 
                 }
-                catch { { result.SetResult(new { name = p.Name, type = p.PropertyType.Name, fullType = p.PropertyType.FullName, value = "(error reading)", canWrite = p.CanWrite }); return; } }
+                catch { return new { name = p.Name, type = p.PropertyType.Name, fullType = p.PropertyType.FullName, value = "(error reading)", canWrite = p.CanWrite }; }
             })
             .ToArray();
 
@@ -103,15 +103,15 @@ internal class CommandScript : IRunCommand
                 try 
                 { 
                     var val = f.GetValue(comp);
-                    { result.SetResult(new { 
+                    return new { 
                         name = f.Name, 
                         type = f.FieldType.Name, 
                         fullType = f.FieldType.FullName,
                         value = FormatValue(val),
                         isSerializable = f.IsPublic || f.GetCustomAttribute<SerializeField>() != null
-                    }); return; } 
+                    }; 
                 }
-                catch { { result.SetResult(new { name = f.Name, type = f.FieldType.Name, fullType = f.FieldType.FullName, value = "(error reading)", isSerializable = false }); return; } }
+                catch { return new { name = f.Name, type = f.FieldType.Name, fullType = f.FieldType.FullName, value = "(error reading)", isSerializable = false }; }
             })
             .ToArray();
 

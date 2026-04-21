@@ -88,7 +88,7 @@ internal class CommandScript : IRunCommand
                         info["keyProperties"] = props;
                 }
         
-                { result.SetResult(info); return; }
+                return info;
             })
             .ToArray();
 

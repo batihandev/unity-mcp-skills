@@ -39,12 +39,12 @@ internal class CommandScript : IRunCommand
             .Select(p =>
             {
                 var shader = AssetDatabase.LoadAssetAtPath<Shader>(p);
-                { result.SetResult(new
+                return new
                 {
                     path = p,
                     name = shader?.name,
                     propertyCount = shader != null ? ShaderUtil.GetPropertyCount(shader) : 0
-                }); return; }
+                };
             })
             .ToArray();
 

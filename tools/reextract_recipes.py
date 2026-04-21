@@ -303,18 +303,49 @@ def _find_statement_end(source: str, start: int) -> int:
 
 def transform_returns(body: str) -> tuple[str, int]:
     """Rewrite every `return <expr>;` at statement level as
-    `result.SetResult(<expr>); return;`. Leaves bare `return;` alone.
+    `result.SetResult(<expr>); return;`. Leaves bare `return;` alone and leaves
+    any return inside a block-lambda body (`=> { ... }`) unchanged — those
+    returns supply the lambda's value and must not be redirected to
+    `result.SetResult`.
+
     Handles multi-line anonymous types and nested braces via a tokenizer
     that respects strings, char literals, and comments."""
     out = []
     i = 0
     n = len(body)
     count = 0
+    # Stack of bools; each `{` pushes True iff it opens a lambda body
+    # (preceded by `=>`, possibly with whitespace). lambda_depth counts truthy
+    # entries so any nested brace inside a lambda keeps its enclosing `return`
+    # value-returning.
+    brace_stack: list[bool] = []
+    lambda_depth = 0
     while i < n:
         skipped = _skip_strings_and_comments(body, i)
         if skipped is not None:
             out.append(body[i:skipped])
             i = skipped
+            continue
+        ch = body[i]
+        if ch == '{':
+            # Look back past whitespace for `=>` to distinguish lambda body
+            # from regular block (if/for/object initializer/method body/etc.).
+            j = i - 1
+            while j >= 0 and body[j] in ' \t\r\n':
+                j -= 1
+            is_lambda = j >= 1 and body[j - 1:j + 1] == '=>'
+            brace_stack.append(is_lambda)
+            if is_lambda:
+                lambda_depth += 1
+            out.append(ch)
+            i += 1
+            continue
+        if ch == '}':
+            was_lambda = brace_stack.pop() if brace_stack else False
+            if was_lambda and lambda_depth > 0:
+                lambda_depth -= 1
+            out.append(ch)
+            i += 1
             continue
         # Match the keyword `return` at a word boundary, followed by whitespace/newline.
         if body[i:i+6] == 'return' and (i == 0 or not (body[i-1].isalnum() or body[i-1] == '_')):
@@ -339,6 +370,12 @@ def transform_returns(body: str) -> tuple[str, int]:
                 i += 1
                 continue
             expr = body[tail:end].strip()
+            if lambda_depth > 0:
+                # Inside a lambda body — the return must supply the lambda's
+                # value. Preserve verbatim.
+                out.append(body[i:end+1])
+                i = end + 1
+                continue
             # Wrap in braces so single-statement `if`/`else`/`case` bodies that
             # held a `return <expr>;` still contain both emitted statements.
             # Without braces, the trailing `return;` escapes the conditional.
