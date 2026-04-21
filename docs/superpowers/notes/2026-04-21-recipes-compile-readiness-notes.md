@@ -55,6 +55,52 @@ cinemachine, component (untested — 479-line render too large), event, material
 
 Every smoke attempt is recorded in `recipe-validation-tracker.md` with its result and short note. Blockers are marked `B` with the reason.
 
+## Task 12 pre-flight outputs (2026-04-21)
+
+### MCP retirement mapping (confirmed against `mcp-tools.md`)
+
+| Retiring recipe(s) | Native MCP replacement | `mcp-tools.md` line |
+|---|---|---|
+| `package/*` (11) | `Unity_PackageManager_ExecuteAction` (Add/Remove/Embed/Sample), `Unity_PackageManager_GetData` | 34–35 |
+| `script/*` | `Unity_CreateScript`, `Unity_DeleteScript`, `Unity_FindInFile`, `Unity_ListResources`, `Unity_ScriptApplyEdits`, `Unity_ValidateScript`, `Unity_GetSha` | 23–29 |
+| `asset/batch_query_assets` | `Unity_FindProjectAssets` | 38 |
+| `camera/camera_screenshot` | `Unity_Camera_Capture` | 32 |
+| `console/console_get_logs` | `Unity_GetConsoleLogs` | 22 |
+| `console/console_clear` | `Unity_ReadConsole` (has clear flag) | 21 |
+| `sample/*` (8) | *in-repo* — duplicates `recipes/gameobject/*`; not MCP | n/a |
+
+MCP tools NOT used as retirement targets because their use case is narrower than the matching recipe's surface: `Unity_AssetGeneration_*`, `Unity_ImportExternalModel`, `Unity_AudioClip_Edit`, `Unity_SceneView_Capture*`, `Unity_Profiler_*`. These tools convert/generate specific asset transformations (texture→material, sprite→animation, etc.) rather than the procedural property-set / list operations the recipes expose.
+
+### Package inventory (verified 2026-04-21 via `Client.List`)
+
+**Installed, recipe-relevant:** `com.unity.timeline` 1.8.12, `com.unity.inputsystem` 1.19.0, `com.unity.test-framework` 1.6.0, `com.unity.nuget.newtonsoft-json` 3.2.2 (note: unavailable in `Unity_RunCommand` dynamic compile), `com.unity.render-pipelines.universal` 17.4.0, `com.unity.ide.visualstudio` 2.0.27, built-in modules: `animation`, `terrain`, `ai`, `physics`, `ugui`, `uielements`.
+
+**Missing — must install:** `com.unity.cinemachine` (34 recipes), `com.unity.xr.interaction.toolkit` (22), `com.unity.probuilder` (22), `com.unity.ai.navigation` (2).
+
+### Deprecation replacements (web-confirmed)
+
+| Deprecated | Replacement | Semantics preserved? | Source |
+|---|---|---|---|
+| `Object.FindObjectOfType<T>()` | `Object.FindFirstObjectByType<T>()` | Yes — direct replacement, returns the first match by InstanceID order | Unity Discussions; Medium (Swartout) |
+| `Object.FindObjectsOfType<T>()` (no args) | `Object.FindObjectsByType<T>(FindObjectsSortMode.None)` | Faster (no sort). For byte-identical legacy behavior use `FindObjectsSortMode.InstanceID` — none of our recipes depend on sort order, so `.None` is the right call. | Unity Discussions; Unity Scripting API docs |
+| `Object.FindObjectsOfType<T>(true)` | `Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None)` | Includes inactive objects, no sort | Unity Discussions |
+| `UnityEditor.AI.NavMeshBuilder.BuildNavMesh()` | `NavMeshSurface.BuildNavMesh()` from `com.unity.ai.navigation` | **Workflow shift, not 1:1.** Legacy API baked a global scene NavMesh via the "Navigation (Obsolete)" window settings. Replacement is per-`NavMeshSurface` component; scene must have at least one `NavMeshSurface` for a bake to happen. | Unity AI Navigation package docs; NavMeshComponents migration |
+| `UnityEditor.AI.NavMeshBuilder.ClearAllNavMeshes()` | Iterate `FindObjectsByType<NavMeshSurface>(FindObjectsSortMode.None)` and call `.RemoveData()` on each | Workflow shift as above | Unity AI Navigation package docs |
+
+**Recipes affected:**
+- `FindObjectOfType<T>()` → **9** recipes (sed-mechanical)
+- `FindObjectsOfType<T>()` → **2** recipes (sed-mechanical; each call site needs per-call review for the `(true)` overload)
+- `NavMeshBuilder.*` → **2** recipes (`navmesh_bake`, `navmesh_clear`) — per-recipe rewrite, not sed
+
+**Sources:**
+- [Unity Discussions — "Was FindObjectsOfType deprecation needed?"](https://discussions.unity.com/t/was-findobjectsoftype-deprecation-needed/1597029)
+- [Unity 6: FindObjectByType Guide (Medium, Simon Swartout)](https://medium.com/@simon.swartout/unity-6-findobjectbytype-guide-fcbc312261cf)
+- [Unity Scripting API — Object.FindObjectsOfType](https://docs.unity3d.com/6000.1/Documentation/ScriptReference/Object.FindObjectsOfType.html)
+- [Unity Discussions — New Navigation package](https://discussions.unity.com/t/theres-a-new-navigation-package-in-town/902596)
+- [AI Navigation package changelog](https://docs.unity3d.com/Packages/com.unity.ai.navigation@2.0/changelog/CHANGELOG.html)
+
+### Task 12 complete. Ready for Task 13.
+
 ## Next session — start here
 
 Session 2 scope is in `docs/superpowers/plans/2026-04-21-recipes-compile-readiness-repair-plan.md` as Tasks 11–21 with a revised execution order at the bottom of that doc. Cold-start steps:
