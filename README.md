@@ -58,7 +58,7 @@ rm -rf ~/.claude/skills/unity-mcp-skills
 
 ## How discovery works
 
-Only the top-level `SKILL.md` is registered with your agent — under the name `unity-skills-library`. That skill routes to domain-specific skills under `skills/<domain>/SKILL.md` internally. You will **not** see `unity-scene`, `unity-physics`, etc. as separate skills in your agent — they are loaded on demand by the library.
+Only the top-level `SKILL.md` is registered with your agent — under the name `unity-mcp-skills`. That skill routes to domain-specific skills under `skills/<domain>/SKILL.md` internally. You will **not** see `unity-scene`, `unity-physics`, etc. as separate skills in your agent — they are loaded on demand by the library.
 
 ## What's in here
 

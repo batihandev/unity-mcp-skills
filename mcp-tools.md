@@ -7,7 +7,7 @@ When handling a Unity Editor task, resolve the tool to use in this order:
 1. **Native MCP tool** — if a dedicated tool exists for the operation, use it directly (no `RunCommand`).
 2. **Topic skill + exact topic recipe** — load `skills/<topic>/SKILL.md` and find a matching recipe in `recipes/<topic>/`.
 3. **Closest recipe** — if no exact match, pick the nearest recipe as a template and adapt it.
-4. **`references/<topic>.md`** — tertiary docs fallback; consult only when the skill and recipes lack the domain detail needed.
+4. **`references/index.md`** — catalog of available topics; consult `references/<topic>.md` as a tertiary fallback when the skill and recipes lack the domain detail needed.
 5. **Fresh `Unity_RunCommand`** — last resort; write a new command only when no recipe covers the case.
 
 ---

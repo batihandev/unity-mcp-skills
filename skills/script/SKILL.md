@@ -1,6 +1,6 @@
 ---
 name: unity-script
-description: "Use when C# script management — create, read, replace, and analyze Unity scripts."
+description: "Use when creating, reading, replacing, or analyzing C# scripts in a Unity project."
 ---
 
 # Unity Script Skills

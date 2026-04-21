@@ -1,6 +1,6 @@
 ---
 name: unity-skills-index
-description: "Index of all Unity domain modules. Browse available capabilities and find the right module to reference for RunCommand recipes or dedicated MCP tools."
+description: "Use when a Unity domain skill or recipe needs to cross-reference the canonical map of Unity modules and their tool routes."
 ---
 
 # Unity Skills — Module Index
@@ -10,7 +10,7 @@ This index lists all available domain modules for interacting with the Unity Edi
 1. **Native MCP tool** — use the dedicated tool if one exists for the operation.
 2. **Topic skill + exact topic recipe** — load `skills/<topic>/SKILL.md` and find a matching recipe.
 3. **Closest recipe** — pick the nearest recipe as a template if no exact match exists.
-4. **`../references/<topic>.md`** — tertiary docs fallback; consult only when skills and recipes lack the domain detail.
+4. **`../references/index.md`** — lists all available topics; consult `../references/<topic>.md` as tertiary fallback when skills and recipes lack the domain detail.
 5. **Fresh `Unity_RunCommand`** — last resort when no recipe covers the case.
 
 > **MCP Tool Routing**: Pay attention to the **Tool Route** column. If a module lists a dedicated MCP tool (e.g. `Unity_ReadConsole`), use that tool directly. If it says `Unity_RunCommand`, use that tool and pull C# examples from the `recipes/` directory.

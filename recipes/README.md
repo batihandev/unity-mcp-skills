@@ -14,6 +14,14 @@ Each `<command>.md` file corresponds to exactly one skill command. If the skill 
 - command filenames must match skill command IDs exactly
 - Recipe path rule: `../../recipes/<topic>/<command>.md`
 
+## Domains
+
+The canonical list of recipe domains is the **Domain Skill Map** in the root [`../SKILL.md`](../SKILL.md). Each `<domain>` listed there has a matching `recipes/<domain>/` directory.
+
+## Shared Helpers
+
+Cross-domain C# helpers live in [`_shared/`](./_shared/README.md) — `gameobject_finder`, `skills_common`, `validate`. Many recipes embed these; do not duplicate the helper code.
+
 ## Golden Template
 
 ```csharp

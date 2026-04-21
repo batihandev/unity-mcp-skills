@@ -1,11 +1,13 @@
 ---
-name: unity-skills-library
-description: Use when analyzing, authoring, or automating a Unity project via MCP. Routes to domain-specific Unity skills for scenes, physics, editor, assets, and more.
+name: unity-mcp-skills
+description: Use when working with a Unity project via MCP — creating or editing scenes, GameObjects, components, prefabs, materials, UI, lighting, navmesh, animations, terrain, C# scripts, or any other Unity Editor task.
 ---
 
 # Unity MCP Skills Library
 
-This is the single discoverable entry point for Unity work. The domain skills under `skills/<domain>/SKILL.md` are **not** registered separately with your agent — load this file first, then navigate to the domain file that matches the task.
+## Overview
+
+The single entry point for Unity work via MCP. Domain skills under `skills/<domain>/SKILL.md` are loaded on demand from this router — read this file first, then navigate to the domain file that matches the task.
 
 ## Integrity Check
 
@@ -25,7 +27,7 @@ Do not attempt to work around missing files by fabricating recipe content.
 1. **Native MCP tool** — see `mcp-tools.md` (library root) for the routing matrix.
 2. **Topic skill + exact recipe** — load the matching domain skill below, then its recipe in `recipes/<domain>/`.
 3. **Closest recipe** — adapt the nearest recipe if no exact match exists.
-4. **`references/<topic>.md`** — tertiary docs fallback.
+4. **`references/index.md`** — lists all available topics; consult `references/<topic>.md` as a tertiary fallback.
 5. **Fresh `Unity_RunCommand`** — last resort.
 
 ## Domain Skill Map
@@ -74,4 +76,5 @@ All paths above are relative to the library root (this file's directory).
 - `skills/SKILL.md` — internal index of the same domain map (for cross-linking from domain skills).
 - `mcp-tools.md` — full routing matrix for native MCP tools vs `Unity_RunCommand`.
 - `recipes/README.md` — recipes intro and conventions.
-- `references/` — tertiary docs fallback (consult per the routing order above).
+- `recipes/_shared/README.md` — cross-domain C# helpers (`gameobject_finder`, `skills_common`, `validate`) embedded by many recipes.
+- `references/index.md` — catalog of all `references/<topic>.md` fallback docs.
