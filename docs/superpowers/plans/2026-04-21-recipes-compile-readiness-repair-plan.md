@@ -591,6 +591,36 @@ Tasks completed in session 2 so far:
 - `run:x` verified for read-only recipes: queries that don't create, delete, or mutate scene/asset state. Target set includes most `*_get_*`, `*_list`, `*_find*`, `*_check_*` recipes.
 - Recipes that mutate state stay `run:-` with a "fixture required" note. A follow-up plan seeds fixtures; not in this cycle.
 
+### Task 22: Recipe-level cleanliness sweep
+
+**Intent:** every recipe under `recipes/` should obey CLAUDE.md's "post-mortem only, no prose that re-explains code" rule. The extraction pipeline pulled real upstream logic but left per-recipe prose duplication and an overlong `## Prerequisites` block. Clean this up once recipes are compile-validated so the surface is tight before the library ships.
+
+**Files:**
+- Modify: every non-retired recipe `.md` under `recipes/<domain>/`.
+- Modify: `tools/inject_prerequisites.py` (template update).
+- Do not touch: `recipes/_shared/*.md`. Helpers are working + confirmed; slimming them (including MiniJson) is explicitly out of scope.
+
+**Required outcomes:**
+- **Compact `## Prerequisites` block** — replace the multi-line header + bullets with a single line per recipe:
+  ```
+  **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+  ```
+  Applied via `inject_prerequisites.py` template change + full re-run. Idempotent. Helpers unchanged.
+- **Drop prose that the code already expresses.** If a recipe has a `## Parameters` table AND inline `// description` comments for the same locals at the top of `Execute`, keep one (prefer the inline comments — paste-ready). If a recipe has a `## Returns` prose schema AND a `result.SetResult(new { ... })` that makes the shape obvious, drop the prose.
+- **Drop "Notes" / "Why" tail sections** whose content is either obvious from the code or already restated in the owning SKILL.md. Keep a note only when it captures a non-obvious gotcha that the code can't express (e.g., "this call silently no-ops outside `EditorApplication.update` on Windows").
+- **Drop any remaining "Use this command when…" / "For quick X, prefer Y" choice-narrative** if the owning SKILL.md's routing section already carries the guidance. Duplication is the tax to remove.
+- **Do not shrink the C# code block itself.** Compile-validated recipes stay byte-identical in their `csharp` fence. This task is a prose pass only.
+- **Do not touch `_shared/*.md`.** Helpers stay as-is.
+
+**Scripted safeguards:**
+- Before committing, re-render one recipe per domain and confirm its code block hash matches pre-Task-22. Hash mismatch → stop and investigate.
+- Re-run `python3 tools/tracker_next.py --gate comp` to confirm zero regressions (no previously-green recipes slip to pending).
+
+**Verification target:**
+- Median recipe length drops ≥30% (measured via `wc -l recipes/<domain>/*.md` before and after, excluding `_shared/` and README).
+- Every `comp:x` row stays `comp:x`. No recipe's `csharp` block content changes.
+- `grep -rn "## Parameters$\|## Notes$\|## Returns$" recipes/ | wc -l` drops substantially (exact threshold recorded in the notes file).
+
 ### Revised execution order (replaces Tasks 0–10 wave for remaining work)
 
 1. ~~**Task 19**~~ ✓ tracker `R` state + tool updates.
@@ -603,8 +633,9 @@ Tasks completed in session 2 so far:
 8. **Task 17** — Unity 6+ commit + apply web-confirmed deprecations.
 9. **Task 5** (from original plan, unchanged) — test async split.
 10. **Task 18** — reflection-based obsolete sweep; handle any new findings.
-11. **Task 20** — full comp re-smoke.
+11. **Task 20** — full comp re-smoke. Per-domain `writing-skills` audit as each domain goes fully green.
 12. **Task 21** — selective run gate.
-13. **Task 10** (from original plan) — final audit + plan-exit notes.
+13. **Task 22** — recipe-level cleanliness sweep (prose dedup + compact Prerequisites; MiniJson + other `_shared` helpers untouched).
+14. **Task 10** (from original plan) — final audit + plan-exit notes.
 13. **Task 10** (from original plan, unchanged) — final audit + plan-exit notes.
 
