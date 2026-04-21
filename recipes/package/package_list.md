@@ -1,41 +1,17 @@
 # package_list
 
-List all installed packages currently cached by UnitySkills.
+List installed packages.
 
-> **Native tool first:** Prefer `Unity_PackageManager_GetData` for listing packages. Use `Unity_RunCommand` with this recipe only when you need custom filtering or post-processing of the package list.
+> **Retired 2026-04-21 — use the native Unity MCP tool instead.**
+>
+> This recipe duplicated functionality provided by a first-class Unity MCP tool.
+> The file is preserved as a redirect so existing links and agents still land
+> on a correct pointer.
 
-**Signature:** `PackageList()`
+## Use this instead
 
-**Returns:** `{ success, count, packages[] }` — each package has `name`, `version`, `displayName`.
+**MCP tool:** `Unity_PackageManager_GetData`
 
-**Note:** Returns `{ error }` if the cache is not ready. Call `package_refresh` first.
+Call with `installedOnly: true` and no `packageID` argument to list everything installed.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-
-```csharp
-using UnityEngine;
-using UnityEditor;
-using System.Linq;
-
-internal class CommandScript : IRunCommand
-{
-    public void Execute(ExecutionResult result)
-    {
-        var packages = PackageManagerHelper.InstalledPackages;
-        if (packages == null)
-        {
-            result.SetResult(new { error = "Package list not ready. Call package_refresh first." });
-            return;
-        }
-
-        var list = packages.Values
-            .Select(p => new { name = p.name, version = p.version, displayName = p.displayName })
-            .ToList();
-
-        result.SetResult(new { success = true, count = list.Count, packages = list });
-    }
-}
-```
+See `mcp-tools.md` in the repo root for the full MCP tool surface.

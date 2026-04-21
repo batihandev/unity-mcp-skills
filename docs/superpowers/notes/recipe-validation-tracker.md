@@ -14,11 +14,11 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 ## Summary
 
 - Total recipes: **484**
-- ext: **484** / 484
-- pre: **484** / 484
-- comp: **20** / 484
+- ext: **461** / 484
+- pre: **461** / 484
+- comp: **19** / 484
 - run: **1** / 484
-- retired: **0** / 484
+- retired: **23** / 484
 
 ## Domains
 
@@ -58,7 +58,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | asset_reimport | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: normalize summary |
 | asset_reimport_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: scripted via inject_prerequisites.py |
 | asset_set_labels | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| batch_query_assets | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: recipe body is top-level REPL script, not CommandScript; uses Newtonsoft.Json which is unavailable in Unity_RunCommand |
+| batch_query_assets | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: recipe body is top-level REPL script, not CommandScript; uses Newtonsoft.Json which is unavailable in Unity_RunCommand; 2026-04-21: retired → native MCP |
 
 ## camera (11 recipes)
 
@@ -70,7 +70,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | camera_get_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | camera_list | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | camera_look_at | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
-| camera_screenshot | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| camera_screenshot | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP |
 | camera_set_culling_mask | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | camera_set_orthographic | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | camera_set_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -149,9 +149,9 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| console_clear | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| console_clear | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP |
 | console_export | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| console_get_logs | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| console_get_logs | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP |
 | console_get_stats | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | console_log | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | console_set_clear_on_play | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -337,17 +337,17 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| package_check | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| package_get_cinemachine_status | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| package_get_dependencies | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| package_get_versions | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| package_install | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| package_install_cinemachine | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| package_install_splines | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| package_list | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses PackageManagerHelper.InstalledPackages — upstream helper not ported |
-| package_refresh | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| package_remove | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| package_search | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| package_check | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_get_cinemachine_status | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_get_dependencies | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_get_versions | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_install | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_install_cinemachine | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_install_splines | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_list | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses PackageManagerHelper.InstalledPackages — upstream helper not ported; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_refresh | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_remove | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
+| package_search | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP (Unity_PackageManager_*) |
 
 ## perception (18 recipes)
 
@@ -452,14 +452,14 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| create_cube | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| create_sphere | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| delete_object | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| find_objects_by_name | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| get_scene_info | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
-| set_object_position | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| set_object_rotation | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| set_object_scale | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| create_cube | R | R | R | R | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → recipes/gameobject/* or recipes/scene/* |
+| create_sphere | R | R | R | R | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → recipes/gameobject/* or recipes/scene/* |
+| delete_object | R | R | R | R | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → recipes/gameobject/* or recipes/scene/* |
+| find_objects_by_name | R | R | R | R | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → recipes/gameobject/* or recipes/scene/* |
+| get_scene_info | R | R | R | R | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: retired → recipes/gameobject/* or recipes/scene/* |
+| set_object_position | R | R | R | R | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → recipes/gameobject/* or recipes/scene/* |
+| set_object_rotation | R | R | R | R | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → recipes/gameobject/* or recipes/scene/* |
+| set_object_scale | R | R | R | R | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → recipes/gameobject/* or recipes/scene/* |
 
 ## scene (10 recipes)
 

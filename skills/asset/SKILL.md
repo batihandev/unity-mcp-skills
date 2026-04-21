@@ -183,3 +183,7 @@ Recipe path rule: `../../recipes/asset/<command>.md`
 5. Backup before bulk delete operations
 
 ---
+
+## Retired recipes (2026-04-21)
+
+- `batch_query_assets` → use the native MCP tool `Unity_FindProjectAssets` (semantic + type + name search). The recipe file is kept as a tombstone pointer.

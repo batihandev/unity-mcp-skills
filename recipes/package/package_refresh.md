@@ -1,61 +1,21 @@
 # package_refresh
 
-Refresh the installed package cache used by query skills.
+Refresh the package cache.
 
-> **Native tool first:** Prefer `Unity_PackageManager_ExecuteAction` with action `refresh` when available. Use `Unity_RunCommand` with this recipe only when you need the returned `jobId` for explicit job tracking.
+> **Retired 2026-04-21 — use the native Unity MCP tool instead.**
+>
+> This recipe duplicated functionality provided by a first-class Unity MCP tool.
+> The file is preserved as a redirect so existing links and agents still land
+> on a correct pointer.
 
-**Signature:** `PackageRefresh()`
+## Use this instead
 
-**Parameters:** None.
+**MCP tool:** `Unity_PackageManager_ExecuteAction`
 
-**Returns:** `{ success, status, jobId, message }`.
+Example payload:
 
-**Note:** If a refresh is already in progress, this returns a job record for the existing refresh rather than starting a new one.
-
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-
-```csharp
-using UnityEngine;
-using UnityEditor;
-
-internal class CommandScript : IRunCommand
-{
-    public void Execute(ExecutionResult result)
-    {
-        if (PackageManagerHelper.IsRefreshing)
-        {
-            var existingJob = AsyncJobService.StartPackageJob("refresh", "(package_list)");
-            result.SetResult(new
-            {
-                success = true,
-                status = "accepted",
-                jobId = existingJob.jobId,
-                message = "Already refreshing package list..."
-            });
-            return;
-        }
-
-        BatchJobRecord job = null;
-        PackageManagerHelper.RefreshPackageList(success =>
-        {
-            if (job == null)
-                return;
-
-            if (!success)
-                AsyncJobService.FailJob(job.jobId, "Package list refresh failed.", "failed_package_refresh");
-        });
-
-        job = AsyncJobService.StartPackageJob("refresh", "(package_list)");
-        result.SetResult(new
-        {
-            success = true,
-            status = "accepted",
-            jobId = job.jobId,
-            message = "Refreshing package list..."
-        });
-    }
-}
+```json
+{ "action": "Resolve" }
 ```
+
+See `mcp-tools.md` in the repo root for the full MCP tool surface.

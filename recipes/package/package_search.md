@@ -1,51 +1,17 @@
 # package_search
 
-Search the installed package cache by package name or display name.
+Search installed packages (cache lookup; does not hit the Unity Registry).
 
-> **Native tool first:** Prefer `Unity_PackageManager_GetData` for searching packages. Use `Unity_RunCommand` with this recipe only when you need custom matching logic beyond name/displayName.
+> **Retired 2026-04-21 — use the native Unity MCP tool instead.**
+>
+> This recipe duplicated functionality provided by a first-class Unity MCP tool.
+> The file is preserved as a redirect so existing links and agents still land
+> on a correct pointer.
 
-**Signature:** `PackageSearch(string query)`
+## Use this instead
 
-**Parameters:**
-- `query` — Required. Search keyword matched case-insensitively against `name` and `displayName`.
+**MCP tool:** `Unity_PackageManager_GetData`
 
-**Returns:** `{ success, query, count, packages[] }` — each package has `name`, `version`, `displayName`.
+Call with `installedOnly: true` to scan the installed package cache.
 
-**Warning:** Searches the **installed package cache only**. It does NOT query the Unity Registry. Call `package_refresh` first if the cache may be stale.
-
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-
-```csharp
-using UnityEngine;
-using UnityEditor;
-using System.Linq;
-
-internal class CommandScript : IRunCommand
-{
-    public void Execute(ExecutionResult result)
-    {
-        string query = "cinemachine"; // Replace with search keyword
-
-        if (Validate.Required(query, "query") is object err) { result.SetResult(err); return; }
-
-        var packages = PackageManagerHelper.InstalledPackages;
-        if (packages == null)
-        {
-            result.SetResult(new { error = "Package list not ready. Call package_refresh first." });
-            return;
-        }
-
-        var matches = packages.Values
-            .Where(p => p.name.IndexOf(query, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
-                        (p.displayName != null && p.displayName.IndexOf(query, System.StringComparison.OrdinalIgnoreCase) >= 0))
-            .Select(p => new { name = p.name, version = p.version, displayName = p.displayName })
-            .ToList();
-
-        result.SetResult(new { success = true, query, count = matches.Count, packages = matches });
-    }
-}
-```
+See `mcp-tools.md` in the repo root for the full MCP tool surface.

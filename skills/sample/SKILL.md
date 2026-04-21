@@ -1,60 +1,24 @@
 ---
 name: unity-sample
-description: "Use when users want to generate example scenes, test API connectivity, or create demo objects for learning."
+description: "Retired skill — sample recipes duplicated gameobject/scene operations. Kept as a routing stub."
 ---
 
-Recipe path rule: `../../recipes/sample/<command>.md`
+# Sample Operations (Retired 2026-04-21)
 
-# Sample Skills
+The `sample/*` recipes were low-level wrappers around primitive creation, deletion, transform editing, and scene queries. Every one of them duplicates a first-class recipe elsewhere in this repo.
 
-## Overview
+## Routing
 
-Basic examples for testing the API.
+| Old recipe | Replacement |
+|---|---|
+| `create_cube`, `create_sphere` | [`recipes/gameobject/gameobject_create.md`](../../recipes/gameobject/gameobject_create.md) with `primitiveType = "Cube"` / `"Sphere"` |
+| `delete_object` | [`recipes/gameobject/gameobject_delete.md`](../../recipes/gameobject/gameobject_delete.md) |
+| `find_objects_by_name` | [`recipes/scene/scene_find_objects.md`](../../recipes/scene/scene_find_objects.md) |
+| `get_scene_info` | [`recipes/scene/scene_get_info.md`](../../recipes/scene/scene_get_info.md) |
+| `set_object_position`, `set_object_rotation`, `set_object_scale` | [`recipes/gameobject/gameobject_set_transform.md`](../../recipes/gameobject/gameobject_set_transform.md) with the appropriate argument set |
 
-## Common Mistakes
+All eight recipe files under `recipes/sample/` are preserved as tombstones that point to the same replacements.
 
+## Why retired
 
-**DO NOT** (common hallucinations):
-- Sample skills are basic test/demo skills — do not use them for production work
-- `sample_create` is a simplified version of `gameobject_create` — prefer the full gameobject module
-- `sample_hello` / `sample_ping` are connectivity test skills only
-
-**Routing**:
-- For actual GameObject operations → use `gameobject` module
-- For server health check → use Python helper's `unity_skills.health()`
-
-## Skills
-
-### create_cube
-Create a cube primitive.
-**Parameters:** `x`, `y`, `z`, `name`
-
-### create_sphere
-Create a sphere primitive.
-**Parameters:** `x`, `y`, `z`, `name`
-
-### delete_object
-Delete object by name.
-**Parameters:** `objectName`
-
-### `find_objects_by_name`
-Find objects containing string.
-**Parameters:** `nameContains` (`name` 也可作为兼容别名)
-
-### `set_object_position`
-Set object position.
-**Parameters:** `objectName`, `x`, `y`, `z`
-
-### `set_object_rotation`
-Set object rotation.
-**Parameters:** `objectName`, `x`, `y`, `z`
-
-### `set_object_scale`
-Set object scale.
-**Parameters:** `objectName`, `x`, `y`, `z`
-
-### `get_scene_info`
-Get current scene information.
-**Parameters:** None.
-
----
+Duplicating `gameobject_create` with a fixed `primitiveType` argument adds surface area without adding capability. Agents were landing on the sample recipes and missing the richer parent recipe. Retirement collapses the surface.

@@ -150,3 +150,10 @@ Set clear on play mode.
 4. Clear console before starting new capture session
 5. Stop capture when done to free resources
 
+
+## Retired recipes (2026-04-21)
+
+- `console_get_logs` → use the native MCP tool `Unity_GetConsoleLogs` (simpler log-focused shape).
+- `console_clear` → use `Unity_ReadConsole` with the clear action argument.
+
+Both recipe files are kept as tombstone pointers.

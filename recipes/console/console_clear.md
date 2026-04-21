@@ -1,38 +1,17 @@
 # console_clear
 
-Clear the Unity console and the in-memory capture buffer.
+Clear all Unity Console entries.
 
-**Signature:** `ConsoleClear()` — no parameters.
+> **Retired 2026-04-21 — use the native Unity MCP tool instead.**
+>
+> This recipe duplicated functionality provided by a first-class Unity MCP tool.
+> The file is preserved as a redirect so existing links and agents still land
+> on a correct pointer.
 
-**Returns:** `{ success, message }`
+## Use this instead
 
-## Notes
+**MCP tool:** `Unity_ReadConsole`
 
-- Uses `UnityEditor.LogEntries.Clear()` via reflection to clear the console window.
-- Also clears the internal capture buffer (`_logs`).
+Pass the clear action argument supported by Unity_ReadConsole; it doubles as both reader and clearer.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-
-## Recipe
-
-```csharp
-using UnityEngine;
-using UnityEditor;
-
-internal class CommandScript : IRunCommand
-{
-    public void Execute(ExecutionResult result)
-    {
-        var assembly = System.Reflection.Assembly.GetAssembly(typeof(SceneView));
-        var logEntries = assembly.GetType("UnityEditor.LogEntries");
-        var clearMethod = logEntries.GetMethod("Clear");
-        clearMethod.Invoke(null, null);
-
-        lock (_logLock) { _logs.Clear(); }
-        result.SetResult(new { success = true, message = "Console cleared" });
-    }
-}
-```
+See `mcp-tools.md` in the repo root for the full MCP tool surface.

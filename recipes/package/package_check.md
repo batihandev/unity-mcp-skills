@@ -2,37 +2,20 @@
 
 Check whether a specific package is installed and retrieve its version.
 
-> **Native tool first:** Prefer `Unity_PackageManager_GetData` for checking package status. Use `Unity_RunCommand` with this recipe only when you need to check multiple packages or combine the result with other logic.
+> **Retired 2026-04-21 — use the native Unity MCP tool instead.**
+>
+> This recipe duplicated functionality provided by a first-class Unity MCP tool.
+> The file is preserved as a redirect so existing links and agents still land
+> on a correct pointer.
 
-**Signature:** `PackageCheck(string packageId)`
+## Use this instead
 
-**Parameters:**
-- `packageId` — Required. Package ID such as `com.unity.cinemachine`.
+**MCP tool:** `Unity_PackageManager_GetData`
 
-**Returns:** `{ packageId, installed, version }` — `version` is `null` when not installed.
+Example payload:
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-
-```csharp
-using UnityEngine;
-using UnityEditor;
-
-internal class CommandScript : IRunCommand
-{
-    public void Execute(ExecutionResult result)
-    {
-        string packageId = "com.unity.cinemachine"; // Replace with target package ID
-
-        if (Validate.Required(packageId, "packageId") is object err) { result.SetResult(err); return; }
-
-        var installed = PackageManagerHelper.IsPackageInstalled(packageId);
-        var version = PackageManagerHelper.GetInstalledVersion(packageId);
-
-        result.SetResult(new { packageId, installed, version });
-    }
-}
+```json
+{ "packageID": "com.unity.cinemachine", "installedOnly": true }
 ```
+
+See `mcp-tools.md` in the repo root for the full MCP tool surface.

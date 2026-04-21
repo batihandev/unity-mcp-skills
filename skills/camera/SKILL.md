@@ -144,3 +144,7 @@ List all cameras in the scene.
 **Returns:** `{ count, cameras: [{ name, instanceId, path, depth, orthographic, enabled }] }`
 
 ---
+
+## Retired recipes (2026-04-21)
+
+- `camera_screenshot` → use the native MCP tool `Unity_Camera_Capture` to render a specific Camera component. The recipe file is kept as a tombstone pointer.

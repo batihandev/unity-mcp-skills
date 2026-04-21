@@ -1,60 +1,21 @@
 # package_get_versions
 
-Get available versions for one installed package.
+List available versions for a package.
 
-> **Native tool first:** Prefer `Unity_PackageManager_GetData` for version inspection. Use `Unity_RunCommand` with this recipe only when you need to process version data programmatically.
+> **Retired 2026-04-21 — use the native Unity MCP tool instead.**
+>
+> This recipe duplicated functionality provided by a first-class Unity MCP tool.
+> The file is preserved as a redirect so existing links and agents still land
+> on a correct pointer.
 
-**Signature:** `PackageGetVersions(string packageId)`
+## Use this instead
 
-**Parameters:**
-- `packageId` — Required. Installed package ID.
+**MCP tool:** `Unity_PackageManager_GetData`
 
-**Returns:** `{ success, packageId, currentVersion, compatibleVersion, latestVersion, allVersions[] }`.
+Example payload:
 
-**Note:** Returns `{ error }` if the cache is not ready or the package is not found.
-
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-
-```csharp
-using UnityEngine;
-using UnityEditor;
-using System.Linq;
-
-internal class CommandScript : IRunCommand
-{
-    public void Execute(ExecutionResult result)
-    {
-        string packageId = "com.unity.cinemachine"; // Replace with installed package ID
-
-        if (Validate.Required(packageId, "packageId") is object err) { result.SetResult(err); return; }
-
-        var packages = PackageManagerHelper.InstalledPackages;
-        if (packages == null)
-        {
-            result.SetResult(new { error = "Package list not ready. Call package_refresh first." });
-            return;
-        }
-
-        if (!packages.TryGetValue(packageId, out var pkg))
-        {
-            result.SetResult(new { error = $"Package not found: {packageId}" });
-            return;
-        }
-
-        var versions = pkg.versions?.all?.ToList();
-        result.SetResult(new
-        {
-            success = true,
-            packageId,
-            currentVersion = pkg.version,
-            compatibleVersion = pkg.versions?.compatible,
-            latestVersion = pkg.versions?.latest,
-            allVersions = versions
-        });
-    }
-}
+```json
+{ "packageID": "com.unity.cinemachine", "installedOnly": false }
 ```
+
+See `mcp-tools.md` in the repo root for the full MCP tool surface.

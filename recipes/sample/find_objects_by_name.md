@@ -1,54 +1,13 @@
 # find_objects_by_name
 
-Find all GameObjects whose name contains the given string (case-insensitive).
+Find GameObjects in the active scene by name.
 
-**Signature:** `FindObjectsByName(string nameContains = null, string name = null)`
+> **Retired 2026-04-21 — use the other recipe instead.**
+>
+> This recipe duplicated a capability already covered by another recipe in
+> this repo. The file is preserved as a redirect.
 
-**Returns:** `{ query, count, objects: [{ name, position: { x, y, z } }] }`
+## Use this instead
 
-## Notes
+**Recipe:** [`recipes/scene/scene_find_objects.md`](recipes/scene/scene_find_objects.md)
 
-- `name` is an accepted alias for `nameContains` for compatibility.
-- Matching is case-insensitive and substring-based.
-- Read-only — does not modify the scene.
-- Prefer `gameobject_find` for richer filtering (tag, layer, component).
-
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-
-## Recipe
-
-```csharp
-using UnityEngine;
-using UnityEditor;
-
-internal class CommandScript : IRunCommand
-{
-    public void Execute(ExecutionResult result)
-    {
-        string nameContains = "Cube"; // required (or use `name` alias)
-        string name = null; // optional alias for nameContains
-
-        nameContains = nameContains ?? name;
-        if (Validate.Required(nameContains, "nameContains") is object err) { result.SetResult(err); return; }
-
-        var allObjects = FindHelper.FindAll<GameObject>();
-        var matches = System.Array.FindAll(allObjects,
-            go => go != null && go.name.IndexOf(nameContains, System.StringComparison.OrdinalIgnoreCase) >= 0);
-        { result.SetResult(new
-        {
-            query = nameContains,
-            count = matches.Length,
-            objects = System.Array.ConvertAll(matches, go => new
-            {
-                name = go.name,
-                position = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z }
-            })
-        }); return; }
-    }
-}
-```

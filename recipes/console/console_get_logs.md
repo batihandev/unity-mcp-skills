@@ -1,75 +1,17 @@
 # console_get_logs
 
-Get Unity console logs. Works in two modes:
+Read Unity Console log entries (Logs / Warnings / Errors).
 
-- **Direct mode** (default): reads existing entries from Unity Console history via `LogEntries` reflection — no setup needed.
-- **Capture mode**: when `console_start_capture` is active, returns buffered entries with precise timestamps.
+> **Retired 2026-04-21 — use the native Unity MCP tool instead.**
+>
+> This recipe duplicated functionality provided by a first-class Unity MCP tool.
+> The file is preserved as a redirect so existing links and agents still land
+> on a correct pointer.
 
-**Signature:** `ConsoleGetLogs(string type = "All", string filter = null, int limit = 100)`
+## Use this instead
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `type` | string | No | `"All"` | `All`, `Error`, `Warning`, or `Log` |
-| `filter` | string | No | null | Substring filter applied to message text |
-| `limit` | int | No | `100` | Maximum entries to return |
+**MCP tool:** `Unity_GetConsoleLogs`
 
-**Returns:** `{ count, logs: [{type, message, time?}], source }` — `source` is `"capture"` or `"console"`.
+Filter by log type, message contents, or stack presence. Returns a simpler log-focused shape than Unity_ReadConsole.
 
-## Common Mistakes
-
-- `console_filter` does not exist — use `console_get_logs` with the `filter` parameter.
-- `console_read` does not exist — use `console_get_logs`.
-- Do not confuse with `debug_get_logs`: `console_get_logs` reads the captured buffer (with timestamps), while `debug_get_logs` always reads console history filtered to errors/warnings by default.
-
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-
-## Recipe
-
-```csharp
-using UnityEngine;
-using UnityEditor;
-
-internal class CommandScript : IRunCommand
-{
-    public void Execute(ExecutionResult result)
-    {
-        string type = "All";   // All | Error | Warning | Log
-        string filter = null;  // optional substring filter
-        int limit = 100;
-
-        if (_capturing)
-        {
-            lock (_logLock)
-            {
-                IEnumerable<LogEntry> results = _logs;
-                if (type != "All")
-                    results = results.Where(l => CapturedLogMatchesType(l.type, type));
-                if (!string.IsNullOrEmpty(filter))
-                    results = results.Where(l => l.message.Contains(filter));
-
-                var captured = results.TakeLast(limit).Select(l => new
-                {
-                    type = l.type.ToString(),
-                    message = l.message,
-                    time = l.time.ToString("HH:mm:ss.fff")
-                }).ToArray();
-                result.SetResult(new { count = captured.Length, logs = captured, source = "capture" });
-                return;
-            }
-        }
-
-        // Direct mode: read from Unity Console via LogEntries reflection
-        int targetMask = 0;
-        if (type == "All" || type.Contains("Error"))   targetMask |= DebugSkills.ErrorModeMask;
-        if (type == "All" || type.Contains("Warning")) targetMask |= DebugSkills.WarningModeMask;
-        if (type == "All" || type.Contains("Log"))     targetMask |= DebugSkills.LogModeMask;
-        if (targetMask == 0) targetMask = DebugSkills.ErrorModeMask | DebugSkills.WarningModeMask | DebugSkills.LogModeMask;
-
-        var logs = DebugSkills.ReadLogEntries(targetMask, filter, limit);
-        result.SetResult(new { count = logs.Count, logs, source = "console" });
-    }
-}
-```
+See `mcp-tools.md` in the repo root for the full MCP tool surface.

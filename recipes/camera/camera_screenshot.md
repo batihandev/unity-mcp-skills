@@ -1,68 +1,17 @@
 # camera_screenshot
 
-Capture a PNG screenshot from a Game Camera to a file. For quick Scene View captures, prefer the native `Unity_Camera_Capture` tool. Use this command when you need a specific Game Camera, custom resolution, or a path under `Assets/`.
+Capture a screenshot from a specific Camera component.
 
-**Signature:** `CameraScreenshot(string savePath = "Assets/screenshot.png", int width = 1920, int height = 1080, string name = null, int instanceId = 0, string path = null)`
+> **Retired 2026-04-21 — use the native Unity MCP tool instead.**
+>
+> This recipe duplicated functionality provided by a first-class Unity MCP tool.
+> The file is preserved as a redirect so existing links and agents still land
+> on a correct pointer.
 
-**Returns:** `{ success, path, width, height }`
+## Use this instead
 
-## Prerequisites
+**MCP tool:** `Unity_Camera_Capture`
 
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+Identify the camera by name / path. The tool renders the camera and returns an image.
 
-```csharp
-using UnityEngine;
-using UnityEditor;
-
-internal class CommandScript : IRunCommand
-{
-    public void Execute(ExecutionResult result)
-    {
-        string savePath = "Assets/Screenshots/capture.png";
-        int width = 1920;
-        int height = 1080;
-
-        // Provide at least one of: name, instanceId, or path
-        string name = "Main Camera";
-        int instanceId = 0;
-        string path = null;
-
-        var (cam, err) = GameObjectFinder.FindComponentOrError<Camera>(name, instanceId, path);
-        if (err != null) { result.SetResult(err); return; }
-
-        if (Validate.SafePath(savePath, "savePath") is object pathErr) { result.SetResult(pathErr); return; }
-        if (!savePath.EndsWith(".png")) savePath += ".png";
-
-        var dir = System.IO.Path.GetDirectoryName(savePath);
-        if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
-            System.IO.Directory.CreateDirectory(dir);
-
-        var rt = new RenderTexture(width, height, 24);
-        Texture2D tex = null;
-        RenderTexture oldTarget = cam.targetTexture;
-        try
-        {
-            cam.targetTexture = rt;
-            cam.Render();
-            RenderTexture.active = rt;
-            tex = new Texture2D(width, height, TextureFormat.RGB24, false);
-            tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-            tex.Apply();
-            System.IO.File.WriteAllBytes(savePath, tex.EncodeToPNG());
-        }
-        finally
-        {
-            cam.targetTexture = oldTarget;
-            RenderTexture.active = null;
-            if (rt != null) Object.DestroyImmediate(rt);
-            if (tex != null) Object.DestroyImmediate(tex);
-        }
-
-        AssetDatabase.ImportAsset(savePath);
-        result.SetResult(new { success = true, path = savePath, width, height });
-    }
-}
-```
+See `mcp-tools.md` in the repo root for the full MCP tool surface.
