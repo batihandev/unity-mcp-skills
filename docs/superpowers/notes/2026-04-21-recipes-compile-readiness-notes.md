@@ -43,13 +43,13 @@ Each of these requires per-recipe fixup and is out of scope for Task 7:
 ### 4. Unity_RunCommand occasionally rejected compile-only with "User interactions are not supported"
 Hit on `shader_delete` twice in a row (with `if (false)` wrapping, no execution path). Unclear whether it's a dialog-adjacent symbol triggering it at compile-analysis time or a transient Unity state. Deferred; single recipe.
 
-## Comp-gate greens by domain
+## Comp-gate greens by domain (session 1 close)
 
-animator, asset, camera, console, editor, gameobject (pilot), light, navmesh, optimization, physics, project, sample, scene, scriptableobject, shader, smart, terrain, timeline, ui, validation.
+animator, asset, camera, console, editor, gameobject (pilot), light, navmesh, optimization, physics, project, scene, scriptableobject, shader, smart, terrain, timeline, ui, validation.
 
-## Comp-gate blockers by domain
+## Comp-gate blockers by domain (session 1 close)
 
-cinemachine, component (untested — 479-line render too large), event, material, package, prefab, probuilder, test, uitoolkit, xr.
+cinemachine, component (untested — 479-line render too large), event, material, prefab, probuilder, test, uitoolkit, xr. (`package`, `sample` and 4 individual recipes retired in session 2 Task 13.)
 
 ## Tracker entries
 
@@ -99,15 +99,25 @@ MCP tools NOT used as retirement targets because their use case is narrower than
 - [Unity Discussions — New Navigation package](https://discussions.unity.com/t/theres-a-new-navigation-package-in-town/902596)
 - [AI Navigation package changelog](https://docs.unity3d.com/Packages/com.unity.ai.navigation@2.0/changelog/CHANGELOG.html)
 
-### Task 12 complete. Ready for Task 13.
+## Session 2 close state (live)
+
+**Gate counts:** ext 461/484, pre 461/484, comp 20/484, run 1/484, retired 23/484.
+
+Tasks done session 2: 19, 11, 12, 13 (plus post-cleanup of skill-file phrasing in `a30f2c6` + recipe-file deletions in `698a45b`).
 
 ## Next session — start here
 
-Session 2 scope is in `docs/superpowers/plans/2026-04-21-recipes-compile-readiness-repair-plan.md` as Tasks 11–21 with a revised execution order at the bottom of that doc. Cold-start steps:
+Session 2 scope lives in `docs/superpowers/plans/2026-04-21-recipes-compile-readiness-repair-plan.md` under "Session 2 scope". Cold-start steps:
 
-1. Read the plan's "Session 2 scope" section and the "Locked decisions" subsection before any edits.
-2. Run Task 12 pre-flight first (read `mcp-tools.md`, re-list installed packages, web-confirm deprecations). The pre-flight outputs are required inputs to Tasks 13, 14, 17.
-3. Task 19 (tracker `R` state) should land before Task 13 (retirements need the `R` cell value to exist).
-4. Follow the revised execution order 1–13 at the bottom of the plan doc.
+1. Read the plan's "Session 2 scope" → "Session 2 progress checkpoint" to see what's live vs pending.
+2. Read "Locked decisions" before any edits.
+3. Pick up at Task 14 (the revised execution order at the bottom of that doc marks Tasks 19 / 11 / 12 / 13 done with strikethrough).
+4. Query pending work: `python3 tools/tracker_next.py --gate comp --limit 5` (retired rows are skipped automatically).
 
-Do not revisit the locked decisions in the plan doc without evidence: no back-port of `CinemachineAdapter` / `XRReflectionHelper` / `BatchExecutor`; retired recipes are deleted (no tombstones outside `docs/`); a SKILL.md is deleted only when another skill carries the same info; no memory-based deprecation replacement (web-confirm first).
+**Locked decisions** (do not revisit without evidence):
+
+- Do not port `CinemachineAdapter`, `XRReflectionHelper`, `BatchExecutor`, `SkillResultHelper` as `_shared/*.md`.
+- Retired recipes are deleted; no tombstones outside `docs/`; no dated retirement narratives in `.md` files outside `docs/`.
+- A `SKILL.md` is deleted only when every capability it claims is covered by another skill or a native MCP tool.
+- Deprecation replacements require web-confirmation against Unity's official docs, not model memory.
+- Unity 6000+ is the baseline; no `#if UNITY_` back-compat.

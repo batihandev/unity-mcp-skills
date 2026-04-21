@@ -417,11 +417,24 @@ body into real executable code.
 
 Session 1 closed with ext 484/484, pre 484/484, comp 19/484, run 1/484. Mid-session work revealed scope the original Tasks 0–10 did not cover. This section defines the remaining work; the revised execution order at the end of this section replaces the Tasks 0–10 wave for anything not already done.
 
+### Session 2 progress checkpoint
+
+Live gate state: **ext 461/484, pre 461/484, comp 20/484, run 1/484, retired 23/484**.
+
+Tasks completed in session 2 so far:
+
+- **Task 19 ✓** — tracker `R` state + `--retire-all` flag + retired counter; `tracker_next.py` hides R rows. Commit `f92a211`.
+- **Task 11 ✓** — `transform_returns` lambda-scope fix via brace-stack depth tracking. Three affected recipes re-extracted (`shader_list`, `component_list`, `component_get_properties`). `shader_list` comp-smoked green to confirm. Commit `f75993d`.
+- **Task 12 ✓** — MCP retirement mapping cross-checked against `mcp-tools.md`; 4 missing packages confirmed; deprecation replacements web-confirmed with source URLs in notes. Commit `4c36558`.
+- **Task 13 ✓** — 23 recipes deleted (`package/*` 11, `sample/*` 8, `asset/batch_query_assets`, `camera/camera_screenshot`, `console/console_get_logs`, `console/console_clear`). `recipes/package/`, `recipes/sample/`, `skills/sample/` directories removed. Six skill files (`asset`, `camera`, `console`, `scene`, `package`, `script`) now name MCP tools directly, no retirement narrative. Commits `9e4f3a6` → `a30f2c6` → `698a45b`.
+
+**Next up (revised execution order below): Task 14 — install 4 packages + drop compat shims + rewrite 2 navmesh recipes.**
+
 ### Mid-session findings that change the plan
 
 1. **REST-era plumbing rejected, not ported.** Upstream `BatchExecutor<T>.Execute`, `SkillResultHelper.TryGetError`, and Newtonsoft.Json-based deserialization are REST-call glue with no purpose in stateless `Unity_RunCommand`. `*_batch` recipes are rewritten as `foreach` loops taking typed arrays.
 2. **Version-compat shims rejected.** Upstream `CinemachineAdapter` (562 lines; Cinemachine 2↔3 shim) and `XRReflectionHelper` (558 lines; XRI 2↔3 reflection shim) are not ported as `_shared/*.md`. Repo commits to Cinemachine 3, XRI 3, and direct v3 API use.
-3. **Native MCP coverage replaces entire domains for retirement.** `package/*` (11 recipes), `script/*`, `asset/batch_query_assets`, `camera/camera_screenshot`, `sample/*` (8), `console/console_get_logs`, `console/console_clear` duplicate first-class MCP tools and are retired — but `skills/<domain>/SKILL.md` files are **kept** as routing stubs, not deleted.
+3. **Native MCP coverage replaces entire domains for retirement.** `package/*` (11 recipes), `script/*`, `asset/batch_query_assets`, `camera/camera_screenshot`, `sample/*` (8), `console/console_get_logs`, `console/console_clear` duplicate first-class MCP tools and are retired. Recipe files are deleted; the owning `skills/<domain>/SKILL.md` carries the routing directly. A skill file that offers no information beyond redirecting elsewhere (`skills/sample/` was the only such case) is also deleted.
 4. **Extractor transform bug.** `tools/reextract_recipes.py` `transform_returns` converts `return <expr>;` inside `Select`/`Where` lambda bodies — invalid, since the lambda must return a value. Caught on `shader_list`, `component_list`; likely affects more of the 73 recipes using Select-block-lambdas.
 5. **Unity project package inventory established.** Installed: timeline, inputsystem, test-framework, newtonsoft-json, ugui, modules.ai, modules.terrain, modules.animation, modules.physics, render-pipelines.universal, ide.visualstudio, and more. Missing: `com.unity.cinemachine`, `com.unity.xr.interaction.toolkit`, `com.unity.probuilder`, `com.unity.ai.navigation`.
 6. **Unity 6000+ is the only supported baseline.** No back-compat branches. `#if UNITY_6000_0_OR_NEWER` conditionals are dropped in favor of the new-API-only path.
@@ -429,8 +442,8 @@ Session 1 closed with ext 484/484, pre 484/484, comp 19/484, run 1/484. Mid-sess
 ### Locked decisions (do not revisit without evidence)
 
 - Do not port `CinemachineAdapter`, `XRReflectionHelper`, `BatchExecutor`, `SkillResultHelper` as `_shared/*.md`.
-- Do not delete any `skills/<domain>/SKILL.md` file even if every recipe in that domain is retired. Rewrite as a routing stub pointing at the MCP replacement.
-- Retired recipe files are deleted. The owning `skills/<domain>/SKILL.md` carries the routing info directly (names the MCP tool or points at the replacement recipe). `.md` files outside `docs/` are post-mortem only — no tombstones, no redirect files, no dated retirement narratives.
+- Retired recipe files are deleted. The owning `skills/<domain>/SKILL.md` carries the routing directly (names the MCP tool or points at the replacement recipe inline). `.md` files outside `docs/` are post-mortem only — no tombstones, no redirect files, no dated retirement narratives, no "this recipe is a redirect" meta-text.
+- Delete a `skills/<domain>/SKILL.md` only when every capability it claims is already covered by another skill or a native MCP tool. Mixed skills (some recipes retired, others active) stay; their routing is corrected in-place.
 - Do not replace a deprecated API based on model-memory alone. Web-confirm the replacement + semantics against Unity's official docs; record source URL in the notes file before applying.
 - Do not add back-compat to older Unity versions. Unity 6000+ is the baseline; root `README.md` states this once.
 
@@ -481,13 +494,13 @@ Session 1 closed with ext 484/484, pre 484/484, comp 19/484, run 1/484. Mid-sess
 
 **Retirement candidates (require Task 12 web-confirm + mcp-tools.md match):**
 - `package/*` (11) → `Unity_PackageManager_ExecuteAction`, `Unity_PackageManager_GetData`.
-- `script/*` → `Unity_CreateScript`, `Unity_DeleteScript`, `Unity_FindInFile`, `Unity_ScriptApplyEdits`, `Unity_ValidateScript`.
+- `script/*` → `Unity_CreateScript`, `Unity_DeleteScript`, `Unity_FindInFile`, `Unity_ScriptApplyEdits`, `Unity_ValidateScript`. (No recipe files exist for this domain — only the skill needed updating.)
 - `asset/batch_query_assets` → `Unity_FindProjectAssets`.
 - `camera/camera_screenshot` → `Unity_Camera_Capture`.
-- `sample/*` (8 recipes) → same-repo duplicates of `recipes/gameobject/*`; consolidate the pointers, retain sample SKILL.md as a pointer stub.
+- `sample/*` (8 recipes) → same-repo duplicates of `recipes/gameobject/*` and `recipes/scene/*`. Whole `skills/sample/` directory also deleted: it held no info the gameobject / scene skills don't already cover.
 - `console/console_get_logs`, `console/console_clear` → `Unity_GetConsoleLogs`, `Unity_ReadConsole`.
 
-**Verification target:** a cold-start AI reading any updated `SKILL.md` knows which MCP tool to call without opening the tombstone recipe file.
+**Verification target:** a cold-start AI reading any updated `SKILL.md` knows which MCP tool to call without needing a recipe file.
 
 ### Task 14: Install 4 packages, drop compat shims, rewrite 2 navmesh recipes
 
@@ -577,11 +590,11 @@ Session 1 closed with ext 484/484, pre 484/484, comp 19/484, run 1/484. Mid-sess
 
 ### Revised execution order (replaces Tasks 0–10 wave for remaining work)
 
-1. **Task 19** — tracker `R` state + tool updates. Done first because it unblocks clean retirement accounting for Task 13.
-2. **Task 11** — fix extractor lambda bug; re-extract affected recipes.
-3. **Task 12** — pre-flight: mcp-tools.md review, package list, web-confirm deprecations.
-4. **Task 13** — retire-to-MCP (tombstone + skill routing).
-5. **Task 14** — install packages + drop compat shims + rewrite 2 navmesh recipes.
+1. ~~**Task 19**~~ ✓ tracker `R` state + tool updates.
+2. ~~**Task 11**~~ ✓ extractor lambda bug fixed; 3 recipes re-extracted.
+3. ~~**Task 12**~~ ✓ pre-flight complete; retirement mappings + deprecation URLs in notes.
+4. ~~**Task 13**~~ ✓ retire-to-MCP: 23 recipes + `skills/sample/` deleted, owning skills updated.
+5. **Task 14** ← **NEXT** — install `com.unity.cinemachine`, `com.unity.xr.interaction.toolkit`, `com.unity.probuilder`, `com.unity.ai.navigation`. Drop compat shims in cinemachine / xr / probuilder recipes. Rewrite `navmesh_bake` + `navmesh_clear` to use `NavMeshSurface`.
 6. **Task 15** — `*_batch` → `foreach` rewrite.
 7. **Task 16** — inline private upstream helpers.
 8. **Task 17** — Unity 6+ commit + apply web-confirmed deprecations.
@@ -589,5 +602,6 @@ Session 1 closed with ext 484/484, pre 484/484, comp 19/484, run 1/484. Mid-sess
 10. **Task 18** — reflection-based obsolete sweep; handle any new findings.
 11. **Task 20** — full comp re-smoke.
 12. **Task 21** — selective run gate.
+13. **Task 10** (from original plan) — final audit + plan-exit notes.
 13. **Task 10** (from original plan, unchanged) — final audit + plan-exit notes.
 
