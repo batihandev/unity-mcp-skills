@@ -1,0 +1,86 @@
+# material_set_emission
+
+Set emission color with HDR intensity and auto-enable the emission keyword.
+
+**Signature:** `MaterialSetEmission(string name = null, int instanceId = 0, string path = null, float r = 1, float g = 1, float b = 1, float intensity = 1.0f, bool enableEmission = true)`
+
+**Returns:** `{ success, target, emissionColor: {r,g,b}, intensity, hdrColor: {r,g,b}, emissionEnabled }`
+
+## Notes
+
+- The HDR color stored on the material is `(r * intensity, g * intensity, b * intensity)`. Set `intensity > 1` for visible bloom in post-processing.
+- Tries `_EmissionColor` then `_Emission` for the property name; returns an error if neither exists on the shader.
+- When `enableEmission = true` and `intensity > 0`: enables the `_EMISSION` keyword and sets `globalIlluminationFlags = RealtimeEmissive`.
+- When `enableEmission = false` or `intensity <= 0`: disables the keyword and sets `globalIlluminationFlags = EmissiveIsBlack`.
+- There is no `alpha` parameter — emission alpha is always set to 1.
+
+## Recipe
+
+```csharp
+using UnityEngine;
+using UnityEditor;
+
+internal class CommandScript : IRunCommand
+{
+    public void Execute(ExecutionResult result)
+    {
+        string name            = "Lantern";  // target GameObject name
+        int    instanceId      = 0;
+        string path            = null;       // or material asset path
+        float  r = 1f, g = 0.8f, b = 0.2f; // warm yellow-white; values 0-1
+        float  intensity       = 3.0f;      // >1 for HDR bloom
+        bool   enableEmission  = true;      // auto-enable _EMISSION keyword
+
+        /* Original Logic:
+
+            var (material, go, error) = FindMaterial(name, instanceId, path);
+            if (error != null) return error;
+
+            WorkflowManager.SnapshotObject(material);
+            Undo.RecordObject(material, "Set Material Emission");
+
+            var hdrColor = new Color(r * intensity, g * intensity, b * intensity, 1f);
+
+            string emissionProperty = null;
+            var emissionProps = new[] { "_EmissionColor", "_Emission" };
+            foreach (var prop in emissionProps)
+            {
+                if (material.HasProperty(prop))
+                {
+                    material.SetColor(prop, hdrColor);
+                    emissionProperty = prop;
+                    break;
+                }
+            }
+
+            if (emissionProperty == null)
+                return new {
+                    error = "Material does not support emission",
+                    shaderName = material.shader.name,
+                    suggestion = "Use a shader that supports emission like Standard, URP/Lit, or HDRP/Lit"
+                };
+
+            if (enableEmission && intensity > 0)
+            {
+                material.EnableKeyword("_EMISSION");
+                material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            }
+            else if (!enableEmission || intensity <= 0)
+            {
+                material.DisableKeyword("_EMISSION");
+                material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+            }
+
+            if (go == null) EditorUtility.SetDirty(material);
+
+            return new {
+                success = true,
+                target = go != null ? go.name : path,
+                emissionColor = new { r, g, b }, intensity,
+                hdrColor = new { r = hdrColor.r, g = hdrColor.g, b = hdrColor.b },
+                emissionEnabled = enableEmission && intensity > 0
+            };
+        */
+    }
+}
+```

@@ -1,0 +1,43 @@
+# timeline_add_signal_track
+
+Add a Signal track for event markers to a Timeline.
+
+**Signature:** `TimelineAddSignalTrack(name string = null, instanceId int = 0, path string = null, trackName string = "Signal Track")`
+
+**Returns:** `{ success, trackName }`
+
+**Notes:**
+- Locate the Director GameObject via `name`, `instanceId`, or `path` (at least one required)
+- Signal tracks hold `SignalEmitter` markers that fire `SignalAsset` events at specific times
+
+```csharp
+using UnityEngine;
+using UnityEditor;
+using UnityEngine.Timeline;
+using UnityEngine.Playables;
+
+internal class CommandScript : IRunCommand
+{
+    public void Execute(ExecutionResult result)
+    {
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        string trackName = "Signal Track";
+
+        var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
+        if (findErr != null) { result.SetResult(findErr); return; }
+
+        var director = go.GetComponent<PlayableDirector>();
+        if (director == null) { result.SetResult(new { error = "PlayableDirector not found" }); return; }
+
+        var timeline = director.playableAsset as TimelineAsset;
+        if (timeline == null) { result.SetResult(new { error = "No TimelineAsset assigned" }); return; }
+
+        var track = timeline.CreateTrack<SignalTrack>(null, trackName);
+        AssetDatabase.SaveAssets();
+
+        result.SetResult(new { success = true, trackName = track.name });
+    }
+}
+```

@@ -1,0 +1,52 @@
+# model_find_assets
+
+Search for model assets in the project using an AssetDatabase filter.
+
+**Skill ID:** `model_find_assets`
+**Source:** `ModelSkills.cs` — `ModelFindAssets`
+
+## Signature
+
+```
+model_find_assets(filter?: string = "", limit?: int = 50)
+  → { success, totalFound, showing, models[{ path, name }] }
+```
+
+## Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `filter` | string | no | `""` | Additional AssetDatabase search terms appended to `t:Model` |
+| `limit` | int | no | `50` | Max results returned |
+
+## Unity_RunCommand Template
+
+```csharp
+using UnityEngine;
+using UnityEditor;
+using System.Linq;
+
+internal class CommandScript : IRunCommand
+{
+    public void Execute(ExecutionResult result)
+    {
+        string filter = ""; // e.g. "label:character" or "hero"
+        int limit = 50;
+
+        var guids = AssetDatabase.FindAssets("t:Model " + filter);
+        var models = guids.Take(limit).Select(guid =>
+        {
+            var path = AssetDatabase.GUIDToAssetPath(guid);
+            return new { path, name = System.IO.Path.GetFileNameWithoutExtension(path) };
+        }).ToArray();
+
+        return new { success = true, totalFound = guids.Length, showing = models.Length, models };
+    }
+}
+```
+
+## Notes
+
+- `t:Model` matches FBX, OBJ, and other model formats recognised by Unity.
+- `totalFound` reflects the full database count before the `limit` cap.
+- Use `model_get_mesh_info` to inspect vertex/triangle stats on a specific model.
