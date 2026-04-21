@@ -14,11 +14,11 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 ## Summary
 
 - Total recipes: **484**
-- ext: **461** / 484
-- pre: **461** / 484
+- ext: **462** / 484
+- pre: **462** / 484
 - comp: **19** / 484
 - run: **1** / 484
-- retired: **23** / 484
+- retired: **22** / 484
 
 ## Domains
 
@@ -70,7 +70,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | camera_get_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | camera_list | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | camera_look_at | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
-| camera_screenshot | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP |
+| camera_screenshot | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP; 2026-04-21: restored from retirement (Unity_Camera_Capture has different surface: in-memory only, no width/height, instanceID-only) |
 | camera_set_culling_mask | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | camera_set_orthographic | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | camera_set_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |

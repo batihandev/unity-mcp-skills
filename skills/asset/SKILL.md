@@ -21,7 +21,7 @@ Use this module to import external files into the project, move or rename assets
 
 **No batch needed**: `asset_duplicate`, `asset_find`, `asset_create_folder`, `asset_refresh`, `asset_get_info`, `asset_reimport`, `asset_reimport_batch`, `asset_set_labels`, `asset_get_labels`
 
-For multi-group asset search (several queries in one call), use the native `Unity_FindProjectAssets` tool.
+For asset search, use the native `Unity_FindProjectAssets` tool. For multi-filter-group searches in a single task, call it once per filter group — the tool takes a single `query` string plus `startIndex` pagination, not a batched filter array.
 
 ## Common Mistakes
 

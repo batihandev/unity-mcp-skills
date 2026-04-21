@@ -444,8 +444,10 @@ Tasks completed in session 2 so far:
 - Do not port `CinemachineAdapter`, `XRReflectionHelper`, `BatchExecutor`, `SkillResultHelper` as `_shared/*.md`.
 - Retired recipe files are deleted. The owning `skills/<domain>/SKILL.md` carries the routing directly (names the MCP tool or points at the replacement recipe inline). `.md` files outside `docs/` are post-mortem only — no tombstones, no redirect files, no dated retirement narratives, no "this recipe is a redirect" meta-text.
 - Delete a `skills/<domain>/SKILL.md` only when every capability it claims is already covered by another skill or a native MCP tool. Mixed skills (some recipes retired, others active) stay; their routing is corrected in-place.
+- **Retirement requires a functional-equivalence check against the real MCP tool schema, not just a one-liner match in `mcp-tools.md`.** Load the tool via `ToolSearch select:<name>`, compare its parameters against the recipe's signature, and confirm every recipe capability (parameter surface, persistence semantics, return shape) is covered. If the MCP tool is a strict subset, keep the recipe. `camera_screenshot` → `Unity_Camera_Capture` was retired on a one-line-description match and reversed after schema check (the MCP tool is in-memory-only, takes instanceID alone, no file persistence, no custom resolution).
 - Do not replace a deprecated API based on model-memory alone. Web-confirm the replacement + semantics against Unity's official docs; record source URL in the notes file before applying.
 - Do not add back-compat to older Unity versions. Unity 6000+ is the baseline; root `README.md` states this once.
+- **After any domain's recipes are fully comp-green (all its non-retired rows at `comp:x`), run `writing-skills` against that domain's `skills/<domain>/SKILL.md` and apply every recommendation before moving to the next domain.** This is the gate that keeps the skill surface coherent with what the recipes actually do.
 
 ### Task 11: Fix `reextract_recipes.py` lambda-scope `return` transform
 
@@ -581,6 +583,7 @@ Tasks completed in session 2 so far:
 - `tools/render_recipe.py` renders every non-retired recipe.
 - `Unity_RunCommand` comp-smokes each (body in `if (false)`). Target: every recipe is `comp:x` or `R`. Remaining `B` cells are documented individually with reason.
 - Existing session 1 `B` cells are re-verified per the disposition table in `2026-04-21-recipes-compile-readiness-notes.md` §4.
+- **Per-domain completion gate:** as each domain hits "every non-retired row at `comp:x`", run `writing-skills` against `skills/<domain>/SKILL.md` and apply its recommendations before moving to the next domain. Record the sweep outcome in the tracker notes for the last recipe of that domain.
 
 ### Task 21: Selective `run` gate
 
