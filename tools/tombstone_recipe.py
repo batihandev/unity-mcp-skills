@@ -30,11 +30,7 @@ TEMPLATE_MCP = """# {stem}
 
 {summary}
 
-> **Retired 2026-04-21 — use the native Unity MCP tool instead.**
->
-> This recipe duplicated functionality provided by a first-class Unity MCP tool.
-> The file is preserved as a redirect so existing links and agents still land
-> on a correct pointer.
+> **This recipe is a redirect. Use the native Unity MCP tool instead.**
 
 ## Use this instead
 
@@ -47,10 +43,7 @@ TEMPLATE_REDIRECT = """# {stem}
 
 {summary}
 
-> **Retired 2026-04-21 — use the other recipe instead.**
->
-> This recipe duplicated a capability already covered by another recipe in
-> this repo. The file is preserved as a redirect.
+> **This recipe is a redirect. Use the recipe below instead.**
 
 ## Use this instead
 

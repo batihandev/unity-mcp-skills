@@ -62,10 +62,10 @@ Do not attempt to work around missing files by fabricating recipe content.
 | perception | `skills/perception/SKILL.md` | `Unity_RunCommand` |
 | camera | `skills/camera/SKILL.md` | `Unity_Camera_Capture` |
 | event | `skills/event/SKILL.md` | `Unity_RunCommand` |
-| package | `skills/package/SKILL.md` | Native MCP only (`Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData`) — recipes retired 2026-04-21 |
+| package | `skills/package/SKILL.md` | Native MCP only (`Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData`) |
 | project | `skills/project/SKILL.md` | `Unity_GetProjectData` |
 | optimization | `skills/optimization/SKILL.md` | `Unity_RunCommand` |
-| sample | `skills/sample/SKILL.md` | Retired 2026-04-21 — recipes redirect to `recipes/gameobject/*` and `recipes/scene/*` |
+| sample | `skills/sample/SKILL.md` | Redirect skill — `sample/*` recipes map to `recipes/gameobject/*` / `recipes/scene/*` |
 | test | `skills/test/SKILL.md` | `Unity_RunCommand` |
 | scriptableobject | `skills/scriptableobject/SKILL.md` | `Unity_RunCommand` |
 

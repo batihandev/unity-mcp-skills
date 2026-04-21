@@ -2,10 +2,7 @@
 
 Get active scene metadata.
 
-> **Retired 2026-04-21 — use the other recipe instead.**
->
-> This recipe duplicated a capability already covered by another recipe in
-> this repo. The file is preserved as a redirect.
+> **This recipe is a redirect. Use the recipe below instead.**
 
 ## Use this instead
 

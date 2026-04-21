@@ -145,6 +145,6 @@ List all cameras in the scene.
 
 ---
 
-## Retired recipes (2026-04-21)
+## Redirects
 
-- `camera_screenshot` → use the native MCP tool `Unity_Camera_Capture` to render a specific Camera component. The recipe file is kept as a tombstone pointer.
+- `camera_screenshot` → use the native MCP tool `Unity_Camera_Capture` to render a specific Camera component. The recipe file is a redirect pointer.

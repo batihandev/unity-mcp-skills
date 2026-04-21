@@ -1,15 +1,15 @@
 ---
 name: unity-sample
-description: "Retired skill — sample recipes duplicated gameobject/scene operations. Kept as a routing stub."
+description: "Redirect skill — sample-* recipes map to existing gameobject / scene recipes. Use the target recipes directly."
 ---
 
-# Sample Operations (Retired 2026-04-21)
+# Sample Operations
 
-The `sample/*` recipes were low-level wrappers around primitive creation, deletion, transform editing, and scene queries. Every one of them duplicates a first-class recipe elsewhere in this repo.
+The `sample/*` recipe names are redirect pointers. For any `sample/*` name, use the target recipe directly instead.
 
 ## Routing
 
-| Old recipe | Replacement |
+| `sample/*` name | Target recipe |
 |---|---|
 | `create_cube`, `create_sphere` | [`recipes/gameobject/gameobject_create.md`](../../recipes/gameobject/gameobject_create.md) with `primitiveType = "Cube"` / `"Sphere"` |
 | `delete_object` | [`recipes/gameobject/gameobject_delete.md`](../../recipes/gameobject/gameobject_delete.md) |
@@ -17,8 +17,4 @@ The `sample/*` recipes were low-level wrappers around primitive creation, deleti
 | `get_scene_info` | [`recipes/scene/scene_get_info.md`](../../recipes/scene/scene_get_info.md) |
 | `set_object_position`, `set_object_rotation`, `set_object_scale` | [`recipes/gameobject/gameobject_set_transform.md`](../../recipes/gameobject/gameobject_set_transform.md) with the appropriate argument set |
 
-All eight recipe files under `recipes/sample/` are preserved as tombstones that point to the same replacements.
-
-## Why retired
-
-Duplicating `gameobject_create` with a fixed `primitiveType` argument adds surface area without adding capability. Agents were landing on the sample recipes and missing the richer parent recipe. Retirement collapses the surface.
+Every file under `recipes/sample/` is a redirect to one of the above.

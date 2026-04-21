@@ -25,11 +25,11 @@ description: "Use when installing, removing, inspecting, or refreshing Unity pac
 
 - Install / remove operations are asynchronous on Unity's side. If the tool returns a "pending" status, poll `Unity_PackageManager_GetData` with `installedOnly: true` a few seconds later to observe the final state.
 - Package operations can trigger a Domain Reload. Expect transient server unavailability afterward; retry once.
-- For older `package_*` recipe filenames under `recipes/package/`, see the tombstone files — each points here.
+- Older `package_*` recipe filenames under `recipes/package/` are redirect pointers to this skill. The routing table above is authoritative.
 
-## Retired recipes (tombstoned, 2026-04-21)
+## Redirects
 
-The following recipe filenames are preserved as tombstones that point back to this skill:
+Recipe filenames that redirect here:
 
 - `package_check`, `package_get_cinemachine_status`, `package_get_dependencies`, `package_get_versions`, `package_list`, `package_search` → `Unity_PackageManager_GetData`
 - `package_install`, `package_install_cinemachine`, `package_install_splines`, `package_remove`, `package_refresh` → `Unity_PackageManager_ExecuteAction`
