@@ -66,5 +66,4 @@ WorkflowManager.SnapshotCreatedGameObject(go, "Cube");           // after primit
 
 ## Notes
 
-- Session-level undo (`BeginTask` / `EndTask` / `UndoSession`) is not provided.
 - Paste this class in the same `Unity_RunCommand` code block as `CommandScript`.

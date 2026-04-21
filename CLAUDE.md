@@ -75,6 +75,14 @@ Do this to pick up mid-job without carrying prior session context:
 Gate priority order: finish all `ext` first, then `pre`, then `comp`, then `run`.
 A recipe must earn earlier gates before later ones.
 
+## Unity MCP is a hard dependency while working on this repo
+
+The Unity Editor's official `com.unity.ai.assistant` MCP must be live and reachable. Tools in the `mcp__unityMCP__*` namespace (e.g. `Unity_RunCommand`, `Unity_PackageManager_GetData`, `Unity_ValidateScript`, `Unity_FindProjectAssets`, `Unity_Camera_Capture`) are the primary way to validate recipes, introspect project state, and evaluate retirement candidates.
+
+- If Unity MCP is not connected when you start, **ask the user to connect it before continuing.** Do not try to infer Unity project state from recipe text or upstream sources alone; the live project is ground truth.
+- **Before claiming an MCP tool replaces, supersedes, or is the preferred route for any recipe — load the tool schema (`ToolSearch select:<ToolName>`) and confirm the parameter surface covers every capability the recipe provides.** `mcp-tools.md` one-line descriptions are summaries, not contracts. Retiring a recipe on a description match alone is how `camera_screenshot` got wrongly deleted — `Unity_Camera_Capture` turned out to be in-memory-only, accept `cameraInstanceID` only, with no file persistence or custom resolution. Schema check first, retirement/routing second.
+- Same rule when writing SKILL.md routing prose: verify the tool name + parameter shape you're about to recommend by loading the schema. A fabricated tool name or wrong parameter hint in a skill file is worse than no mention — agents will paste it verbatim.
+
 ## Gotchas (stable quirks of Unity_RunCommand)
 
 Put these in code comments where the gotcha actually bites, not in prose

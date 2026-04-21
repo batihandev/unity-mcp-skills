@@ -368,7 +368,7 @@ body into real executable code.
 - Re-run the audit commands from Task 0. Every broken-dependency count that was >0 at the start is now either 0 **or** every non-zero hit is an intentional reference inside `recipes/_shared/` itself.
 - The 13 original async recipes no longer reference `AsyncJobService` (they have been redesigned per Task 5).
 - The `_shared/validate.md` file no longer contains `bool true = default;` or `/* Original Logic:` placeholders.
-- **Index coherence check:** `ls skills/*/` and `ls recipes/*/` must match the tables in root `SKILL.md` and `skills/SKILL.md` exactly. Zero orphan directories (empty domain folders not listed in any index), zero dangling index rows (listed domains whose directory doesn't exist). Scripted one-liner: `diff <(ls -d skills/*/ | sed 's|.*/\([^/]*\)/|\1|') <(grep -oE '^\| [a-z_]+' SKILL.md | awk '{print $2}' | sort)` — must be empty.
+- **Index coherence check (domain-level only):** `ls -d skills/*/` must match the domain rows in root `SKILL.md`'s domain map AND in `skills/SKILL.md`'s internal index. Zero orphan directories (empty skill folders not listed in either index), zero dangling index rows (listed domains whose `skills/<name>/` directory doesn't exist). No recipe-file listing is expected in either index — individual recipes live under `recipes/<domain>/` and are discovered from the domain's `SKILL.md`, not from the library root.
 - Same coherence check for `recipes/_shared/README.md` (lists helpers) vs `ls recipes/_shared/*.md` — no helper mentioned that isn't on disk, no helper on disk that isn't mentioned.
 - Same check for `mcp-tools.md` tool names vs tools actually loadable via `ToolSearch` — a tool listed in the matrix but not surfaced by the MCP server is a stale index entry.
 - Notes file has a final summary entry listing: total files modified, total recipes redesigned, smoke-test coverage percentage, any outstanding minor issues deferred to a later pass.
@@ -601,7 +601,7 @@ Tasks completed in session 2 so far:
 **Files:**
 - Modify: every non-retired recipe `.md` under `recipes/<domain>/`.
 - Modify: `tools/inject_prerequisites.py` (template update).
-- Do not touch: `recipes/_shared/*.md`. Helpers are working + confirmed; slimming them (including MiniJson) is explicitly out of scope.
+- Modify: `recipes/_shared/*.md` — **prose only**. The `csharp` fenced code blocks inside helpers (MiniJson, GameObjectFinder, Validate, WorkflowManager, ComponentSkills split, SkillsCommon) stay byte-identical because they're working + confirmed. Headers, "Call pattern" sections, "Do not" lists, and paste-instructions inside helper files are audited for redundancy and stripped where duplicated elsewhere.
 
 **Required outcomes:**
 - **Compact `## Prerequisites` block** — replace the multi-line header + bullets with a single line per recipe:
@@ -612,8 +612,8 @@ Tasks completed in session 2 so far:
 - **Drop prose that the code already expresses.** If a recipe has a `## Parameters` table AND inline `// description` comments for the same locals at the top of `Execute`, keep one (prefer the inline comments — paste-ready). If a recipe has a `## Returns` prose schema AND a `result.SetResult(new { ... })` that makes the shape obvious, drop the prose.
 - **Drop "Notes" / "Why" tail sections** whose content is either obvious from the code or already restated in the owning SKILL.md. Keep a note only when it captures a non-obvious gotcha that the code can't express (e.g., "this call silently no-ops outside `EditorApplication.update` on Windows").
 - **Drop any remaining "Use this command when…" / "For quick X, prefer Y" choice-narrative** if the owning SKILL.md's routing section already carries the guidance. Duplication is the tax to remove.
-- **Do not shrink the C# code block itself.** Compile-validated recipes stay byte-identical in their `csharp` fence. This task is a prose pass only.
-- **Do not touch `_shared/*.md`.** Helpers stay as-is.
+- **Do not shrink any `csharp` code block.** Compile-validated recipes AND `_shared/*.md` helpers stay byte-identical in their `csharp` fence. This task is a prose pass only.
+- **`_shared/*.md` prose is in scope, `_shared/*.md` code is out of scope.** Redundant headers / duplicate "paste this inside the same code block as `CommandScript`" reminders get trimmed; the actual C# body is untouched.
 
 **Scripted safeguards:**
 - Before committing, re-render one recipe per domain and confirm its code block hash matches pre-Task-22. Hash mismatch → stop and investigate.
