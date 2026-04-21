@@ -5,7 +5,7 @@
 
 **Goal:** Make every non-async recipe in `recipes/**` compile and execute successfully inside the current official Unity MCP `Unity_RunCommand` environment, document the small set of genuinely async recipes honestly, and fix the broken recipe-discovery path in every `SKILL.md` so AI agents can find the right template instead of inventing their own.
 
-**Architecture:** This repo is documentation-only (per `agent.md`). No C# asmdef will be shipped. Helpers that the recipes depend on (`Validate`, `GameObjectFinder`, `FindHelper`, `WorkflowManager`, `ExecutionResult.SetResult`) must therefore exist as **paste-in templates** under `recipes/_shared/<helper>.md` and be pulled into the `Unity_RunCommand` call by the agent when the recipe declares the dependency. This preserves the repo's "zero install, pure docs" promise while making the recipes actually runnable.
+**Architecture:** This repo is documentation-only (per root `SKILL.md` and `README.md` — `MIGRATION.md` and `agent.md` were removed in commit `dfde255` on 2026-04-21; the root `SKILL.md` is now the single entry point and source of truth for framing). No C# asmdef will be shipped. Helpers that the recipes depend on (`Validate`, `GameObjectFinder`, `FindHelper`, `WorkflowManager`, `ExecutionResult.SetResult`) must therefore exist as **paste-in templates** under `recipes/_shared/<helper>.md` and be pulled into the `Unity_RunCommand` call by the agent when the recipe declares the dependency. This preserves the repo's "zero install, pure docs" promise while making the recipes actually runnable.
 
 **Tech Stack:** Markdown, ripgrep, shell, Unity Editor `com.unity.ai.assistant` MCP package, `Unity_RunCommand` C# execution environment, `Newtonsoft.Json` (already present in Unity via `com.unity.nuget.newtonsoft-json`).
 
@@ -20,33 +20,45 @@
 
 ## Why This Plan Exists
 
-The `MIGRATION.md` file claims "MIGRATION COMPLETE" and `agent.md` claims "Every recipe is a verified C# snippet executed via `Unity_RunCommand`." Neither claim is currently true. A full dependency audit (2026-04-21) against the live Unity AI Assistant MCP package (`com.unity.ai.assistant@fc16ca46e208`) shows:
+Commit `dfde255` (2026-04-21) removed `MIGRATION.md` and `agent.md` and collapsed framing into the root `SKILL.md` + `README.md`. That cleanup did **not** touch recipes or `_shared/` helpers; the compile-readiness problems below are still present in the tree as of the latest commit (`b68086a`). A dependency audit against the live Unity AI Assistant MCP package (`com.unity.ai.assistant@fc16ca46e208`) on 2026-04-21 against `HEAD` shows:
 
 ### Hard breakage (does not compile in current `Unity_RunCommand`)
 
-| Dependency | Files using it | What exists today | Status |
+| Dependency | Files using it (HEAD) | What exists today | Status |
 |---|---|---|---|
 | `result.SetResult(...)` | 299 / 522 recipes | No shared helper; not on current `ExecutionResult` | **broken** |
 | `WorkflowManager.SnapshotObject(...)` / other `WorkflowManager.*` | 174 recipes | No shared helper | **broken** |
-| `GameObjectFinder.*` | 156 recipes | Template exists at `recipes/_shared/gameobject_finder.md` but no recipe references it | **works if pasted, but recipes do not declare the dep** |
+| `GameObjectFinder.*` | 154 recipes | Template exists at `recipes/_shared/gameobject_finder.md` but no recipe references it | **works if pasted, but recipes do not declare the dep** |
 | `Validate.Required` / `Validate.SafePath` | 113 recipes | `recipes/_shared/validate.md` exists but is a broken stub (contains literal `bool true = default;` garbage) | **broken** |
-| `FindHelper.FindAll<T>(...)` | 22 recipes | Template exists at `recipes/_shared/gameobject_finder.md` (bundled with `GameObjectFinder`) | **works if pasted, but recipes do not declare the dep** |
+| `FindHelper.FindAll<T>(...)` | 20 recipes | Template exists at `recipes/_shared/gameobject_finder.md` (bundled with `GameObjectFinder`) | **works if pasted, but recipes do not declare the dep** |
 | `AsyncJobService.TryStartTestJob(...)` / `AsyncJobService.Get(...)` / `.jobId` / `.startedAt` | 13 recipes | No shared helper possible (requires cross-call state persistence) | **fundamentally incompatible with stateless `Unity_RunCommand`** |
 
 ### Soft breakage (compiles but AI cannot find it)
 
-- Every `SKILL.md` contains the line `Recipe path rule: ../../recipes/<topic>/<command>.md`. That relative path resolves from the skill's **filesystem** location to the recipe's filesystem location. Most AI agents load skills through a platform-curated surface (e.g. Claude Code's `/home/<user>/.claude/skills/<topic>/`) where the resolved relative path **does not land on the real `recipes/` directory**. The result: agents never read the recipe and fall back to guessing. This is how the `test` skill session on 2026-04-21 ended up using `ExecuteMenuItem` + XML polling instead of the intended async pattern.
-- `SKILL.md` files describe `test_run`, `test_get_result`, `gameobject_create`, etc. as if they are first-class MCP tool names. They are not — they are recipe filenames. Without a clear "these are templates to paste into `Unity_RunCommand`" framing, agents hallucinate non-existent MCP tools.
+- Both `skills/SKILL.md` and `recipes/README.md` contain the line `Recipe path rule: ../../recipes/<topic>/<command>.md`. That relative path resolves from the skill's **filesystem** location to the recipe's filesystem location. Most AI agents load skills through a platform-curated surface (e.g. Claude Code's `~/.claude/skills/unity-mcp-skills/...`). Even when the install is one folder, the `../../recipes/...` form is brittle across symlinks, worktrees, and platforms. The result: agents sometimes never read the recipe and fall back to guessing. This is how the `test` skill session on 2026-04-21 ended up using `ExecuteMenuItem` + XML polling instead of the intended async pattern.
+- The root `SKILL.md` now (post-`dfde255`) correctly lists domain skill paths and has an integrity-check block, but the per-skill `SKILL.md` files still describe `test_run`, `test_get_result`, `gameobject_create`, etc. as if they are first-class MCP tool names. They are not — they are recipe filenames. Without a clear "these are templates to paste into `Unity_RunCommand`" framing **per-skill**, agents hallucinate non-existent MCP tools.
+
+### Additional hard breakage (discovered mid-implementation on 2026-04-21)
+
+`rg -l "Original Logic:" recipes/` returns **82 recipes**. In each one the real
+C# logic is trapped inside a `/* Original Logic: */ ... */` comment block, and the
+method body above contains garbage placeholders (e.g. `bool true = default;`,
+`string "Assets" = default;`) that do not compile. Examples confirmed:
+`recipes/gameobject/gameobject_create.md`, `recipes/component/component_add.md`,
+`recipes/_shared/validate.md` (pre-Task-1). These recipes did not fail the
+"uses `IRunCommand`" audit because the `IRunCommand` boilerplate is intact —
+only the body is stubbed. They need Task 5b below to promote the comment-block
+body into real executable code.
 
 ### Scope signal
 
-`IRunCommand` / `ExecutionResult` appear in ~487 of 522 recipes — the core execution contract is fine. The breakage is almost entirely in **six missing or broken helpers** and **one broken skill-to-recipe pointer**, not in recipe logic.
+`IRunCommand` / `ExecutionResult` appear in ~487 of 522 recipes — the core execution contract is fine. The breakage is in **six missing or broken helpers**, **~82 half-extracted recipe bodies**, and **one broken skill-to-recipe pointer**, not in recipe domain logic (the logic survives, it's just commented out).
 
 ---
 
 ## Non-Goals
 
-- **Do not** introduce a C# asmdef, plugin, or runtime DLL into this repo. The repo's stated philosophy (`agent.md`) is documentation-only. Any fix must stay pure markdown + paste-in templates.
+- **Do not** introduce a C# asmdef, plugin, or runtime DLL into this repo. The repo's stated philosophy (root `SKILL.md` + `README.md`) is documentation-only. Any fix must stay pure markdown + paste-in templates.
 - **Do not** try to make the 13 async recipes pretend to be synchronous inside `Unity_RunCommand`. Cross-call state persistence is not available in stateless RunCommand; those 13 need honest redesign.
 - **Do not** mass-rewrite all 299 `SetResult` call sites into `result.Log(JsonConvert.SerializeObject(...))`. A single shared extension method preserves the existing call pattern and is far safer than 299 mechanical edits.
 - Performance tuning of helpers beyond what's needed for compile + basic correctness.
@@ -61,22 +73,35 @@ The `MIGRATION.md` file claims "MIGRATION COMPLETE" and `agent.md` claims "Every
 3. **`SetResult` is preserved as an extension method, not rewritten across 299 files.** A new `recipes/_shared/execution_result.md` defines `public static void SetResult(this ExecutionResult r, object payload)` as a thin wrapper over `r.Log(Newtonsoft.Json.JsonConvert.SerializeObject(payload))`. All 299 existing call sites keep working once they declare the prerequisite.
 4. **`WorkflowManager` is replaced with a thin paste-in that maps to standard Unity APIs.** The original `WorkflowManager.SnapshotObject(go)` call mapped to `Undo.RegisterCompleteObjectUndo(go, "...")` plus optional tracking. The shared template wraps the standard Unity undo API so the 174 call sites stay intact. Non-essential tracking (session history, named workflows) is dropped — it was a REST-era feature with no MCP analog.
 5. **The 13 async recipes get redesigned, not patched.** Each is split into a `<name>_start.md` (fire-and-forget) and a `<name>_read.md` (stateless read from Unity's own persisted surface: `TestResults/*.xml` for tests, package manifest for packages, etc.). The old `<name>.md` file is replaced with a dispatcher recipe that the AI reads once to learn the pattern.
-6. **Skill → recipe discovery uses explicit content, not relative paths.** Every `SKILL.md` ends with a `## RunCommand Templates` section that inlines the full recipe filenames and explains the load pattern. The `Recipe path rule: ../../recipes/<topic>/<command>.md` line stays (it is still useful as an absolute-from-repo-root convention) but is supplemented by inline recipe pointers listed explicitly so the agent does not need path resolution to find them.
+6. **Skill → recipe discovery uses explicit content, not relative paths.** Every per-domain `SKILL.md` ends with a `## RunCommand Templates` section that inlines the full recipe filenames and explains the load pattern. The root `SKILL.md` (post-`dfde255`) already uses a repo-rooted `skills/<domain>/SKILL.md` convention — per-domain skills must adopt the same repo-rooted form (`recipes/<domain>/<command>.md`) and keep the `../../recipes/...` variant only as a secondary convenience pointer, never the primary.
 
 ---
 
-## Task 0: Baseline evidence and workflow notes setup
+## Task 0: Baseline evidence, upstream pin, and workflow notes setup
 
-**Intent:** Freeze the current state as evidence, create the notes file this plan's future tasks will append to, and confirm the audit numbers before touching anything.
+**Intent:** Freeze the current state as evidence, clone the upstream source at a pinned SHA so later tasks can re-extract recipe bodies and verify helper signatures, create the notes file this plan's future tasks will append to, and confirm the audit numbers before touching anything.
+
+**Upstream pin:**
+- Repo: `https://github.com/Besty0728/Unity-Skills`
+- SHA: `55b03ef32de920f4f2d884c9eed1491a535c2ae5`
+- Clone command: `git clone https://github.com/Besty0728/Unity-Skills.git /tmp/upstream-unity-skills && cd /tmp/upstream-unity-skills && git checkout 55b03ef3`
+- Source-of-truth mapping: recipe filename `<topic>_<command>.md` → upstream method `UnitySkills.<Topic>Skills.<Command>` in `SkillsForUnity/Editor/Skills/<Topic>Skills.cs`. Helpers (`Validate`, `FindHelper`, `GameObjectFinder`, `SkillsCommon`) all live in `SkillsForUnity/Editor/Skills/GameObjectFinder.cs`. `ComponentSkills.FindComponentType` + `ConvertValue` live in `SkillsForUnity/Editor/Skills/ComponentSkills.cs`. `AsyncJobService` lives in `SkillsForUnity/Editor/Skills/AsyncJobService.cs` and is deliberately NOT ported (requires `[InitializeOnLoad]` + file-backed `BatchPersistence`).
 
 **Files:**
 - Create: `docs/superpowers/notes/2026-04-21-recipes-compile-readiness-notes.md`
 
 **Required outcomes:**
 - Notes file exists with the task-note template (four buckets: friction, stale-doc mismatches, redundant-systems, reusable skill/tool candidates).
-- A fresh dependency-count snapshot is captured in the notes as the baseline:
-  - exact file counts for each of the 6 breakage rows in the "Why This Plan Exists" table
-  - a list of the 13 async recipe filenames (currently: test/test_run, test/test_get_result, test/test_run_by_name, test/test_cancel, test/test_get_last_result, test/test_get_summary, test/test_smoke_skills, test/test_create_editmode, test/test_create_playmode, editor/editor_play, package/package_install, package/package_install_cinemachine, package/package_install_splines, package/package_refresh, package/package_remove — **verify actual list with `rg -l AsyncJobService recipes/`**)
+- A fresh dependency-count snapshot is captured in the notes as the baseline. Expected starting counts at HEAD `b68086a`:
+  - `result.SetResult` — 299 files
+  - `WorkflowManager.` — 174 files
+  - `GameObjectFinder.` — 154 files
+  - `Validate.` — 113 files
+  - `FindHelper.` — 20 files
+  - `AsyncJobService` — 13 files
+  - total recipes — 522; `IRunCommand` references — 487
+  - If the audit diverges by more than ±5 from these, stop and update the plan.
+  - Enumerate the 13 async recipe filenames with `rg -l AsyncJobService recipes/` — do not assume the historical list.
 - No recipe or skill is modified in Task 0.
 
 **Verification target:**
@@ -139,6 +164,26 @@ The `MIGRATION.md` file claims "MIGRATION COMPLETE" and `agent.md` claims "Every
 
 ---
 
+## Task 3b: Split `ComponentSkills` surface into two paste-in helpers
+
+**Intent:** Six recipes call `ComponentSkills.FindComponentType` or `ComponentSkills.ConvertValue`. Mid-implementation audit (2026-04-21) revealed this — the earlier plan missed it because the grep scope was `Validate|GameObjectFinder|FindHelper|WorkflowManager`, not `ComponentSkills`. Port the two needed surfaces as **two separate** paste-in files so recipes that only need one can keep their concatenated payload small.
+
+**Files:**
+- Create: `recipes/_shared/component_type_finder.md` — exposes `internal static class ComponentSkills` with only `FindComponentType(string)` + private `TryGetTypeFromAssemblies` + private `_typeCache` + `ExtendedNamespaces[]`. Depends on `SkillsCommon.GetAllLoadedTypes`, so recipes using this file must also declare `_shared/skills_common.md` as a prerequisite.
+- Create: `recipes/_shared/value_converter.md` — exposes `internal static class ComponentSkills` with only `ConvertValue(string, Type)` + all private `Parse*` helpers (`ParseBool`, `ParseVector2/3/4`, `ParseVector2Int/3Int`, `ParseQuaternion`, `ParseColor`, `ParseColor32`, `GetNamedColor`, `ParseRect`, `ParseBounds`, `ParseLayerMask`, `ParseAnimationCurve`, `ParseFloatArray`, `ParseIntArray`).
+- Note: both files expose `internal static class ComponentSkills`, but a recipe never needs both in the same RunCommand block — `FindComponentType` callers don't parse values, and `ConvertValue` callers don't search for types. If a future recipe needs both, merge the two files into a single `_shared/component_skills.md` on demand.
+
+**Required outcomes:**
+- Verbatim extract from upstream `ComponentSkills.cs` at SHA `55b03ef3`, stripped of unrelated methods (~900 of 1028 lines are drop). Match upstream signatures exactly (same `public` vs `internal`, same param names).
+- `component_type_finder.md` is ~90 lines of pasteable C#; `value_converter.md` is ~180 lines.
+- Each file documents its paste pattern and (for `component_type_finder.md`) the transitive dependency on `skills_common.md`.
+
+**Verification target:**
+- One recipe that calls `FindComponentType` (e.g. `recipes/prefab/prefab_set_property.md`) compiles with `_shared/component_type_finder.md` + `_shared/skills_common.md` concatenated.
+- One recipe that calls `ConvertValue` (e.g. `recipes/scriptableobject/scriptableobject_set.md`) compiles with `_shared/value_converter.md` concatenated.
+
+---
+
 ## Task 4: Confirm `recipes/_shared/gameobject_finder.md` covers all current call patterns
 
 **Intent:** The existing `_shared/gameobject_finder.md` already defines `FindHelper` and `GameObjectFinder`, but there was never a cross-check that it actually covers every symbol used by the 156 + 22 consuming recipes.
@@ -187,6 +232,34 @@ The `MIGRATION.md` file claims "MIGRATION COMPLETE" and `agent.md` claims "Every
 **Verification target:**
 - `test_run.md` followed by `test_get_result.md` successfully returns pass/fail counts for this repo's own dogfood test project (or a named Unity project provided by the human operator).
 - `package_install.md` successfully installs a small harmless package (e.g. `com.unity.ide.visualstudio`) and `package_list.md` afterwards shows it present.
+
+---
+
+## Task 5b: De-stub the 82 recipes whose body is trapped in `/* Original Logic: */`
+
+**Intent:** Restore the real C# logic for every recipe that was half-extracted. The outer method body currently contains garbage placeholders (`bool true = default;`, `string "Assets" = default;`, `int 50 = default;`) above a `/* Original Logic: */` comment block that holds the real logic. The recipe compiles (barely — some of those placeholders are themselves illegal identifiers) but executes a no-op.
+
+**Files:**
+- Modify: the 82 files returned by `rg -l "Original Logic:" recipes/`. Enumerate at Task start — do not rely on this number.
+
+**Required outcomes:**
+- For each affected recipe:
+  1. Remove the lines that look like `<type> <literal> = default; // Assign value` (the "TODO: Replace parameters" block). These were placeholder garbage emitted by a broken extractor.
+  2. Keep any legitimate parameter-default declarations at the top of `Execute` that use real identifier names (`string name = "MyObject";`, etc.) — these are intentional example values. Distinguish via: left-hand side must be a valid C# identifier, not a literal.
+  3. Unwrap the `/* Original Logic: ... */` block. Its contents become the new method body.
+  4. Translate `return <payload>;` inside the unwrapped block to `result.SetResult(<payload>); return;` (since `IRunCommand.Execute` returns void, not `object`). Preserve the semantics: early-return error objects become `result.SetResult(err); return;`.
+  5. If the unwrapped block uses any of `Validate.*`, `GameObjectFinder.*`, `FindHelper.*`, `WorkflowManager.*`, `SkillsCommon.*`, or `result.SetResult`, make sure Task 6's prerequisite-detector picks it up after the de-stub.
+- Do not introduce new logic. This is a pure restoration: uncomment, re-shape return statements, delete literal-named placeholders.
+- Non-essential `// TODO: Replace parameters with your actual logic` banner comment is removed.
+
+**Verification target:**
+- `rg -l "Original Logic:" recipes/` returns zero matches after the task completes.
+- `rg -N '[a-z]+ ("[^"]+"|[0-9]+|true|false) = default;' recipes/` returns zero matches (catches leftover literal-name placeholders).
+- Spot-compile at least one recipe per affected category via `Unity_RunCommand` to confirm the de-stubbed body runs; record results in the notes file.
+
+**Execution plan:**
+- Write a small de-stub script (Python or `sed`+`awk`) that handles the common shape. Hand-fix any recipe the script cannot safely transform.
+- Run Task 5b **before** Task 6, because the prerequisite-detector in Task 6 grep the method body — a stubbed recipe has no helper calls in its (empty) body, so it would be missed.
 
 ---
 
@@ -241,16 +314,17 @@ The `MIGRATION.md` file claims "MIGRATION COMPLETE" and `agent.md` claims "Every
 **Intent:** Make sure an AI agent reading a `SKILL.md` can actually find the recipe it needs. The existing `Recipe path rule: ../../recipes/<topic>/<command>.md` line is necessary but not sufficient.
 
 **Files:**
-- Modify: every `skills/<topic>/SKILL.md`.
-- Modify: `skills/SKILL.md` (root).
-- Modify: `agent.md` and `recipes/README.md` if drift is found.
+- Modify: every `skills/<topic>/SKILL.md` (per-domain).
+- Modify: `skills/SKILL.md` (domain index — the `Recipe Path Rule` section still hardcodes `../../recipes/...`).
+- Modify: root `SKILL.md` (Routing Order step 2) and `recipes/README.md` if drift is found.
 
 **Required outcomes:**
-- Every topic `SKILL.md` ends with a `## RunCommand Templates` section that:
+- Every per-domain `SKILL.md` ends with a `## RunCommand Templates` section that:
   - Names each command (e.g. `gameobject_create`) and gives the **repo-rooted** path (e.g. `recipes/gameobject/gameobject_create.md`) — not just the `../../recipes/...` relative form.
   - States explicitly: "These are C# templates for `Unity_RunCommand`, not standalone MCP tools. Paste the template and any `## Prerequisites` helpers into a single `Unity_RunCommand` call."
-- The `## Skills` table in each `SKILL.md` adds a visual cue (e.g. a `Recipe` column with the recipe filename) so an agent scanning the table sees the recipe pointer immediately.
-- `agent.md` "Routing Order" step 3 ("Exact recipe — `recipes/<topic>/<command>.md` for a verified C# template") is updated to say the recipe lists its own Prerequisites and the agent must also read those before issuing `Unity_RunCommand`.
+- The `## Skills` / command table in each per-domain `SKILL.md` adds a visual cue (e.g. a `Recipe` column with the recipe filename) so an agent scanning the table sees the recipe pointer immediately.
+- `skills/SKILL.md` `Recipe Path Rule` section is rewritten to give both a repo-rooted form (`recipes/<topic>/<command>.md`, primary) and the relative form (`../../recipes/<topic>/<command>.md`, fallback), and to note the new `## Prerequisites` declaration on every recipe.
+- Root `SKILL.md` Routing Order step 2 ("Topic skill + exact recipe") is expanded to say the recipe lists its own Prerequisites and the agent must concatenate those helper classes before issuing `Unity_RunCommand`.
 - `recipes/README.md` adds a section naming the available `_shared/*` helpers so agents who land in `recipes/` instead of `skills/` still learn about them.
 
 **Verification target:**
@@ -258,22 +332,28 @@ The `MIGRATION.md` file claims "MIGRATION COMPLETE" and `agent.md` claims "Every
 
 ---
 
-## Task 9: Correct `MIGRATION.md` and `agent.md`
+## Task 9: Align root `SKILL.md`, `README.md`, and `recipes/README.md` with post-repair reality
 
-**Intent:** The current "MIGRATION COMPLETE" and "Every recipe is a verified C# snippet" claims are false. Future agents rely on these framing docs. Fix them.
+**Intent:** Commit `dfde255` already removed `MIGRATION.md` and `agent.md` and consolidated framing into root `SKILL.md` + `README.md`. This task makes sure the **remaining** framing docs match the post-Tasks-1-8 state — no aspirational "verified C# snippet" claims, and correct pointers to the new `_shared/*` helpers and `## Prerequisites` convention.
 
 **Files:**
-- Modify: `MIGRATION.md`
-- Modify: `agent.md`
-- Modify: `SKILL.md` (root) if drift is found
+- Modify: root `SKILL.md`
+- Modify: `README.md`
+- Modify: `recipes/README.md`
+- Modify: `recipes/_shared/README.md` (exists per root `SKILL.md` reference — create if missing)
 
 **Required outcomes:**
-- `MIGRATION.md` adds a Phase 6 section noting the 2026-04-21 compile-readiness repair and what it covered. Do not retroactively rewrite earlier phases; add the new phase as a truthful record.
-- `agent.md` updates the "What This Repo Is" section so the "every recipe is a verified C# snippet" claim is either backed by Task 7 evidence or softened to reflect reality ("every recipe is a template verified against the current Unity MCP — see `docs/superpowers/notes/2026-04-21-recipes-compile-readiness-notes.md` for the smoke-test coverage").
-- Any README that points to recipes or `_shared/` is checked for stale claims and corrected.
+- Root `SKILL.md` "Routing Order" and "Other root files" sections explicitly name every `_shared/*` helper that ships now (`execution_result.md`, `workflow_manager.md`, `validate.md`, `gameobject_finder.md`, and — if retained — `skills_common.md`). No helper listed there may be absent from the filesystem (Integrity Check block already enforces this on the agent side).
+- Root `SKILL.md` "Overview" / "Integrity Check" sections do not make "every recipe verified" claims beyond what Task 7 actually covers. If Task 7 smoked one recipe per category, the wording says exactly that.
+- `README.md` "What's in here" bullet for `recipes/_shared/` enumerates the helpers by name and one-line purpose.
+- `recipes/README.md` "Shared Helpers" section matches the actual `_shared/*.md` filenames post-Tasks-2-4 (current text mentions `skills_common` which may end up dropped per follow-up note — reconcile).
+- `recipes/_shared/README.md` exists and is a simple index: one row per helper with filename, one-line purpose, and which recipes depend on it (or a grep hint).
+- No doc references the deleted `MIGRATION.md` or `agent.md`. Run `rg -l "MIGRATION\.md|agent\.md"` across the repo; only acceptable hit is inside the `docs/superpowers/plans/` historical records.
 
 **Verification target:**
-- `grep -n "MIGRATION COMPLETE\|verified C# snippet" MIGRATION.md agent.md` produces results that match current reality, not aspirational claims.
+- `rg -n "MIGRATION COMPLETE|verified C# snippet" .` returns zero hits outside `docs/superpowers/plans/`.
+- `rg -n "MIGRATION\.md|agent\.md" -g '!docs/superpowers/plans/*' -g '!docs/superpowers/notes/*'` returns zero hits.
+- Every `_shared/*.md` file listed in root `SKILL.md` and `README.md` exists on disk.
 
 ---
 
@@ -324,7 +404,7 @@ The `MIGRATION.md` file claims "MIGRATION COMPLETE" and `agent.md` claims "Every
 ### Follow-up notes (post-slice)
 
 - After this plan lands, consider a second pass that audits each `## Prerequisites` declaration against the actual `using ...` directives in the recipe's C# block. Missing `using Newtonsoft.Json;` or `using System.Collections.Generic;` is a different compile error class than missing helpers, and it deserves its own audit pass.
-- The `_shared/skills_common.md` file exists but is unused by any current recipe (grep `SkillsCommon` returns 0). Decide in a follow-up whether to delete it or adopt it for the `GetAllLoadedTypes` helper that a few scriptableobject / optimization recipes reimplement inline.
+- The `_shared/skills_common.md` file is actively used by ~13 recipes across scriptableobject, optimization, perception, test, shader, and importer (`SkillsCommon.GetAllLoadedTypes`, `Utf8NoBom`, `GetTriangleCount`). Treat it as a first-class shared helper alongside the others; include it in Task 6's `## Prerequisites` script and Task 9's `_shared/README.md` enumeration. (Earlier plan draft incorrectly said `SkillsCommon` had zero callers; that was an audit miss.)
 - After compile-readiness is restored, a "one recipe per command actually exercises its happy path" PlayMode-style coverage pass would be valuable, but it is out of scope here.
 
 ### Execution note
