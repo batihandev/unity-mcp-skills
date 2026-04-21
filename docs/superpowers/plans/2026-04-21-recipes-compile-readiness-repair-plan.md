@@ -359,7 +359,7 @@ body into real executable code.
 
 ## Task 10: Final audit sweep and plan-exit notes
 
-**Intent:** Close the loop. Re-run the full dependency audit and confirm zero hard-breakage symbols remain.
+**Intent:** Close the loop. Re-run the full dependency audit, verify indexes match filesystem reality, and confirm zero hard-breakage symbols remain.
 
 **Files:**
 - Append to: `docs/superpowers/notes/2026-04-21-recipes-compile-readiness-notes.md`
@@ -368,10 +368,13 @@ body into real executable code.
 - Re-run the audit commands from Task 0. Every broken-dependency count that was >0 at the start is now either 0 **or** every non-zero hit is an intentional reference inside `recipes/_shared/` itself.
 - The 13 original async recipes no longer reference `AsyncJobService` (they have been redesigned per Task 5).
 - The `_shared/validate.md` file no longer contains `bool true = default;` or `/* Original Logic:` placeholders.
+- **Index coherence check:** `ls skills/*/` and `ls recipes/*/` must match the tables in root `SKILL.md` and `skills/SKILL.md` exactly. Zero orphan directories (empty domain folders not listed in any index), zero dangling index rows (listed domains whose directory doesn't exist). Scripted one-liner: `diff <(ls -d skills/*/ | sed 's|.*/\([^/]*\)/|\1|') <(grep -oE '^\| [a-z_]+' SKILL.md | awk '{print $2}' | sort)` — must be empty.
+- Same coherence check for `recipes/_shared/README.md` (lists helpers) vs `ls recipes/_shared/*.md` — no helper mentioned that isn't on disk, no helper on disk that isn't mentioned.
+- Same check for `mcp-tools.md` tool names vs tools actually loadable via `ToolSearch` — a tool listed in the matrix but not surfaced by the MCP server is a stale index entry.
 - Notes file has a final summary entry listing: total files modified, total recipes redesigned, smoke-test coverage percentage, any outstanding minor issues deferred to a later pass.
 
 **Verification target:**
-- Closing audit table in notes matches reality.
+- Closing audit table in notes matches reality. Zero index drift across root `SKILL.md` / `skills/SKILL.md` / `recipes/_shared/README.md` / `mcp-tools.md`.
 - A cold-start AI session opens a randomly selected recipe and successfully executes it end-to-end without the human needing to explain the repo's architecture.
 
 ---
