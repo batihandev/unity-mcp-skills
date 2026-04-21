@@ -11,6 +11,13 @@ Enable or disable a GameObject.
 - At least one identifier (`name`, `instanceId`, or `path`) is required.
 - `active` defaults to `true` (enable). Pass `false` to disable.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -26,17 +33,14 @@ internal class CommandScript : IRunCommand
         string path = null;
         bool active = false;      // true = enable, false = disable
 
-        /* Original Logic:
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        WorkflowManager.SnapshotObject(go);
+        Undo.RecordObject(go, "Set Active");
+        go.SetActive(active);
 
-            WorkflowManager.SnapshotObject(go);
-            Undo.RecordObject(go, "Set Active");
-            go.SetActive(active);
-
-            return new { success = true, name = go.name, active };
-        */
+        { result.SetResult(new { success = true, name = go.name, active }); return; }
     }
 }
 ```

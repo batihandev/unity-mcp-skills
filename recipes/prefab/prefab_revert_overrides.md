@@ -29,6 +29,13 @@ Revert all overrides on a prefab instance back to the values defined in the sour
 - The operation is recorded with `Undo.RecordObject` before reverting, so it can be undone.
 - Use `prefab_get_overrides` first to inspect what will be discarded.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -39,20 +46,17 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-            var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId);
-            if (findErr != null) return findErr;
+        var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
+        if (prefabRoot == null) { result.SetResult(new { error = "Not a prefab instance" }); return; }
 
-            var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
-            if (prefabRoot == null) return new { error = "Not a prefab instance" };
+        WorkflowManager.SnapshotObject(prefabRoot);
+        Undo.RecordObject(prefabRoot, "Revert Prefab Overrides");
+        PrefabUtility.RevertPrefabInstance(prefabRoot, InteractionMode.UserAction);
 
-            WorkflowManager.SnapshotObject(prefabRoot);
-            Undo.RecordObject(prefabRoot, "Revert Prefab Overrides");
-            PrefabUtility.RevertPrefabInstance(prefabRoot, InteractionMode.UserAction);
-
-            return new { success = true, reverted = prefabRoot.name };
-        */
+        { result.SetResult(new { success = true, reverted = prefabRoot.name }); return; }
     }
 }
 ```

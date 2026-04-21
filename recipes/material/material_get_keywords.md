@@ -17,6 +17,11 @@ Get all enabled shader keywords on a material, plus the status of common known k
 
 `_EMISSION`, `_NORMALMAP`, `_METALLICGLOSSMAP`, `_SPECGLOSSMAP`, `_ALPHATEST_ON`, `_ALPHABLEND_ON`, `_ALPHAPREMULTIPLY_ON`, `_DETAIL_MULX2`, `_PARALLAXMAP`, `_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A`, `_SPECULARHIGHLIGHTS_OFF`, `_ENVIRONMENTREFLECTIONS_OFF`, `_RECEIVE_SHADOWS_OFF`, `_SURFACE_TYPE_TRANSPARENT`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -31,32 +36,33 @@ internal class CommandScript : IRunCommand
         int    instanceId = 0;
         string path       = null;   // or material asset path
 
-        /* Original Logic:
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        // Get common keywords that might be available
+        var commonKeywords = new[] {
+            "_EMISSION", "_NORMALMAP", "_METALLICGLOSSMAP", "_SPECGLOSSMAP",
+            "_ALPHATEST_ON", "_ALPHABLEND_ON", "_ALPHAPREMULTIPLY_ON",
+            "_DETAIL_MULX2", "_PARALLAXMAP", "_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A",
+            "_SPECULARHIGHLIGHTS_OFF", "_ENVIRONMENTREFLECTIONS_OFF",
+            "_RECEIVE_SHADOWS_OFF", "_SURFACE_TYPE_TRANSPARENT"
+        };
 
-            var commonKeywords = new[] {
-                "_EMISSION", "_NORMALMAP", "_METALLICGLOSSMAP", "_SPECGLOSSMAP",
-                "_ALPHATEST_ON", "_ALPHABLEND_ON", "_ALPHAPREMULTIPLY_ON",
-                "_DETAIL_MULX2", "_PARALLAXMAP", "_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A",
-                "_SPECULARHIGHLIGHTS_OFF", "_ENVIRONMENTREFLECTIONS_OFF",
-                "_RECEIVE_SHADOWS_OFF", "_SURFACE_TYPE_TRANSPARENT"
-            };
+        var enabledKeywords = material.shaderKeywords;
+        var keywordStatus = new List<object>();
 
-            var enabledKeywords = material.shaderKeywords;
-            var keywordStatus = new List<object>();
-            foreach (var kw in commonKeywords)
-                keywordStatus.Add(new { keyword = kw, enabled = material.IsKeywordEnabled(kw) });
+        foreach (var kw in commonKeywords)
+        {
+            keywordStatus.Add(new { keyword = kw, enabled = material.IsKeywordEnabled(kw) });
+        }
 
-            return new {
-                success = true,
-                target = go != null ? go.name : path,
-                shader = material.shader.name,
-                enabledKeywords,
-                commonKeywordStatus = keywordStatus
-            };
-        */
+        { result.SetResult(new {
+            success = true,
+            target = go != null ? go.name : path,
+            shader = material.shader.name,
+            enabledKeywords,
+            commonKeywordStatus = keywordStatus
+        }); return; }
     }
 }
 ```

@@ -6,6 +6,11 @@ Get metadata about an asset: name, type, GUID, and labels.
 
 **Returns:** `{ path, name, type, guid, labels }` — or `{ error }` if the asset is not found.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

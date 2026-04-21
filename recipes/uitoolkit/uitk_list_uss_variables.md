@@ -6,6 +6,12 @@ Inspect CSS custom property (design token) definitions and `var()` usages in a U
 
 **Returns:** `{ path, definedCount, variables[] { name, value }, referencedVariables[] }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

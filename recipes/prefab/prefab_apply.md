@@ -30,6 +30,13 @@ Apply all changes from a prefab instance back to its source prefab asset. Equiva
 - `prefab_save` does not exist — use this command.
 - Equivalent to `prefab_apply_overrides`; both call `PrefabUtility.ApplyPrefabInstance`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -40,21 +47,18 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        var (go, goErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
+        if (goErr != null) { result.SetResult(goErr); return; }
 
-            var (go, goErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
-            if (goErr != null) return goErr;
+        var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
+        if (prefabRoot == null)
+            { result.SetResult(new { error = "GameObject is not a prefab instance" }); return; }
 
-            var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
-            if (prefabRoot == null)
-                return new { error = "GameObject is not a prefab instance" };
+        WorkflowManager.SnapshotObject(prefabRoot);
+        var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabRoot);
+        PrefabUtility.ApplyPrefabInstance(prefabRoot, InteractionMode.UserAction);
 
-            WorkflowManager.SnapshotObject(prefabRoot);
-            var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabRoot);
-            PrefabUtility.ApplyPrefabInstance(prefabRoot, InteractionMode.UserAction);
-
-            return new { success = true, appliedTo = prefabPath };
-        */
+        { result.SetResult(new { success = true, appliedTo = prefabPath }); return; }
     }
 }
 ```

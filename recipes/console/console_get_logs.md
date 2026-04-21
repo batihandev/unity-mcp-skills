@@ -21,6 +21,11 @@ Get Unity console logs. Works in two modes:
 - `console_read` does not exist — use `console_get_logs`.
 - Do not confuse with `debug_get_logs`: `console_get_logs` reads the captured buffer (with timestamps), while `debug_get_logs` always reads console history filtered to errors/warnings by default.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -51,7 +56,7 @@ internal class CommandScript : IRunCommand
                     message = l.message,
                     time = l.time.ToString("HH:mm:ss.fff")
                 }).ToArray();
-                result.Return(new { count = captured.Length, logs = captured, source = "capture" });
+                result.SetResult(new { count = captured.Length, logs = captured, source = "capture" });
                 return;
             }
         }
@@ -64,7 +69,7 @@ internal class CommandScript : IRunCommand
         if (targetMask == 0) targetMask = DebugSkills.ErrorModeMask | DebugSkills.WarningModeMask | DebugSkills.LogModeMask;
 
         var logs = DebugSkills.ReadLogEntries(targetMask, filter, limit);
-        result.Return(new { count = logs.Count, logs, source = "console" });
+        result.SetResult(new { count = logs.Count, logs, source = "console" });
     }
 }
 ```

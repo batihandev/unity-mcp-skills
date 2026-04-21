@@ -44,6 +44,14 @@ If the component already exists (and disallows multiple):
 - Uses `Undo.AddComponent` — operation is undoable in the editor.
 - Records the created component in the workflow snapshot if a workflow is recording.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -54,44 +62,44 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        if (Validate.Required(componentType, "componentType") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(componentType, "componentType") is object err) return err;
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        var type = FindComponentType(componentType);
+        if (type == null)
+            { result.SetResult(new { 
+                error = $"Component type not found: {componentType}",
+                hint = "Try using full type name like 'CinemachineVirtualCamera' or 'Unity.Cinemachine.CinemachineCamera'",
+                availableTypes = GetSimilarTypes(componentType)
+            }); return; }
 
-            var type = FindComponentType(componentType);
-            if (type == null)
-                return new {
-                    error = $"Component type not found: {componentType}",
-                    hint = "Try using full type name like 'CinemachineVirtualCamera' or 'Unity.Cinemachine.CinemachineCamera'",
-                    availableTypes = GetSimilarTypes(componentType)
-                };
-
-            // Check if component already exists (for single-instance components)
-            if (go.GetComponent(type) != null && !AllowMultiple(type))
-                return new {
-                    warning = $"Component {type.Name} already exists on {go.name}",
-                    gameObject = go.name,
-                    instanceId = go.GetInstanceID()
-                };
-
-            var comp = Undo.AddComponent(go, type);
-
-            if (WorkflowManager.IsRecording)
-                WorkflowManager.SnapshotCreatedComponent(comp);
-
-            EditorUtility.SetDirty(go);
-
-            return new {
-                success = true,
+        // Check if component already exists (for single-instance components)
+        if (go.GetComponent(type) != null && !AllowMultiple(type))
+            { result.SetResult(new { 
+                warning = $"Component {type.Name} already exists on {go.name}",
                 gameObject = go.name,
-                instanceId = go.GetInstanceID(),
-                component = type.Name,
-                fullTypeName = type.FullName
-            };
-        */
+                instanceId = go.GetInstanceID()
+            }); return; }
+
+        var comp = Undo.AddComponent(go, type);
+
+        // Record created component for workflow undo if recording
+        if (WorkflowManager.IsRecording)
+        {
+            WorkflowManager.SnapshotCreatedComponent(comp);
+        }
+
+        EditorUtility.SetDirty(go);
+
+        { result.SetResult(new {
+            success = true,
+            gameObject = go.name,
+            instanceId = go.GetInstanceID(),
+            component = type.Name,
+            fullTypeName = type.FullName
+        }); return; }
     }
 }
 ```

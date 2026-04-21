@@ -13,6 +13,11 @@ Force Unity to refresh the asset database and request immediate script recompila
 - `serverAvailability` contains a structured notice; always surface it to the user.
 - Requires `using UnityEditor.Compilation;`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -27,7 +32,7 @@ internal class CommandScript : IRunCommand
         AssetDatabase.Refresh();
         CompilationPipeline.RequestScriptCompilation();
 
-        result.Return(new
+        result.SetResult(new
         {
             success = true,
             message = "Compilation requested",

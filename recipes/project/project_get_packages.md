@@ -12,6 +12,11 @@ Read the project's UPM `Packages/manifest.json` and return its full contents. Re
 - `manifest` contains `dependencies` and optionally `scopedRegistries`, `lock`, etc.
 - This is the equivalent of reading the raw manifest; no package resolution is performed.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## C# Template
 
 ```csharp

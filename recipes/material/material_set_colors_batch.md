@@ -15,6 +15,12 @@ Set colors on multiple GameObjects or material assets in a single call (efficien
 - Color channels are in the **0–1** range (not 0–255).
 - Prefer this over calling `material_set_color` repeatedly when setting colors on 2+ objects.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -32,37 +38,38 @@ internal class CommandScript : IRunCommand
             { ""name"": ""Plane"",  ""r"": 0.0, ""g"": 0.0, ""b"": 1.0, ""a"": 1.0 }
         ]";
 
-        /* Original Logic:
+        // Auto-detect color property if not specified
+        if (string.IsNullOrEmpty(propertyName))
+            propertyName = ProjectSkills.GetColorPropertyName();
 
-            if (string.IsNullOrEmpty(propertyName))
-                propertyName = ProjectSkills.GetColorPropertyName();
+        { result.SetResult(BatchExecutor.Execute<BatchColorItem>(items, item =>
+        {
+            var (material, go, error) = FindMaterial(item.name, item.instanceId, item.path);
+            if (error != null) throw new System.Exception("Material not found");
 
-            return BatchExecutor.Execute<BatchColorItem>(items, item =>
+            var color = new Color(item.r, item.g, item.b, item.a);
+
+            WorkflowManager.SnapshotObject(material);
+            Undo.RecordObject(material, "Batch Set Color");
+
+            bool colorSet = false;
+            var propertiesToTry = new[] { propertyName, "_BaseColor", "_Color" };
+            foreach (var prop in propertiesToTry)
             {
-                var (material, go, error) = FindMaterial(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Material not found");
-
-                var color = new Color(item.r, item.g, item.b, item.a);
-                WorkflowManager.SnapshotObject(material);
-                Undo.RecordObject(material, "Batch Set Color");
-
-                bool colorSet = false;
-                var propertiesToTry = new[] { propertyName, "_BaseColor", "_Color" };
-                foreach (var prop in propertiesToTry)
+                if (material.HasProperty(prop))
                 {
-                    if (material.HasProperty(prop))
-                    {
-                        material.SetColor(prop, color);
-                        colorSet = true;
-                        break;
-                    }
+                    material.SetColor(prop, color);
+                    colorSet = true;
+                    break;
                 }
+            }
 
-                if (!colorSet) throw new System.Exception("No color property found");
-                if (go == null) EditorUtility.SetDirty(material);
-                return new { target = go?.name ?? item.path, success = true };
-            }, item => item.name ?? item.path);
-        */
+            if (!colorSet)
+                throw new System.Exception("No color property found");
+
+            if (go == null) EditorUtility.SetDirty(material);
+            return new { target = go?.name ?? item.path, success = true };
+        }, item => item.name ?? item.path)); return; }
     }
 }
 ```

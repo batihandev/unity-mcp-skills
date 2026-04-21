@@ -11,6 +11,12 @@ Create a RawImage UI element for displaying a Texture2D or RenderTexture.
 - Unlike `Image`, `RawImage` accepts any `Texture` (not just `Sprite`), including `RenderTexture`.
 - `hasTexture` in the response indicates whether the texture was successfully loaded.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

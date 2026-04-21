@@ -14,6 +14,13 @@ Set parent for multiple GameObjects in one call.
 - Omit all parent fields to unparent to scene root.
 - A missing child or parent causes that item to fail without stopping the rest.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -30,32 +37,29 @@ internal class CommandScript : IRunCommand
             { ""childInstanceId"": 12345, ""parentPath"": ""Level/Root"" }
         ]";
 
-        /* Original Logic:
+        { result.SetResult(BatchExecutor.Execute<BatchSetParentItem>(items, item =>
+        {
+            var (child, childError) = GameObjectFinder.FindOrError(item.childName, item.childInstanceId, item.childPath);
+            if (childError != null) throw new System.Exception("Child object not found");
 
-            return BatchExecutor.Execute<BatchSetParentItem>(items, item =>
+            Transform parent = null;
+            if (!string.IsNullOrEmpty(item.parentName) || item.parentInstanceId != 0 || !string.IsNullOrEmpty(item.parentPath))
             {
-                var (child, childError) = GameObjectFinder.FindOrError(item.childName, item.childInstanceId, item.childPath);
-                if (childError != null) throw new System.Exception("Child object not found");
+                var (parentGo, parentError) = GameObjectFinder.FindOrError(item.parentName, item.parentInstanceId, item.parentPath);
+                if (parentError != null)
+                    throw new System.Exception($"Parent not found: {item.parentName ?? item.parentPath}");
+                parent = parentGo.transform;
+            }
 
-                Transform parent = null;
-                if (!string.IsNullOrEmpty(item.parentName) || item.parentInstanceId != 0 || !string.IsNullOrEmpty(item.parentPath))
-                {
-                    var (parentGo, parentError) = GameObjectFinder.FindOrError(item.parentName, item.parentInstanceId, item.parentPath);
-                    if (parentError != null)
-                        throw new System.Exception($"Parent not found: {item.parentName ?? item.parentPath}");
-                    parent = parentGo.transform;
-                }
-
-                WorkflowManager.SnapshotObject(child.transform);
-                Undo.SetTransformParent(child.transform, parent, "Batch Set Parent");
-                return new
-                {
-                    target = child.name,
-                    success = true,
-                    parent = parent?.name ?? "(root)"
-                };
-            }, item => item.childName ?? item.childPath);
-        */
+            WorkflowManager.SnapshotObject(child.transform);
+            Undo.SetTransformParent(child.transform, parent, "Batch Set Parent");
+            return new
+            {
+                target = child.name,
+                success = true,
+                parent = parent?.name ?? "(root)"
+            };
+        }, item => item.childName ?? item.childPath)); return; }
     }
 }
 ```

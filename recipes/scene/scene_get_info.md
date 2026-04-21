@@ -8,6 +8,11 @@ Get metadata about the currently active scene.
 
 No parameters. Use this to verify which scene is loaded and whether it has unsaved changes before performing destructive operations.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

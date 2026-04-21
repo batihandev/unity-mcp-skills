@@ -12,6 +12,13 @@ Delete a GameObject.
 - `instanceId` is preferred when precision matters (avoids ambiguity with duplicate names).
 - The pre-deletion state is snapshotted for workflow tracking before the object is destroyed.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -26,16 +33,13 @@ internal class CommandScript : IRunCommand
         int instanceId = 0;
         string path = null;
 
-        /* Original Logic:
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
-
-            var deletedName = go.name;
-            WorkflowManager.SnapshotObject(go); // Record pre-deletion state
-            Undo.DestroyObjectImmediate(go);
-            return new { success = true, deleted = deletedName };
-        */
+        var deletedName = go.name;
+        WorkflowManager.SnapshotObject(go); // Record pre-deletion state
+        Undo.DestroyObjectImmediate(go);
+        { result.SetResult(new { success = true, deleted = deletedName }); return; }
     }
 }
 ```

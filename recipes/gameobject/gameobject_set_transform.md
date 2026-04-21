@@ -51,6 +51,13 @@ GameObjectSetTransform(
 - The skill auto-detects whether the object has a `RectTransform` and applies UI params accordingly.
 - UI params (`anchoredPos*`, `anchor*`, `pivot*`, `sizeDelta*`, `width`, `height`) are silently ignored for non-UI objects.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -72,75 +79,74 @@ internal class CommandScript : IRunCommand
         // float? anchoredPosX = 100f, anchoredPosY = -50f;
         // float? width = 200f, height = 60f;
 
-        /* Original Logic:
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        WorkflowManager.SnapshotObject(go.transform);
+        Undo.RecordObject(go.transform, "Set Transform");
 
-            WorkflowManager.SnapshotObject(go.transform);
-            Undo.RecordObject(go.transform, "Set Transform");
+        var rt = go.GetComponent<RectTransform>();
+        bool isUI = rt != null;
 
-            var rt = go.GetComponent<RectTransform>();
-            bool isUI = rt != null;
+        if (TryMergeVector3(posX, posY, posZ, go.transform.position, out var newPos))
+            go.transform.position = newPos;
+        if (TryMergeVector3(localPosX, localPosY, localPosZ, go.transform.localPosition, out var newLocalPos))
+            go.transform.localPosition = newLocalPos;
+        if (TryMergeVector3(rotX, rotY, rotZ, go.transform.eulerAngles, out var newRot))
+            go.transform.eulerAngles = newRot;
+        if (TryMergeVector3(scaleX, scaleY, scaleZ, go.transform.localScale, out var newScale))
+            go.transform.localScale = newScale;
 
-            if (TryMergeVector3(posX, posY, posZ, go.transform.position, out var newPos))
-                go.transform.position = newPos;
-            if (TryMergeVector3(localPosX, localPosY, localPosZ, go.transform.localPosition, out var newLocalPos))
-                go.transform.localPosition = newLocalPos;
-            if (TryMergeVector3(rotX, rotY, rotZ, go.transform.eulerAngles, out var newRot))
-                go.transform.eulerAngles = newRot;
-            if (TryMergeVector3(scaleX, scaleY, scaleZ, go.transform.localScale, out var newScale))
-                go.transform.localScale = newScale;
+        // RectTransform specific properties
+        if (isUI)
+        {
+            if (TryMergeVector2(anchoredPosX, anchoredPosY, rt.anchoredPosition, out var newAnchoredPos))
+                rt.anchoredPosition = newAnchoredPos;
+            if (TryMergeVector2(anchorMinX, anchorMinY, rt.anchorMin, out var newAnchorMin))
+                rt.anchorMin = newAnchorMin;
+            if (TryMergeVector2(anchorMaxX, anchorMaxY, rt.anchorMax, out var newAnchorMax))
+                rt.anchorMax = newAnchorMax;
+            if (TryMergeVector2(pivotX, pivotY, rt.pivot, out var newPivot))
+                rt.pivot = newPivot;
+            if (TryMergeVector2(sizeDeltaX, sizeDeltaY, rt.sizeDelta, out var newSizeDelta))
+                rt.sizeDelta = newSizeDelta;
 
-            if (isUI)
+            // Width/Height shortcuts
+            if (width.HasValue || height.HasValue)
             {
-                if (TryMergeVector2(anchoredPosX, anchoredPosY, rt.anchoredPosition, out var newAnchoredPos))
-                    rt.anchoredPosition = newAnchoredPos;
-                if (TryMergeVector2(anchorMinX, anchorMinY, rt.anchorMin, out var newAnchorMin))
-                    rt.anchorMin = newAnchorMin;
-                if (TryMergeVector2(anchorMaxX, anchorMaxY, rt.anchorMax, out var newAnchorMax))
-                    rt.anchorMax = newAnchorMax;
-                if (TryMergeVector2(pivotX, pivotY, rt.pivot, out var newPivot))
-                    rt.pivot = newPivot;
-                if (TryMergeVector2(sizeDeltaX, sizeDeltaY, rt.sizeDelta, out var newSizeDelta))
-                    rt.sizeDelta = newSizeDelta;
-
-                if (width.HasValue || height.HasValue)
-                {
-                    rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width ?? rt.rect.width);
-                    rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height ?? rt.rect.height);
-                }
-
-                EditorUtility.SetDirty(rt);
-
-                return new
-                {
-                    success = true,
-                    name = go.name,
-                    instanceId = go.GetInstanceID(),
-                    isUI = true,
-                    anchoredPosition = new { x = rt.anchoredPosition.x, y = rt.anchoredPosition.y },
-                    anchorMin = new { x = rt.anchorMin.x, y = rt.anchorMin.y },
-                    anchorMax = new { x = rt.anchorMax.x, y = rt.anchorMax.y },
-                    pivot = new { x = rt.pivot.x, y = rt.pivot.y },
-                    sizeDelta = new { x = rt.sizeDelta.x, y = rt.sizeDelta.y },
-                    rect = new { width = rt.rect.width, height = rt.rect.height },
-                    localPosition = new { x = go.transform.localPosition.x, y = go.transform.localPosition.y, z = go.transform.localPosition.z }
-                };
+                rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width ?? rt.rect.width);
+                rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height ?? rt.rect.height);
             }
 
-            return new
+            EditorUtility.SetDirty(rt);
+
+            { result.SetResult(new
             {
                 success = true,
                 name = go.name,
                 instanceId = go.GetInstanceID(),
-                isUI = false,
-                position = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z },
-                localPosition = new { x = go.transform.localPosition.x, y = go.transform.localPosition.y, z = go.transform.localPosition.z },
-                rotation = new { x = go.transform.eulerAngles.x, y = go.transform.eulerAngles.y, z = go.transform.eulerAngles.z },
-                scale = new { x = go.transform.localScale.x, y = go.transform.localScale.y, z = go.transform.localScale.z }
-            };
-        */
+                isUI = true,
+                anchoredPosition = new { x = rt.anchoredPosition.x, y = rt.anchoredPosition.y },
+                anchorMin = new { x = rt.anchorMin.x, y = rt.anchorMin.y },
+                anchorMax = new { x = rt.anchorMax.x, y = rt.anchorMax.y },
+                pivot = new { x = rt.pivot.x, y = rt.pivot.y },
+                sizeDelta = new { x = rt.sizeDelta.x, y = rt.sizeDelta.y },
+                rect = new { width = rt.rect.width, height = rt.rect.height },
+                localPosition = new { x = go.transform.localPosition.x, y = go.transform.localPosition.y, z = go.transform.localPosition.z }
+            }); return; }
+        }
+
+        { result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            isUI = false,
+            position = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z },
+            localPosition = new { x = go.transform.localPosition.x, y = go.transform.localPosition.y, z = go.transform.localPosition.z },
+            rotation = new { x = go.transform.eulerAngles.x, y = go.transform.eulerAngles.y, z = go.transform.eulerAngles.z },
+            scale = new { x = go.transform.localScale.x, y = go.transform.localScale.y, z = go.transform.localScale.z }
+        }); return; }
     }
 }
 ```

@@ -29,6 +29,12 @@ Create a prefab variant from an existing prefab. The variant inherits the source
 - The variant maintains a parent-child relationship with the source — changes to the source propagate unless overridden.
 - Workflow snapshot records the created variant asset.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ## C# Template
 
 ```csharp
@@ -39,24 +45,21 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        if (Validate.Required(sourcePrefabPath, "sourcePrefabPath") is object err) { result.SetResult(err); return; }
+        if (Validate.SafePath(variantPath, "variantPath") is object pathErr) { result.SetResult(pathErr); return; }
 
-            if (Validate.Required(sourcePrefabPath, "sourcePrefabPath") is object err) return err;
-            if (Validate.SafePath(variantPath, "variantPath") is object pathErr) return pathErr;
+        var source = AssetDatabase.LoadAssetAtPath<GameObject>(sourcePrefabPath);
+        if (source == null) { result.SetResult(new { error = $"Prefab not found: {sourcePrefabPath}" }); return; }
 
-            var source = AssetDatabase.LoadAssetAtPath<GameObject>(sourcePrefabPath);
-            if (source == null) return new { error = $"Prefab not found: {sourcePrefabPath}" };
+        var dir = Path.GetDirectoryName(variantPath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-            var dir = Path.GetDirectoryName(variantPath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
+        var instance = PrefabUtility.InstantiatePrefab(source) as GameObject;
+        var variant = PrefabUtility.SaveAsPrefabAssetAndConnect(
+            instance, variantPath, InteractionMode.AutomatedAction);
+        Object.DestroyImmediate(instance);
 
-            var instance = PrefabUtility.InstantiatePrefab(source) as GameObject;
-            var variant = PrefabUtility.SaveAsPrefabAssetAndConnect(
-                instance, variantPath, InteractionMode.AutomatedAction);
-            Object.DestroyImmediate(instance);
-
-            return new { success = true, sourcePath = sourcePrefabPath, variantPath, name = variant.name };
-        */
+        { result.SetResult(new { success = true, sourcePath = sourcePrefabPath, variantPath, name = variant.name }); return; }
     }
 }
 ```

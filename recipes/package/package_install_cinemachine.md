@@ -16,6 +16,11 @@ Install Cinemachine using the supported package/version strategy. Handles versio
 - CM3 auto-installs the Splines dependency.
 - The version string is resolved from `PackageManagerHelper.Cinemachine3Version` / `Cinemachine2Version` at runtime.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

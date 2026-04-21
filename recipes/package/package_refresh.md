@@ -12,6 +12,11 @@ Refresh the installed package cache used by query skills.
 
 **Note:** If a refresh is already in progress, this returns a job record for the existing refresh rather than starting a new one.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -10,6 +10,12 @@ Validate the active scene for missing scripts, missing prefabs, duplicate names,
 - `checkEmptyGameObjects` is off by default to reduce noise; enable for thorough audits
 - `severity` values: `"Error"`, `"Warning"`, `"Info"`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

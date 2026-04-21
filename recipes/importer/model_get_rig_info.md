@@ -18,6 +18,11 @@ model_get_rig_info(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the model file |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ## Unity_RunCommand Template
 
 ```csharp

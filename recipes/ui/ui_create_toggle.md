@@ -11,6 +11,12 @@ Create a Toggle (checkbox) UI element with background, checkmark, and label.
 - Checkmark fill color is blue `(0.3, 0.6, 1)`.
 - Label text uses TMP if available, otherwise legacy `Text`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

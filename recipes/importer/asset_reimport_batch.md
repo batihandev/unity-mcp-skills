@@ -20,6 +20,12 @@ asset_reimport_batch(searchFilter?: string = "*", folder?: string = "Assets", li
 | `folder` | string | no | `"Assets"` | Root folder to search within |
 | `limit` | int | no | `100` | Max number of assets to reimport |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Unity_RunCommand Template
 
 ```csharp

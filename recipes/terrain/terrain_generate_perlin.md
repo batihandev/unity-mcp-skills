@@ -8,6 +8,11 @@ Generate natural-looking terrain using multi-octave Perlin noise.
 
 > **Parameters:** `scale` — lower values produce larger landscape features. `seed = 0` means random each time.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

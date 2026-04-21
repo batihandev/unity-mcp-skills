@@ -29,6 +29,11 @@ audio_set_import_settings(
 | `compressionFormat` | string | no | `PCM`, `Vorbis`, `ADPCM` |
 | `quality` | int | no | 0–100 (mapped to `0.0`–`1.0` internally) |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Unity_RunCommand Template
 
 ```csharp

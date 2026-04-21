@@ -12,6 +12,11 @@ Evenly distribute selected objects between the first and last positions along an
 - `axis`: X, Y, Z, -X, -Y, -Z
 - Requires 3+ objects selected
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

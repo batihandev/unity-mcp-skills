@@ -10,6 +10,13 @@ Duplicate a named element (including its entire subtree) and insert the clone af
 - The clone is inserted immediately after the original element in the parent's child list.
 - Supply `newName` to give the clone a distinct `name` attribute; otherwise both elements share the same name.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

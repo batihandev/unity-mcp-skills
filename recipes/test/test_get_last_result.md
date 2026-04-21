@@ -11,6 +11,11 @@ Get the most recent test run result without needing a job ID.
 - Returns an error object if no test runs have been recorded yet
 - Field names differ slightly from `test_get_result` (e.g., `total` vs `totalTests`)
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

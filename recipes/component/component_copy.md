@@ -36,6 +36,13 @@ Copy a component from one GameObject to another using Unity's built-in Component
 - If the source object does not have the specified component, the call returns an error.
 - Workflow tracking is enabled; the pasted component is recorded.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## C# Template
 
 ```csharp
@@ -46,24 +53,21 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        if (Validate.Required(componentType, "componentType") is object err) { result.SetResult(err); return; }
+        var (srcGo, srcErr) = GameObjectFinder.FindOrError(name: sourceName, instanceId: sourceInstanceId, path: sourcePath);
+        if (srcErr != null) { result.SetResult(srcErr); return; }
+        var (dstGo, dstErr) = GameObjectFinder.FindOrError(name: targetName, instanceId: targetInstanceId, path: targetPath);
+        if (dstErr != null) { result.SetResult(dstErr); return; }
 
-            if (Validate.Required(componentType, "componentType") is object err) return err;
-            var (srcGo, srcErr) = GameObjectFinder.FindOrError(name: sourceName, instanceId: sourceInstanceId, path: sourcePath);
-            if (srcErr != null) return srcErr;
-            var (dstGo, dstErr) = GameObjectFinder.FindOrError(name: targetName, instanceId: targetInstanceId, path: targetPath);
-            if (dstErr != null) return dstErr;
+        var type = FindComponentType(componentType);
+        if (type == null) { result.SetResult(new { error = $"Component type not found: {componentType}" }); return; }
 
-            var type = FindComponentType(componentType);
-            if (type == null) return new { error = $"Component type not found: {componentType}" };
+        var srcComp = srcGo.GetComponent(type);
+        if (srcComp == null) { result.SetResult(new { error = $"No {componentType} on {sourceName}" }); return; }
 
-            var srcComp = srcGo.GetComponent(type);
-            if (srcComp == null) return new { error = $"No {componentType} on {sourceName}" };
-
-            UnityEditorInternal.ComponentUtility.CopyComponent(srcComp);
-            UnityEditorInternal.ComponentUtility.PasteComponentAsNew(dstGo);
-            return new { success = true, source = sourceName, target = targetName, componentType };
-        */
+        UnityEditorInternal.ComponentUtility.CopyComponent(srcComp);
+        UnityEditorInternal.ComponentUtility.PasteComponentAsNew(dstGo);
+        { result.SetResult(new { success = true, source = sourceName, target = targetName, componentType }); return; }
     }
 }
 ```

@@ -339,12 +339,10 @@ def transform_returns(body: str) -> tuple[str, int]:
                 i += 1
                 continue
             expr = body[tail:end].strip()
-            # Preserve leading whitespace on the line (indent) of the original return
-            line_start = body.rfind('\n', 0, i) + 1
-            indent = body[line_start:i]
-            # Keep only whitespace of indent
-            indent = ''.join(ch for ch in indent if ch in ' \t')
-            replacement = f'result.SetResult({expr});\n{indent}return;'
+            # Wrap in braces so single-statement `if`/`else`/`case` bodies that
+            # held a `return <expr>;` still contain both emitted statements.
+            # Without braces, the trailing `return;` escapes the conditional.
+            replacement = f'{{ result.SetResult({expr}); return; }}'
             out.append(replacement)
             i = end + 1
             count += 1
@@ -364,17 +362,22 @@ def rewrite_recipe(recipe_path: Path, method_body: str) -> tuple[bool, str]:
     text = recipe_path.read_text(encoding="utf-8")
     lines = text.split('\n')
 
-    # Find the first csharp fenced block that contains 'Original Logic:'
+    # Find the first csharp fenced block that looks stubbed — either the classic
+    # `/* Original Logic: */` comment form, or the newer `UnitySkillsBridge.Call(...)`
+    # placeholder emitted by a prior extractor pass.
     fence_start = fence_end = None
+    stub_kind: str | None = None
     for i, line in enumerate(lines):
         if CSHARP_FENCE_START.match(line):
-            # Find closing fence
             for j in range(i + 1, len(lines)):
                 if CSHARP_FENCE_END.match(lines[j]):
                     block = '\n'.join(lines[i+1:j])
                     if 'Original Logic:' in block:
                         fence_start, fence_end = i, j
-                        break
+                        stub_kind = 'original_logic'
+                    elif 'UnitySkillsBridge.Call' in block:
+                        fence_start, fence_end = i, j
+                        stub_kind = 'bridge_call'
                     break
             if fence_start is not None:
                 break
@@ -425,17 +428,23 @@ def rewrite_recipe(recipe_path: Path, method_body: str) -> tuple[bool, str]:
     # variable declarations — we keep those).
     inner = block[exec_open + 1:exec_close]
 
-    orig_start = orig_end = None
-    for i, l in enumerate(inner):
-        if ORIGINAL_LOGIC_START.search(l):
-            orig_start = i
-        elif orig_start is not None and ORIGINAL_LOGIC_END.search(l):
-            orig_end = i
-            break
-    if orig_start is None or orig_end is None:
-        return False, 'no /* Original Logic: */ block'
+    if stub_kind == 'original_logic':
+        orig_start = orig_end = None
+        for i, l in enumerate(inner):
+            if ORIGINAL_LOGIC_START.search(l):
+                orig_start = i
+            elif orig_start is not None and ORIGINAL_LOGIC_END.search(l):
+                orig_end = i
+                break
+        if orig_start is None or orig_end is None:
+            return False, 'no /* Original Logic: */ block'
 
-    preamble = inner[:orig_start]
+        preamble = inner[:orig_start]
+    else:
+        # UnitySkillsBridge.Call stub — discard the entire body; it's a placeholder
+        # that doesn't reflect any parameter-example preamble worth keeping.
+        preamble = []
+
     # Trim trailing blank lines and any '// TODO: Replace parameters with your actual logic' banner
     while preamble and (preamble[-1].strip() == '' or '// TODO:' in preamble[-1]):
         preamble.pop()
@@ -452,8 +461,6 @@ def rewrite_recipe(recipe_path: Path, method_body: str) -> tuple[bool, str]:
 
     # Transform method body
     dedented = dedent_body(method_body)
-    if detect_multiline_return(dedented):
-        return False, 'multi-line return detected; needs manual review'
     transformed, return_count = transform_returns(dedented)
 
     # Determine the Execute body indent (match first non-empty original line or default 8-space)
@@ -508,7 +515,8 @@ def main() -> int:
 
     stubbed = []
     for md in args.recipes.rglob("*.md"):
-        if "Original Logic:" in md.read_text(encoding="utf-8", errors="ignore"):
+        text = md.read_text(encoding="utf-8", errors="ignore")
+        if "Original Logic:" in text or "UnitySkillsBridge.Call" in text:
             stubbed.append(md)
 
     print(f"found {len(stubbed)} stubbed recipes")

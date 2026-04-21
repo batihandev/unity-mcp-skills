@@ -11,6 +11,12 @@ Create a new UXML layout file for UI Toolkit.
 - Creates intermediate directories automatically.
 - When `ussPath` is in the same directory as `savePath`, a relative `<Style src="..."/>` reference is used.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

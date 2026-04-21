@@ -8,6 +8,12 @@ Save the active scene.
 
 Omit `scenePath` to save to the scene's existing path. Provide a path to save-as (e.g. when saving a new unsaved scene for the first time).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

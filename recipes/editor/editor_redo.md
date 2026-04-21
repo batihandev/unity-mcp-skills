@@ -8,6 +8,11 @@ For multiple steps use `history_redo(steps=N)`.
 
 **Returns:** `{ success, message }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

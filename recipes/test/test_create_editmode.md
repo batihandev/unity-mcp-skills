@@ -12,6 +12,13 @@ Create an EditMode test script template and return a compile-monitor job.
 - Triggers a script mutation job (`jobId`) to monitor compile status after file creation
 - `serverAvailability` always includes a transient unavailability notice due to domain reload
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

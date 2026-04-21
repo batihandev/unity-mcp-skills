@@ -11,6 +11,12 @@ Find all lights in the current scene, with optional type filtering.
 - `lightType` filter is case-insensitive. If the value does not match a known `LightType`, the filter is silently skipped and all lights are returned.
 - `limit` caps results; increase if the scene has many lights.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

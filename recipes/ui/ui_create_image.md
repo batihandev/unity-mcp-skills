@@ -10,6 +10,12 @@ Create an Image UI element, optionally loading a sprite from an asset path.
 - `spritePath` must be a project-relative path (e.g. `Assets/Sprites/icon.png`).
 - If the sprite is not found at the given path, the Image is created without a sprite (no error).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

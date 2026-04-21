@@ -11,6 +11,11 @@ Get the current Lightmap baking settings for the active scene.
 - `isRunning` is `true` while a bake is in progress.
 - `lightmapSize` corresponds to `LightmapEditorSettings.maxAtlasSize`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

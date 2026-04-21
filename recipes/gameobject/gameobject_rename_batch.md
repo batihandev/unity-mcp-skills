@@ -13,6 +13,13 @@ Rename multiple GameObjects in one call.
 - Each item requires at least one identifier (`name`, `instanceId`, or `path`) and a `newName`.
 - A missing object or missing `newName` causes that item to fail without stopping the rest.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -29,24 +36,21 @@ internal class CommandScript : IRunCommand
             { ""path"": ""Parent/OldChild"", ""newName"": ""NewChild"" }
         ]";
 
-        /* Original Logic:
+        { result.SetResult(BatchExecutor.Execute<BatchRenameItem>(items, item =>
+        {
+            if (string.IsNullOrEmpty(item.newName))
+                throw new System.Exception("newName is required");
 
-            return BatchExecutor.Execute<BatchRenameItem>(items, item =>
-            {
-                if (string.IsNullOrEmpty(item.newName))
-                    throw new System.Exception("newName is required");
+            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (error != null) throw new System.Exception("Object not found");
 
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
+            var oldName = go.name;
+            WorkflowManager.SnapshotObject(go);
+            Undo.RecordObject(go, "Batch Rename " + go.name);
+            go.name = item.newName;
 
-                var oldName = go.name;
-                WorkflowManager.SnapshotObject(go);
-                Undo.RecordObject(go, "Batch Rename " + go.name);
-                go.name = item.newName;
-
-                return new { success = true, oldName, newName = go.name, instanceId = go.GetInstanceID() };
-            }, item => item.name ?? item.path ?? item.instanceId.ToString());
-        */
+            return new { success = true, oldName, newName = go.name, instanceId = go.GetInstanceID() };
+        }, item => item.name ?? item.path ?? item.instanceId.ToString())); return; }
     }
 }
 ```

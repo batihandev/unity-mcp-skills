@@ -35,6 +35,11 @@ On out-of-range index:
 - Quality level names are defined in Project Settings > Quality. Use `project_get_quality_settings` to list them.
 - `QualitySettings.SetQualityLevel(level, true)` applies quality settings immediately.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## C# Template
 
 ```csharp

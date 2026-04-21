@@ -34,6 +34,12 @@ Inspect all property overrides, added components, removed components, and added 
 - `propertyOverrides` is the count of `PropertyModification` entries where the target is non-null (internal Unity bookkeeping entries with null targets are excluded).
 - Check `hasOverrides` for a quick true/false before deciding whether to apply or revert.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## C# Template
 
 ```csharp
@@ -44,44 +50,41 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        var (go, goErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId);
+        if (goErr != null) { result.SetResult(goErr); return; }
 
-            var (go, goErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId);
-            if (goErr != null) return goErr;
+        var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
+        if (prefabRoot == null) { result.SetResult(new { error = "Not a prefab instance" }); return; }
 
-            var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
-            if (prefabRoot == null) return new { error = "Not a prefab instance" };
+        var overrides = PrefabUtility.GetPropertyModifications(prefabRoot);
+        var addedComponents = PrefabUtility.GetAddedComponents(prefabRoot);
+        var removedComponents = PrefabUtility.GetRemovedComponents(prefabRoot);
+        var addedObjects = PrefabUtility.GetAddedGameObjects(prefabRoot);
 
-            var overrides = PrefabUtility.GetPropertyModifications(prefabRoot);
-            var addedComponents = PrefabUtility.GetAddedComponents(prefabRoot);
-            var removedComponents = PrefabUtility.GetRemovedComponents(prefabRoot);
-            var addedObjects = PrefabUtility.GetAddedGameObjects(prefabRoot);
-
-            var propOverrides = new System.Collections.Generic.List<object>();
-            if (overrides != null)
+        var propOverrides = new System.Collections.Generic.List<object>();
+        if (overrides != null)
+        {
+            foreach (var o in overrides)
             {
-                foreach (var o in overrides)
-                {
-                    if (o.target == null) continue;
-                    propOverrides.Add(new {
-                        target = o.target.name,
-                        property = o.propertyPath,
-                        value = o.value
-                    });
-                }
+                if (o.target == null) continue;
+                propOverrides.Add(new { 
+                    target = o.target.name, 
+                    property = o.propertyPath, 
+                    value = o.value 
+                });
             }
+        }
 
-            return new
-            {
-                success = true,
-                prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabRoot),
-                propertyOverrides = propOverrides.Count,
-                addedComponents = addedComponents.Count,
-                removedComponents = removedComponents.Count,
-                addedGameObjects = addedObjects.Count,
-                hasOverrides = propOverrides.Count > 0 || addedComponents.Count > 0 || removedComponents.Count > 0
-            };
-        */
+        { result.SetResult(new
+        {
+            success = true,
+            prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabRoot),
+            propertyOverrides = propOverrides.Count,
+            addedComponents = addedComponents.Count,
+            removedComponents = removedComponents.Count,
+            addedGameObjects = addedObjects.Count,
+            hasOverrides = propOverrides.Count > 0 || addedComponents.Count > 0 || removedComponents.Count > 0
+        }); return; }
     }
 }
 ```

@@ -8,6 +8,12 @@ At least one of `name`, `instanceId`, or `path` must be provided.
 
 **Returns:** `{ success, selected }` — `selected` is the resolved object name.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

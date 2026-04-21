@@ -6,6 +6,11 @@ Smooth terrain heights in a region by averaging each pixel with its 8 neighbors.
 
 **Returns:** `{ success, centerX, centerZ, radius, iterations, affectedArea }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

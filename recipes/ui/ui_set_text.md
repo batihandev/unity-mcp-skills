@@ -11,6 +11,13 @@ Update the text content on a Text UI element (supports TMP and legacy Text).
 - TMP component is checked first; falls back to legacy `Text` if TMP is unavailable or not present.
 - Returns an error if neither component type is found on the target.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

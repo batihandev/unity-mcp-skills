@@ -12,6 +12,12 @@ Set the local scale of a GameObject.
 - Sets `transform.localScale`.
 - The change is registered with Undo.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## Recipe
 
 ```csharp
@@ -27,14 +33,11 @@ internal class CommandScript : IRunCommand
         float y = 1f;
         float z = 1f;
 
-        /* Original Logic:
-
-            var (obj, err) = GameObjectFinder.FindOrError(objectName);
-            if (err != null) return err;
-            Undo.RecordObject(obj.transform, "Set Scale");
-            obj.transform.localScale = new Vector3(x, y, z);
-            return new { success = true, name = objectName, scale = new { x, y, z }, message = $"Set {objectName} scale to ({x},{y},{z})" };
-        */
+        var (obj, err) = GameObjectFinder.FindOrError(objectName);
+        if (err != null) { result.SetResult(err); return; }
+        Undo.RecordObject(obj.transform, "Set Scale");
+        obj.transform.localScale = new Vector3(x, y, z);
+        { result.SetResult(new { success = true, name = objectName, scale = new { x, y, z }, message = $"Set {objectName} scale to ({x},{y},{z})" }); return; }
     }
 }
 ```

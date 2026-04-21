@@ -11,6 +11,13 @@ Set RectTransform size, anchored position, and padding offsets.
 - `left`/`bottom` control `offsetMin`; `right`/`top` control `offsetMax` (stored as negatives).
 - Use after `ui_set_anchor` for precise placement of stretched elements.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

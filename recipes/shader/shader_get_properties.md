@@ -13,6 +13,11 @@ Get all property definitions exposed by a shader (name, type, description).
 - For material instance property values, use `material_get_properties` from the material module.
 - `type` reflects `ShaderUtil.ShaderPropertyType` (e.g., `Color`, `Float`, `Range`, `TexEnv`, `Vector`).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -25,29 +30,26 @@ internal class CommandScript : IRunCommand
     {
         string shaderNameOrPath = "Standard"; // or "Assets/Shaders/MyShader.shader"
 
-        /* Original Logic:
+        var shader = FindShaderByNameOrPath(shaderNameOrPath);
+        if (shader == null)
+            { result.SetResult(new { error = $"Shader not found: {shaderNameOrPath}" }); return; }
 
-            var shader = FindShaderByNameOrPath(shaderNameOrPath);
-            if (shader == null)
-                return new { error = $"Shader not found: {shaderNameOrPath}" };
-
-            var propCount = ShaderUtil.GetPropertyCount(shader);
-            var properties = Enumerable.Range(0, propCount)
-                .Select(i => new
-                {
-                    name = ShaderUtil.GetPropertyName(shader, i),
-                    type = ShaderUtil.GetPropertyType(shader, i).ToString(),
-                    description = ShaderUtil.GetPropertyDescription(shader, i)
-                })
-                .ToArray();
-
-            return new
+        var propCount = ShaderUtil.GetPropertyCount(shader);
+        var properties = Enumerable.Range(0, propCount)
+            .Select(i => new
             {
-                shaderName = shader.name,
-                propertyCount = propCount,
-                properties
-            };
-        */
+                name = ShaderUtil.GetPropertyName(shader, i),
+                type = ShaderUtil.GetPropertyType(shader, i).ToString(),
+                description = ShaderUtil.GetPropertyDescription(shader, i)
+            })
+            .ToArray();
+
+        { result.SetResult(new
+        {
+            shaderName = shader.name,
+            propertyCount = propCount,
+            properties
+        }); return; }
     }
 }
 ```

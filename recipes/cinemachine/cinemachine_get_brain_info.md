@@ -11,6 +11,11 @@ Get information about the active `CinemachineBrain` on the Main Camera: which VC
 - Returns an error if there is no Main Camera or no `CinemachineBrain` on the Main Camera.
 - `activeBlend` is `"None"` when no blend is in progress.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -8,6 +8,11 @@ Paint a terrain texture layer at a normalized position. The terrain must have la
 
 > **Prerequisite:** Call `terrain_get_info` first to verify available layer indices. Layer index is 0-based.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

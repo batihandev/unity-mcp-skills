@@ -13,6 +13,11 @@ Set the default blend (or a per-camera-pair blend) on the `CinemachineBrain`.
 - Per-camera-pair blends (with `fromCamera`/`toCamera`) require a `CinemachineBlenderSettings` asset. The current implementation sets the default blend and returns a note about the limitation — for full per-pair control, create a CinemachineBlenderSettings asset manually or via `cinemachine_set_brain`.
 - For camera-specific blend control also see `cinemachine_set_brain`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

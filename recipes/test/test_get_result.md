@@ -11,6 +11,12 @@ Get the result of a test run by job ID.
 - Returns an error object if the job is not found or is not a test job
 - `elapsedSeconds` counts from job start time to now; check `status` to know if the run has completed
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

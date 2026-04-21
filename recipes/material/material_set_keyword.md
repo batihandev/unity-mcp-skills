@@ -23,6 +23,13 @@ Enable or disable a shader keyword on a material.
 | `_ALPHABLEND_ON` | Enable alpha blending |
 | `_ALPHAPREMULTIPLY_ON` | Enable premultiplied alpha |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -39,25 +46,28 @@ internal class CommandScript : IRunCommand
         string keyword    = "_EMISSION";  // required
         bool   enable     = true;         // false to disable
 
-        /* Original Logic:
+        if (Validate.Required(keyword, "keyword") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(keyword, "keyword") is object err) return err;
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Material Keyword");
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Material Keyword");
+        if (enable)
+            material.EnableKeyword(keyword);
+        else
+            material.DisableKeyword(keyword);
 
-            if (enable)
-                material.EnableKeyword(keyword);
-            else
-                material.DisableKeyword(keyword);
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
-
-            return new { success = true, target = go != null ? go.name : path, keyword, enabled = enable, allKeywords = material.shaderKeywords };
-        */
+        { result.SetResult(new { 
+            success = true, 
+            target = go != null ? go.name : path, 
+            keyword, 
+            enabled = enable,
+            allKeywords = material.shaderKeywords
+        }); return; }
     }
 }
 ```

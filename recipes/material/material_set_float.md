@@ -21,6 +21,13 @@ Set a float property on a material.
 | URP | `_Metallic` | `_Smoothness` |
 | HDRP | `_Metallic` | `_Smoothness` |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -37,28 +44,27 @@ internal class CommandScript : IRunCommand
         string propertyName = "_Metallic";  // required
         float  value        = 0.8f;
 
-        /* Original Logic:
+        if (Validate.Required(propertyName, "propertyName") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(propertyName, "propertyName") is object err) return err;
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        if (!material.HasProperty(propertyName))
+        {
+            { result.SetResult(new { 
+                error = $"Property not found: {propertyName}",
+                shaderName = material.shader.name,
+                suggestion = "Use material_get_properties to see available properties"
+            }); return; }
+        }
 
-            if (!material.HasProperty(propertyName))
-                return new {
-                    error = $"Property not found: {propertyName}",
-                    shaderName = material.shader.name,
-                    suggestion = "Use material_get_properties to see available properties"
-                };
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Material Float");
+        material.SetFloat(propertyName, value);
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Material Float");
-            material.SetFloat(propertyName, value);
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
-
-            return new { success = true, target = go != null ? go.name : path, property = propertyName, value };
-        */
+        { result.SetResult(new { success = true, target = go != null ? go.name : path, property = propertyName, value }); return; }
     }
 }
 ```

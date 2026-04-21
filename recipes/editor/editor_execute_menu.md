@@ -17,6 +17,11 @@ Execute a Unity menu item by its exact path. Typos cause silent failure — the 
 | `Window/General/Console` | Open Console window |
 | `Assets/Refresh` | Refresh asset database |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

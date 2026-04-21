@@ -33,6 +33,11 @@ Each object in the JSON array may contain:
 | `readable` | bool | CPU-readable |
 | `spritePixelsPerUnit` | float | Pixels per unit |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Unity_RunCommand Template
 
 ```csharp

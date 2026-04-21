@@ -12,6 +12,11 @@ Run a broad smoke test across all registered skills, executing safe read-only on
 - `excludeNamesCsv` accepts comma- or semicolon-separated skill names
 - `limit = 0` means no limit (all matching skills)
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

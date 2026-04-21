@@ -11,6 +11,11 @@ Run Unity tests asynchronously; returns a job ID immediately for polling.
 - Only one test job should be active at a time; starting a second while one is running may conflict
 - `filter` is a test name substring or exact name; omit to run all tests in the specified mode
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

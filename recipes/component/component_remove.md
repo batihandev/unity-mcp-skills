@@ -38,6 +38,14 @@ On failure:
 - Use `componentIndex` only when the same component type appears multiple times on an object.
 - Snapshots the object state for workflow undo before removing.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -48,39 +56,38 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        if (Validate.Required(componentType, "componentType") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(componentType, "componentType") is object err) return err;
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        var type = FindComponentType(componentType);
+        if (type == null)
+            { result.SetResult(new { error = $"Component type not found: {componentType}" }); return; }
 
-            var type = FindComponentType(componentType);
-            if (type == null)
-                return new { error = $"Component type not found: {componentType}" };
+        // Support removing specific component instance by index
+        var components = go.GetComponents(type);
+        if (components.Length == 0)
+            { result.SetResult(new { error = $"Component not found on {go.name}: {componentType}" }); return; }
 
-            var components = go.GetComponents(type);
-            if (components.Length == 0)
-                return new { error = $"Component not found on {go.name}: {componentType}" };
+        if (componentIndex >= components.Length)
+            { result.SetResult(new { error = $"Component index {componentIndex} out of range. Found {components.Length} components of type {componentType}" }); return; }
 
-            if (componentIndex >= components.Length)
-                return new { error = $"Component index {componentIndex} out of range. Found {components.Length} components of type {componentType}" };
+        var comp = components[componentIndex];
 
-            var comp = components[componentIndex];
+        // Check if it's a required component
+        var requiredBy = GetRequiredByComponents(go, type);
+        if (requiredBy.Any())
+            { result.SetResult(new {
+                error = $"Cannot remove {componentType} - required by: {string.Join(", ", requiredBy)}",
+                hint = "Remove dependent components first"
+            }); return; }
 
-            var requiredBy = GetRequiredByComponents(go, type);
-            if (requiredBy.Any())
-                return new {
-                    error = $"Cannot remove {componentType} - required by: {string.Join(", ", requiredBy)}",
-                    hint = "Remove dependent components first"
-                };
+        WorkflowManager.SnapshotObject(comp);
+        Undo.DestroyObjectImmediate(comp);
+        EditorUtility.SetDirty(go);
 
-            WorkflowManager.SnapshotObject(comp);
-            Undo.DestroyObjectImmediate(comp);
-            EditorUtility.SetDirty(go);
-
-            return new { success = true, gameObject = go.name, removed = componentType };
-        */
+        { result.SetResult(new { success = true, gameObject = go.name, removed = componentType }); return; }
     }
 }
 ```

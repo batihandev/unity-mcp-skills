@@ -11,6 +11,14 @@ Rename a GameObject.
 - At least one identifier (`name`, `instanceId`, or `path`) is required to locate the object.
 - `newName` is required.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -26,26 +34,23 @@ internal class CommandScript : IRunCommand
         string path = null;
         string newName = "RenamedObject"; // required
 
-        /* Original Logic:
+        if (Validate.Required(newName, "newName") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(newName, "newName") is object err) return err;
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        var oldName = go.name;
+        WorkflowManager.SnapshotObject(go);
+        Undo.RecordObject(go, "Rename GameObject");
+        go.name = newName;
 
-            var oldName = go.name;
-            WorkflowManager.SnapshotObject(go);
-            Undo.RecordObject(go, "Rename GameObject");
-            go.name = newName;
-
-            return new { 
-                success = true, 
-                oldName, 
-                newName = go.name, 
-                instanceId = go.GetInstanceID(),
-                path = GameObjectFinder.GetPath(go)
-            };
-        */
+        { result.SetResult(new { 
+            success = true, 
+            oldName, 
+            newName = go.name, 
+            instanceId = go.GetInstanceID(),
+            path = GameObjectFinder.GetPath(go)
+        }); return; }
     }
 }
 ```

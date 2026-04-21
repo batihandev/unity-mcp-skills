@@ -11,6 +11,11 @@ List available Unity tests discovered from source files.
 - Each entry in `tests` contains `name`, `fullName`, and `runState`
 - `limit` is clamped to a minimum of 1 via `Mathf.Max`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

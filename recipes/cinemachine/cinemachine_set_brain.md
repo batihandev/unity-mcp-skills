@@ -16,6 +16,11 @@ Configure `CinemachineBrain` properties: update method, default blend, and debug
 - Only pass parameters you want to change; omitted parameters are left unchanged.
 - Returns the full resulting settings for confirmation.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

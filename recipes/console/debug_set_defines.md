@@ -17,6 +17,11 @@ Set the scripting define symbols (preprocessor symbols) for the currently select
 - To read current defines first, call `debug_get_defines`.
 - Replaces all existing defines — pass the full desired set, not a diff.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -31,7 +36,7 @@ internal class CommandScript : IRunCommand
 
         var group = EditorUserBuildSettings.selectedBuildTargetGroup;
         PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
-        result.Return(new
+        result.SetResult(new
         {
             success = true,
             buildTargetGroup = group.ToString(),

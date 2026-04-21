@@ -11,6 +11,12 @@ Create a new Timeline asset and Director instance.
 - The folder is created if it does not exist
 - The asset path is made unique via `AssetDatabase.GenerateUniqueAssetPath`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -21,6 +21,12 @@ Set the render queue of a material.
 | 3000–3999 | Transparent |
 | >= 4000 | Overlay |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -36,30 +42,32 @@ internal class CommandScript : IRunCommand
         string path        = null;    // or material asset path
         int    renderQueue = 3000;    // -1 for shader default; 3000 = Transparent
 
-        /* Original Logic:
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Render Queue");
+        material.renderQueue = renderQueue;
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Render Queue");
-            material.renderQueue = renderQueue;
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
+        string queueName = renderQueue switch
+        {
+            -1 => "ShaderDefault",
+            < 2000 => "Background",
+            < 2450 => "Geometry",
+            < 2500 => "AlphaTest",
+            < 3000 => "GeometryLast",
+            < 4000 => "Transparent",
+            _ => "Overlay"
+        };
 
-            string queueName = renderQueue switch
-            {
-                -1      => "ShaderDefault",
-                < 2000  => "Background",
-                < 2450  => "Geometry",
-                < 2500  => "AlphaTest",
-                < 3000  => "GeometryLast",
-                < 4000  => "Transparent",
-                _       => "Overlay"
-            };
-
-            return new { success = true, target = go != null ? go.name : path, renderQueue, queueCategory = queueName };
-        */
+        { result.SetResult(new { 
+            success = true, 
+            target = go != null ? go.name : path, 
+            renderQueue,
+            queueCategory = queueName
+        }); return; }
     }
 }
 ```

@@ -14,6 +14,13 @@ Add a child camera instruction to a Sequencer/BlendList camera, defining how lon
 - `blendTime` is the blend duration entering this child camera.
 - The child must have a `CinemachineVirtualCameraBase` component.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

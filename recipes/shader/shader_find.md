@@ -13,6 +13,11 @@ Find a shader by its exact internal name (case-sensitive).
 - `path` is `"(built-in)"` for Unity built-in shaders that have no asset file.
 - Returns an error if no shader with that name exists.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -25,20 +30,17 @@ internal class CommandScript : IRunCommand
     {
         string searchName = "Universal Render Pipeline/Lit";
 
-        /* Original Logic:
+        var shader = Shader.Find(searchName);
+        if (shader == null)
+            { result.SetResult(new { error = $"Shader not found: {searchName}" }); return; }
 
-            var shader = Shader.Find(searchName);
-            if (shader == null)
-                return new { error = $"Shader not found: {searchName}" };
-
-            var path = AssetDatabase.GetAssetPath(shader);
-            return new
-            {
-                found = true,
-                name = shader.name,
-                path = string.IsNullOrEmpty(path) ? "(built-in)" : path
-            };
-        */
+        var path = AssetDatabase.GetAssetPath(shader);
+        { result.SetResult(new
+        {
+            found = true,
+            name = shader.name,
+            path = string.IsNullOrEmpty(path) ? "(built-in)" : path
+        }); return; }
     }
 }
 ```

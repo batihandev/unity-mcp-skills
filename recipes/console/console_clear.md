@@ -11,6 +11,11 @@ Clear the Unity console and the in-memory capture buffer.
 - Uses `UnityEditor.LogEntries.Clear()` via reflection to clear the console window.
 - Also clears the internal capture buffer (`_logs`).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -27,7 +32,7 @@ internal class CommandScript : IRunCommand
         clearMethod.Invoke(null, null);
 
         lock (_logLock) { _logs.Clear(); }
-        result.Return(new { success = true, message = "Console cleared" });
+        result.SetResult(new { success = true, message = "Console cleared" });
     }
 }
 ```

@@ -13,6 +13,11 @@ Get log statistics (count by type). Uses the in-memory capture buffer when `cons
 - Capture mode differentiates `Exception` and `Assert` types; direct mode maps these to `Error`.
 - Direct mode reads up to 10 000 entries to build the count.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -27,7 +32,7 @@ internal class CommandScript : IRunCommand
         {
             lock (_logLock)
             {
-                result.Return(new
+                result.SetResult(new
                 {
                     success = true,
                     total = _logs.Count,
@@ -55,7 +60,7 @@ internal class CommandScript : IRunCommand
                 default:        logCount++;  break;
             }
         }
-        result.Return(new
+        result.SetResult(new
         {
             success = true,
             total = entries.Count,

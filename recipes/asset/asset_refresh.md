@@ -6,6 +6,11 @@ Refresh the AssetDatabase after external file changes. No parameters required.
 
 **Returns:** `{ success, message }` — plus a `serverAvailability` notice (conditional: only emitted when Unity may recompile scripts).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

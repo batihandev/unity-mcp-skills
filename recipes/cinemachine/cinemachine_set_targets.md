@@ -10,6 +10,13 @@ Set the Follow and/or LookAt transform targets on a Virtual Camera in one call.
 - Pass only the parameters you want to change; omitting `followName` leaves the existing Follow target unchanged, and similarly for `lookAtName`.
 - This is the canonical way to set targets. Do NOT use `cinemachine_set_target`, `cinemachine_set_follow`, or `cinemachine_set_lookat` — those commands do not exist.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

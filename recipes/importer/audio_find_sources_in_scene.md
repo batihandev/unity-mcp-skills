@@ -18,6 +18,11 @@ audio_find_sources_in_scene(limit?: int = 50)
 |-----------|------|----------|---------|-------------|
 | `limit` | int | no | `50` | Max results returned |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## Unity_RunCommand Template
 
 ```csharp

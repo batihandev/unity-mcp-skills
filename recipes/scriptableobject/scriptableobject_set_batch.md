@@ -13,6 +13,13 @@ Set multiple fields on a ScriptableObject in a single operation.
 | `assetPath` | string | Yes | Asset path of the ScriptableObject |
 | `fields` | string | Yes | JSON object with field-value pairs, e.g. `{"fieldName": "value", ...}` |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/value_converter.md` — for `ComponentSkills.ConvertValue`
+
 ## Notes
 
 - Only public instance fields are set; properties are not supported in batch mode.

@@ -6,6 +6,11 @@ Find ScriptableObject assets by type name within a search path.
 
 **Returns:** `{ success, count, assets }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Parameters
 
 | Parameter | Type | Required | Default | Description |

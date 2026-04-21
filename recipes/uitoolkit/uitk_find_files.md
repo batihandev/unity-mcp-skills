@@ -11,6 +11,11 @@ Search for USS and/or UXML files in the project.
 - `folder` restricts the search root (defaults to `"Assets"`).
 - `filter` is a substring match against the asset path.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

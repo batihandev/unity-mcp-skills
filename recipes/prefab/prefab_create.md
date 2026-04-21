@@ -33,6 +33,14 @@ Create a prefab asset from a scene GameObject. The source object remains in the 
 - The created prefab asset is recorded in the workflow snapshot.
 - Do NOT use `prefab_create_from_object` — that command does not exist.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -43,24 +51,23 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        if (Validate.Required(savePath, "savePath") is object reqErr) { result.SetResult(reqErr); return; }
+        if (Validate.SafePath(savePath, "savePath") is object pathErr) { result.SetResult(pathErr); return; }
 
-            if (Validate.Required(savePath, "savePath") is object reqErr) return reqErr;
-            if (Validate.SafePath(savePath, "savePath") is object pathErr) return pathErr;
+        var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-            var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
-            if (findErr != null) return findErr;
+        var dir = Path.GetDirectoryName(savePath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            Directory.CreateDirectory(dir);
 
-            var dir = Path.GetDirectoryName(savePath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
+        // 使用 SaveAsPrefabAssetAndConnect 将场景物体连接为预制体实例
+        var prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(go, savePath, InteractionMode.UserAction);
 
-            var prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(go, savePath, InteractionMode.UserAction);
+        // 记录新创建的预制体资产
+        WorkflowManager.SnapshotCreatedAsset(prefab);
 
-            WorkflowManager.SnapshotCreatedAsset(prefab);
-
-            return new { success = true, prefabPath = savePath, name = prefab.name };
-        */
+        { result.SetResult(new { success = true, prefabPath = savePath, name = prefab.name }); return; }
     }
 }
 ```

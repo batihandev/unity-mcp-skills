@@ -11,6 +11,12 @@ Create an InputField UI element with placeholder and text children.
 - TMP path creates a "Text Area" viewport with `RectMask2D`; legacy path creates flat children directly on the root.
 - Check `usingTMP` in the response before any component-specific post-processing.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

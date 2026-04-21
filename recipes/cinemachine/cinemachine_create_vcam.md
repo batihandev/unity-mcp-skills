@@ -6,6 +6,12 @@ Create a new Virtual Camera (CM2: `CinemachineVirtualCamera`, CM3: `CinemachineC
 
 **Returns:** `{ success, gameObjectName, instanceId }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

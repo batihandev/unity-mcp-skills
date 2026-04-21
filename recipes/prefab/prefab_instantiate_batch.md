@@ -44,6 +44,13 @@ Instantiate multiple prefabs in one call. Use this whenever spawning 2 or more i
 - Each instance is registered with `Undo.RegisterCreatedObjectUndo`.
 - Rotation is applied as world `eulerAngles`; scale as `localScale`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -54,64 +61,63 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        // Cache loaded prefabs to avoid repeated AssetDatabase calls
+        var prefabCache = new System.Collections.Generic.Dictionary<string, GameObject>();
 
-            var prefabCache = new System.Collections.Generic.Dictionary<string, GameObject>();
+        { result.SetResult(BatchExecutor.Execute<BatchInstantiateItem>(items, item =>
+        {
+            if (string.IsNullOrEmpty(item.prefabPath))
+                throw new System.Exception("prefabPath required");
 
-            return BatchExecutor.Execute<BatchInstantiateItem>(items, item =>
+            if (!prefabCache.TryGetValue(item.prefabPath, out var prefab))
             {
-                if (string.IsNullOrEmpty(item.prefabPath))
-                    throw new System.Exception("prefabPath required");
-
-                if (!prefabCache.TryGetValue(item.prefabPath, out var prefab))
-                {
-                    prefab = AssetDatabase.LoadAssetAtPath<GameObject>(item.prefabPath);
-                    if (prefab == null)
-                    {
-                        var guids = AssetDatabase.FindAssets(item.prefabPath + " t:Prefab");
-                        if (guids.Length > 0)
-                            prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guids[0]));
-                    }
-                    if (prefab != null)
-                        prefabCache[item.prefabPath] = prefab;
-                }
-
+                prefab = AssetDatabase.LoadAssetAtPath<GameObject>(item.prefabPath);
                 if (prefab == null)
-                    throw new System.Exception($"Prefab not found: {item.prefabPath}");
-
-                var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
-                if (instance == null)
-                    throw new System.Exception($"Failed to instantiate prefab: {item.prefabPath}");
-
-                if (!string.IsNullOrEmpty(item.parentName) || item.parentInstanceId != 0 || !string.IsNullOrEmpty(item.parentPath))
                 {
-                    var (parentGo, parentErr) = GameObjectFinder.FindOrError(item.parentName, item.parentInstanceId, item.parentPath);
-                    if (parentErr != null) throw new System.Exception($"Parent not found for '{item.name ?? item.prefabPath}'");
-                    instance.transform.SetParent(parentGo.transform, false);
+                    var guids = AssetDatabase.FindAssets(item.prefabPath + " t:Prefab");
+                    if (guids.Length > 0)
+                        prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guids[0]));
                 }
 
-                instance.transform.localPosition = new Vector3(item.x, item.y, item.z);
+                if (prefab != null)
+                    prefabCache[item.prefabPath] = prefab;
+            }
 
-                if (item.rotX != 0 || item.rotY != 0 || item.rotZ != 0)
-                    instance.transform.eulerAngles = new Vector3(item.rotX, item.rotY, item.rotZ);
+            if (prefab == null)
+                throw new System.Exception($"Prefab not found: {item.prefabPath}");
 
-                if (item.scaleX != 1 || item.scaleY != 1 || item.scaleZ != 1)
-                    instance.transform.localScale = new Vector3(item.scaleX, item.scaleY, item.scaleZ);
+            var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+            if (instance == null)
+                throw new System.Exception($"Failed to instantiate prefab: {item.prefabPath}");
+            // Set parent if specified
+            if (!string.IsNullOrEmpty(item.parentName) || item.parentInstanceId != 0 || !string.IsNullOrEmpty(item.parentPath))
+            {
+                var (parentGo, parentErr) = GameObjectFinder.FindOrError(item.parentName, item.parentInstanceId, item.parentPath);
+                if (parentErr != null) throw new System.Exception($"Parent not found for '{item.name ?? item.prefabPath}'");
+                instance.transform.SetParent(parentGo.transform, false);
+            }
 
-                if (!string.IsNullOrEmpty(item.name))
-                    instance.name = item.name;
+            instance.transform.localPosition = new Vector3(item.x, item.y, item.z);
 
-                Undo.RegisterCreatedObjectUndo(instance, "Batch Instantiate Prefab");
-                WorkflowManager.SnapshotObject(instance, SnapshotType.Created);
-                return new
-                {
-                    success = true,
-                    name = instance.name,
-                    instanceId = instance.GetInstanceID(),
-                    position = new { x = item.x, y = item.y, z = item.z }
-                };
-            }, item => item.prefabPath);
-        */
+            if (item.rotX != 0 || item.rotY != 0 || item.rotZ != 0)
+                instance.transform.eulerAngles = new Vector3(item.rotX, item.rotY, item.rotZ);
+
+            if (item.scaleX != 1 || item.scaleY != 1 || item.scaleZ != 1)
+                instance.transform.localScale = new Vector3(item.scaleX, item.scaleY, item.scaleZ);
+
+            if (!string.IsNullOrEmpty(item.name))
+                instance.name = item.name;
+
+            Undo.RegisterCreatedObjectUndo(instance, "Batch Instantiate Prefab");
+            WorkflowManager.SnapshotObject(instance, SnapshotType.Created);
+            return new
+            {
+                success = true,
+                name = instance.name,
+                instanceId = instance.GetInstanceID(),
+                position = new { x = item.x, y = item.y, z = item.z }
+            };
+        }, item => item.prefabPath)); return; }
     }
 }
 ```

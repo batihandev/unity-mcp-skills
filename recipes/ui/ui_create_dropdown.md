@@ -12,6 +12,12 @@ Create a Dropdown UI element with a scrollable option list template.
 - Uses `TMP_Dropdown` when TMP is available; falls back to legacy `Dropdown`.
 - Template child is deactivated after construction (standard Unity pattern).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

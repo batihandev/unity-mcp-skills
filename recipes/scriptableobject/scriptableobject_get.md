@@ -6,6 +6,11 @@ Get properties of a ScriptableObject asset.
 
 **Returns:** `{ path, typeName, fields, properties }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

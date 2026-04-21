@@ -10,6 +10,13 @@ Add or configure a CanvasGroup on a UI element to control alpha, interactability
 - Creates a new `CanvasGroup` if one is not already present; otherwise modifies the existing one.
 - Useful for fade animations (set `alpha`) and disabling entire UI sections (`interactable = false`).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

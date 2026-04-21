@@ -12,6 +12,12 @@ Create a sphere primitive at the specified position.
 - Position is set in world space.
 - The created object is registered with Undo.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -27,15 +33,12 @@ internal class CommandScript : IRunCommand
         float z = 0f;
         string name = "Sphere";
 
-        /* Original Logic:
-
-            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.name = name;
-            sphere.transform.position = new Vector3(x, y, z);
-            Undo.RegisterCreatedObjectUndo(sphere, "Create " + name);
-            WorkflowManager.SnapshotObject(sphere, SnapshotType.Created);
-            return new { success = true, name = sphere.name, instanceId = sphere.GetInstanceID(), position = new { x, y, z }, message = $"Created {name} at ({x},{y},{z})" };
-        */
+        var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        sphere.name = name;
+        sphere.transform.position = new Vector3(x, y, z);
+        Undo.RegisterCreatedObjectUndo(sphere, "Create " + name);
+        WorkflowManager.SnapshotObject(sphere, SnapshotType.Created);
+        { result.SetResult(new { success = true, name = sphere.name, instanceId = sphere.GetInstanceID(), position = new { x, y, z }, message = $"Created {name} at ({x},{y},{z})" }); return; }
     }
 }
 ```

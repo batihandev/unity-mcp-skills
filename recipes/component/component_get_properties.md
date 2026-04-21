@@ -44,6 +44,13 @@ Properties that cannot be read safely return `"(error reading)"` as their value.
 - For `MeshRenderer` / `Renderer`, reading `material` or `materials` is redirected to `sharedMaterial` / `sharedMaterials` to avoid instantiating materials in editor.
 - `includePrivate: true` adds `BindingFlags.NonPublic` — output can be very large.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## C# Template
 
 ```csharp
@@ -54,70 +61,67 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        if (Validate.Required(componentType, "componentType") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(componentType, "componentType") is object err) return err;
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        var type = FindComponentType(componentType);
+        if (type == null)
+            { result.SetResult(new { error = $"Component type not found: {componentType}" }); return; }
+    
+        var comp = go.GetComponent(type);
+        if (comp == null)
+            { result.SetResult(new { error = $"Component not found: {componentType}" }); return; }
 
-            var type = FindComponentType(componentType);
-            if (type == null)
-                return new { error = $"Component type not found: {componentType}" };
+        var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+        if (includePrivate)
+            bindingFlags |= BindingFlags.NonPublic;
 
-            var comp = go.GetComponent(type);
-            if (comp == null)
-                return new { error = $"Component not found: {componentType}" };
+        var props = type.GetProperties(bindingFlags)
+            .Where(p => p.CanRead && !p.GetIndexParameters().Any())
+            .Select(p =>
+            {
+                try 
+                { 
+                    var val = ReadPropertyValueSafely(comp, p);
+                    { result.SetResult(new { 
+                        name = p.Name, 
+                        type = p.PropertyType.Name, 
+                        fullType = p.PropertyType.FullName,
+                        value = FormatValue(val),
+                        canWrite = p.CanWrite
+                    }); return; } 
+                }
+                catch { { result.SetResult(new { name = p.Name, type = p.PropertyType.Name, fullType = p.PropertyType.FullName, value = "(error reading)", canWrite = p.CanWrite }); return; } }
+            })
+            .ToArray();
 
-            var bindingFlags = BindingFlags.Public | BindingFlags.Instance;
-            if (includePrivate)
-                bindingFlags |= BindingFlags.NonPublic;
+        var fields = type.GetFields(bindingFlags)
+            .Select(f =>
+            {
+                try 
+                { 
+                    var val = f.GetValue(comp);
+                    { result.SetResult(new { 
+                        name = f.Name, 
+                        type = f.FieldType.Name, 
+                        fullType = f.FieldType.FullName,
+                        value = FormatValue(val),
+                        isSerializable = f.IsPublic || f.GetCustomAttribute<SerializeField>() != null
+                    }); return; } 
+                }
+                catch { { result.SetResult(new { name = f.Name, type = f.FieldType.Name, fullType = f.FieldType.FullName, value = "(error reading)", isSerializable = false }); return; } }
+            })
+            .ToArray();
 
-            var props = type.GetProperties(bindingFlags)
-                .Where(p => p.CanRead && !p.GetIndexParameters().Any())
-                .Select(p =>
-                {
-                    try
-                    {
-                        var val = ReadPropertyValueSafely(comp, p);
-                        return new {
-                            name = p.Name,
-                            type = p.PropertyType.Name,
-                            fullType = p.PropertyType.FullName,
-                            value = FormatValue(val),
-                            canWrite = p.CanWrite
-                        };
-                    }
-                    catch { return new { name = p.Name, type = p.PropertyType.Name, fullType = p.PropertyType.FullName, value = "(error reading)", canWrite = p.CanWrite }; }
-                })
-                .ToArray();
-
-            var fields = type.GetFields(bindingFlags)
-                .Select(f =>
-                {
-                    try
-                    {
-                        var val = f.GetValue(comp);
-                        return new {
-                            name = f.Name,
-                            type = f.FieldType.Name,
-                            fullType = f.FieldType.FullName,
-                            value = FormatValue(val),
-                            isSerializable = f.IsPublic || f.GetCustomAttribute<SerializeField>() != null
-                        };
-                    }
-                    catch { return new { name = f.Name, type = f.FieldType.Name, fullType = f.FieldType.FullName, value = "(error reading)", isSerializable = false }; }
-                })
-                .ToArray();
-
-            return new {
-                gameObject = go.name,
-                component = componentType,
-                fullTypeName = type.FullName,
-                properties = props,
-                fields = fields
-            };
-        */
+        { result.SetResult(new { 
+            gameObject = go.name, 
+            component = componentType, 
+            fullTypeName = type.FullName,
+            properties = props,
+            fields = fields
+        }); return; }
     }
 }
 ```

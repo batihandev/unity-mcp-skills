@@ -15,6 +15,11 @@ Install or upgrade Unity Splines using the recommended version for the current U
 - The recommended version is determined at runtime by `PackageManagerHelper.GetRecommendedSplinesVersion()` (Unity 6 vs Unity 2022).
 - If Splines is already installed but at a different version, the message indicates an upgrade.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

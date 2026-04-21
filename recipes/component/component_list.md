@@ -52,6 +52,12 @@ With `includeProperties: true`, components that have key properties (Transform, 
 - Use this command to discover component type names before calling `component_set_property` or `component_get_properties`.
 - `path` in the response is the full hierarchy path as returned by `GameObjectFinder.GetPath`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## C# Template
 
 ```csharp
@@ -62,40 +68,37 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        var components = go.GetComponents<Component>()
+            .Where(c => c != null)
+            .Select(c => {
+                var info = new Dictionary<string, object>
+                {
+                    { "type", c.GetType().Name },
+                    { "fullType", c.GetType().FullName },
+                    { "enabled", (c as Behaviour)?.enabled ?? true }
+                };
+        
+                if (includeProperties)
+                {
+                    var props = GetComponentPropertiesSummary(c);
+                    if (props.Any())
+                        info["keyProperties"] = props;
+                }
+        
+                { result.SetResult(info); return; }
+            })
+            .ToArray();
 
-            var components = go.GetComponents<Component>()
-                .Where(c => c != null)
-                .Select(c => {
-                    var info = new Dictionary<string, object>
-                    {
-                        { "type", c.GetType().Name },
-                        { "fullType", c.GetType().FullName },
-                        { "enabled", (c as Behaviour)?.enabled ?? true }
-                    };
-
-                    if (includeProperties)
-                    {
-                        var props = GetComponentPropertiesSummary(c);
-                        if (props.Any())
-                            info["keyProperties"] = props;
-                    }
-
-                    return info;
-                })
-                .ToArray();
-
-            return new {
-                gameObject = go.name,
-                instanceId = go.GetInstanceID(),
-                path = GameObjectFinder.GetPath(go),
-                componentCount = components.Length,
-                components
-            };
-        */
+        { result.SetResult(new { 
+            gameObject = go.name, 
+            instanceId = go.GetInstanceID(), 
+            path = GameObjectFinder.GetPath(go), 
+            componentCount = components.Length,
+            components 
+        }); return; }
     }
 }
 ```

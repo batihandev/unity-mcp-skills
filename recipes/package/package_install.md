@@ -14,6 +14,12 @@ Install a Unity package by ID. Returns an async job when the request is accepted
 
 **Warning:** Install triggers package import and Domain Reload. The REST server may be transiently unavailable. Use `job_status` or `job_wait` with the returned `jobId` to track progress.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -21,6 +21,13 @@ Change the shader of a material.
 | HDRP | `HDRP/Lit` |
 | Unlit | `Unlit/Color`, `Unlit/Texture` |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -36,28 +43,31 @@ internal class CommandScript : IRunCommand
         string path       = null;                            // or material asset path
         string shaderName = "Universal Render Pipeline/Lit"; // required
 
-        /* Original Logic:
+        if (Validate.Required(shaderName, "shaderName") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(shaderName, "shaderName") is object err) return err;
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        var shader = Shader.Find(shaderName);
+        if (shader == null)
+        {
+            { result.SetResult(new {
+                error = $"Shader not found: {shaderName}",
+                suggestion = "Use project_get_render_pipeline to see recommended shaders"
+            }); return; }
+        }
 
-            var shader = Shader.Find(shaderName);
-            if (shader == null)
-                return new {
-                    error = $"Shader not found: {shaderName}",
-                    suggestion = "Use project_get_render_pipeline to see recommended shaders"
-                };
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Shader");
+        material.shader = shader;
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Shader");
-            material.shader = shader;
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
-
-            return new { success = true, target = go != null ? go.name : path, shader = shaderName };
-        */
+        { result.SetResult(new { 
+            success = true, 
+            target = go != null ? go.name : path, 
+            shader = shaderName
+        }); return; }
     }
 }
 ```

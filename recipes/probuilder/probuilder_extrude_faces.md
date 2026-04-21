@@ -13,6 +13,12 @@ Extrude selected faces along their normals.
 - `method`: `FaceNormal` (default), `IndividualFaces`, `VertexNormal`.
 - Call `probuilder_get_info` first to confirm face count before selecting indexes.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -23,15 +29,39 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name = "MyShape";
-        string faceIndexes = "0";
-        float distance = 0.5f;
-        string method = "FaceNormal";
+        #if !PROBUILDER
+                    { result.SetResult(NoProBuilder()); return; }
+        #else
+                    var (pbMesh, err) = FindProBuilderMesh(name, instanceId, path);
+                    if (err != null) { result.SetResult(err); return; }
 
-        var res = UnitySkillsBridge.Call("probuilder_extrude_faces", new {
-            name, faceIndexes, distance, method
-        });
-        result.Log("Extruded: {0}", res);
+                    if (!Enum.TryParse<ExtrudeMethod>(method, true, out var extrudeMethod))
+                        { result.SetResult(new { error = $"Unknown extrude method: {method}. Available: IndividualFaces, FaceNormal, VertexNormal" }); return; }
+
+                    var faces = SelectFaces(pbMesh, faceIndexes);
+                    if (faces.Count == 0)
+                        { result.SetResult(new { error = "No faces selected. Provide faceIndexes as comma-separated indices (e.g. \"0,1,2\"), or omit to extrude all faces." }); return; }
+
+                    Undo.RecordObject(pbMesh, "Extrude Faces");
+                    WorkflowManager.SnapshotObject(pbMesh);
+
+                    var newFaces = pbMesh.Extrude(faces, extrudeMethod, distance);
+
+                    pbMesh.ToMesh();
+                    pbMesh.Refresh();
+
+                    { result.SetResult(new
+                    {
+                        success = true,
+                        name = pbMesh.gameObject.name,
+                        instanceId = pbMesh.gameObject.GetInstanceID(),
+                        extrudedFaceCount = newFaces?.Length ?? 0,
+                        method,
+                        distance,
+                        totalFaces = pbMesh.faceCount,
+                        totalVertices = pbMesh.vertexCount
+                    }); return; }
+        #endif
     }
 }
 ```

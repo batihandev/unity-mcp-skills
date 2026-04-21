@@ -12,6 +12,11 @@ Create multiple UI elements in one call by dispatching to individual create skil
 - Unknown `type` values throw and are counted as failures.
 - Prefer this over N sequential create calls when building menus, HUDs, or repeated widget groups.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -30,6 +30,11 @@ SceneContext(
 
 Returns `success`, `sceneName`, `totalObjects`, `scopeObjects`, `exportedObjects`, `truncated`, `objects` array, `references` array (when `includeReferences`), `codeDependencies` array (when `includeCodeDeps`).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## RunCommand Recipe
 
 ```csharp

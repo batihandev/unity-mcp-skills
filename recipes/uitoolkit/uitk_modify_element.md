@@ -10,6 +10,13 @@ Change attributes, classes, text, or inline style on a named UXML element.
 - Only provided (non-null) parameters are changed; all others are left as-is.
 - Use `setAttribute`/`setAttributeValue` to set arbitrary XML attributes not covered by the named parameters.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

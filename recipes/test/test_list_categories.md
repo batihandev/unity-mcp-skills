@@ -11,6 +11,11 @@ List all NUnit `[Category]` attribute values found in discovered tests.
 - Results are deduplicated and sorted case-insensitively
 - `note` is populated only when zero categories are found
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

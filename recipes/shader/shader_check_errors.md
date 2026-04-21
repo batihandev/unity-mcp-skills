@@ -13,6 +13,11 @@ Check a shader for compilation errors using Unity's ShaderUtil message count.
 - `messageCount` includes warnings and errors reported by `ShaderUtil.GetShaderMessageCount`.
 - Use this before assigning a shader to a material to confirm it compiled cleanly.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -25,13 +30,10 @@ internal class CommandScript : IRunCommand
     {
         string shaderNameOrPath = "Custom/MyShader"; // or "Assets/Shaders/My.shader"
 
-        /* Original Logic:
-
-            var shader = FindShaderByNameOrPath(shaderNameOrPath);
-            if (shader == null) return new { error = $"Shader not found: {shaderNameOrPath}" };
-            int msgCount = ShaderUtil.GetShaderMessageCount(shader);
-            return new { shaderName = shader.name, hasErrors = msgCount > 0, messageCount = msgCount };
-        */
+        var shader = FindShaderByNameOrPath(shaderNameOrPath);
+        if (shader == null) { result.SetResult(new { error = $"Shader not found: {shaderNameOrPath}" }); return; }
+        int msgCount = ShaderUtil.GetShaderMessageCount(shader);
+        { result.SetResult(new { shaderName = shader.name, hasErrors = msgCount > 0, messageCount = msgCount }); return; }
     }
 }
 ```

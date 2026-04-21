@@ -17,6 +17,12 @@ None.
 
 Returns `success`, `hintCount`, `hints` array with `priority` (1=high, 3=low), `category`, `issue`, `suggestion`, `fixSkill` (name of the skill to fix the issue, or null).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+
 ## RunCommand Recipe
 
 ```csharp

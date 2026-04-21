@@ -10,6 +10,11 @@ List all installed packages currently cached by UnitySkills.
 
 **Note:** Returns `{ error }` if the cache is not ready. Call `package_refresh` first.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

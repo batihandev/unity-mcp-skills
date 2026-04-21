@@ -35,6 +35,11 @@ Each object in the JSON array may contain:
 | `animationType` | string | `None`, `Legacy`, `Generic`, `Humanoid` |
 | `materialImportMode` | string | `None`, `ImportViaMaterialDescription`, `ImportStandard` |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Unity_RunCommand Template
 
 ```csharp

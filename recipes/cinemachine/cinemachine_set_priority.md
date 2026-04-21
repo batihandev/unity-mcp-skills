@@ -11,6 +11,13 @@ Set an explicit priority value on a Virtual Camera. Higher priority wins activat
 - Default priority is `10`. Use `cinemachine_set_active` when you just want to force a specific camera active immediately.
 - Lower-priority cameras remain as fallbacks; the Brain switches automatically.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

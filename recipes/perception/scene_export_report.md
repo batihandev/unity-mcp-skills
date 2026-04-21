@@ -24,6 +24,13 @@ SceneExportReport(
 
 Returns `success`, `savedTo`, `objectCount`, `userScriptCount`, `referenceCount`, `codeReferenceCount`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+
 ## RunCommand Recipe
 
 ```csharp

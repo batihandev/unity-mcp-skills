@@ -32,6 +32,13 @@ Find all instances of a prefab asset currently present in the active scene.
 - `limit` defaults to 50 to avoid large result payloads in busy scenes.
 - Searches all GameObjects in the active scene regardless of hierarchy depth.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## C# Template
 
 ```csharp
@@ -42,21 +49,18 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        if (Validate.Required(prefabPath, "prefabPath") is object err) { result.SetResult(err); return; }
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+        if (prefab == null) { result.SetResult(new { error = $"Prefab not found: {prefabPath}" }); return; }
 
-            if (Validate.Required(prefabPath, "prefabPath") is object err) return err;
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-            if (prefab == null) return new { error = $"Prefab not found: {prefabPath}" };
+        var allObjects = FindHelper.FindAll<GameObject>();
+        var instances = allObjects
+            .Where(go => PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go) == prefabPath)
+            .Take(limit)
+            .Select(go => new { name = go.name, path = GameObjectFinder.GetPath(go), instanceId = go.GetInstanceID() })
+            .ToArray();
 
-            var allObjects = FindHelper.FindAll<GameObject>();
-            var instances = allObjects
-                .Where(go => PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go) == prefabPath)
-                .Take(limit)
-                .Select(go => new { name = go.name, path = GameObjectFinder.GetPath(go), instanceId = go.GetInstanceID() })
-                .ToArray();
-
-            return new { success = true, prefabPath, count = instances.Length, instances };
-        */
+        { result.SetResult(new { success = true, prefabPath, count = instances.Length, instances }); return; }
     }
 }
 ```

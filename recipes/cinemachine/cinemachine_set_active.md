@@ -11,6 +11,13 @@ Force a VCam to become the active camera by giving it a priority higher than all
 - To revert, manually set the priority back with `cinemachine_set_priority`.
 - In CM3, priority is accessed via `Priority.Value`; the adapter handles this transparently.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

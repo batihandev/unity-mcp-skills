@@ -13,6 +13,12 @@ Box-project UVs onto faces of a ProBuilder mesh.
 - Only box projection is supported; other UV projection modes are not available.
 - Uses reflection to access `UVEditing.ProjectFacesBox` (internal in ProBuilder 5.x).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -23,12 +29,39 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name = "MyShape";
-        string faceIndexes = null; // null = all faces
-        int channel = 0;
+        #if !PROBUILDER
+                    { result.SetResult(NoProBuilder()); return; }
+        #else
+                    var (pbMesh, err) = FindProBuilderMesh(name, instanceId, path);
+                    if (err != null) { result.SetResult(err); return; }
 
-        var res = UnitySkillsBridge.Call("probuilder_project_uv", new { name, faceIndexes, channel });
-        result.Log("Projected UV: {0}", res);
+                    var faces = SelectFaces(pbMesh, faceIndexes);
+                    if (faces.Count == 0)
+                        { result.SetResult(new { error = "No faces selected. Provide faceIndexes or omit to project all." }); return; }
+
+                    if (channel < 0 || channel > 3)
+                        { result.SetResult(new { error = "UV channel must be 0-3 (0=primary, 1=lightmap)" }); return; }
+
+                    Undo.RecordObject(pbMesh, "Project UV");
+                    WorkflowManager.SnapshotObject(pbMesh);
+
+                    // UVEditing is internal — use reflection
+                    if (!InvokeProjectFacesBox(pbMesh, faces.ToArray(), channel))
+                        { result.SetResult(new { error = "Failed to project UVs. UVEditing.ProjectFacesBox is not accessible in this ProBuilder version." }); return; }
+
+                    pbMesh.ToMesh();
+                    pbMesh.Refresh();
+
+                    { result.SetResult(new
+                    {
+                        success = true,
+                        name = pbMesh.gameObject.name,
+                        instanceId = pbMesh.gameObject.GetInstanceID(),
+                        projectedFaceCount = faces.Count,
+                        channel,
+                        method = "Box"
+                    }); return; }
+        #endif
     }
 }
 ```

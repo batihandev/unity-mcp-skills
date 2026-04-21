@@ -17,6 +17,11 @@ None.
 
 Returns `success`, `totalObjects`, `untaggedCount`, `tags` array (tag, count, sorted by count desc), `layers` array (layer, count, sorted by count desc), `emptyDefinedLayers` array (layer names that are defined in TagManager but have no objects).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## RunCommand Recipe
 
 ```csharp

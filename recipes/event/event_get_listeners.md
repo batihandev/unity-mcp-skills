@@ -6,6 +6,12 @@ Get the persistent listeners of a UnityEvent on a component field or property. R
 
 **Returns:** `{ success, gameObject, component, eventName, listenerCount, listeners: [{ index, target, targetType, method, state }] }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.Events;

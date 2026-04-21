@@ -11,6 +11,13 @@ Marks a surface as a teleport destination by adding TeleportationArea. Auto-adds
 - If a MeshFilter with a mesh is present, a MeshCollider is added; otherwise a BoxCollider.
 - The collider must NOT be a trigger — the raycast hits it as a surface.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -19,11 +26,45 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name = "Floor";
-        string matchOrientation = "WorldSpaceUp";
+        #if !XRI
+                    { result.SetResult(NoXRI()); return; }
+        #else
+                    var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+                    if (findErr != null) { result.SetResult(findErr); return; }
 
-        var res = UnitySkillsBridge.Call("xr_add_teleport_area", new { name, matchOrientation });
-        result.SetResult(res);
+                    Undo.RecordObject(go, "Add TeleportationArea");
+
+                    var comp = XRReflectionHelper.AddXRComponent(go, "TeleportationArea");
+                    if (comp == null)
+                        { result.SetResult(new { error = "Failed to add TeleportationArea. Type not found in current XRI version." }); return; }
+
+                    Undo.RegisterCreatedObjectUndo(comp, "Add TeleportationArea");
+
+                    if (!string.IsNullOrEmpty(matchOrientation))
+                        XRReflectionHelper.SetEnumProperty(comp, "matchOrientation", matchOrientation);
+
+                    // Ensure collider for raycast detection
+                    if (go.GetComponent<Collider>() == null)
+                    {
+                        var meshFilter = go.GetComponent<MeshFilter>();
+                        if (meshFilter != null && meshFilter.sharedMesh != null)
+                            go.AddComponent<MeshCollider>();
+                        else
+                            go.AddComponent<BoxCollider>();
+                    }
+
+                    WorkflowManager.SnapshotObject(go);
+
+                    { result.SetResult(new
+                    {
+                        success = true,
+                        name = go.name,
+                        instanceId = go.GetInstanceID(),
+                        teleportType = "TeleportationArea",
+                        matchOrientation,
+                        matchOrientationOptions = XRReflectionHelper.GetEnumValues(comp, "matchOrientation")
+                    }); return; }
+        #endif
     }
 }
 ```

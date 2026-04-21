@@ -8,6 +8,11 @@ Get a list of all currently loaded scenes.
 
 No parameters. Returns every scene currently open in the editor, including additively loaded scenes. Use this instead of the non-existent `scene_list` command.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

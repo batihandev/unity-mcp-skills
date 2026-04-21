@@ -12,6 +12,12 @@ Create a cube primitive at the specified position.
 - Position is set in world space.
 - The created object is registered with Undo.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -27,15 +33,12 @@ internal class CommandScript : IRunCommand
         float z = 0f;
         string name = "Cube";
 
-        /* Original Logic:
-
-            var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.name = name;
-            cube.transform.position = new Vector3(x, y, z);
-            Undo.RegisterCreatedObjectUndo(cube, "Create " + name);
-            WorkflowManager.SnapshotObject(cube, SnapshotType.Created);
-            return new { success = true, name = cube.name, instanceId = cube.GetInstanceID(), position = new { x, y, z }, message = $"Created {name} at ({x},{y},{z})" };
-        */
+        var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cube.name = name;
+        cube.transform.position = new Vector3(x, y, z);
+        Undo.RegisterCreatedObjectUndo(cube, "Create " + name);
+        WorkflowManager.SnapshotObject(cube, SnapshotType.Created);
+        { result.SetResult(new { success = true, name = cube.name, instanceId = cube.GetInstanceID(), position = new { x, y, z }, message = $"Created {name} at ({x},{y},{z})" }); return; }
     }
 }
 ```

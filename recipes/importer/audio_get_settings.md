@@ -19,6 +19,11 @@ audio_get_settings(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the audio file |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ## Unity_RunCommand Template
 
 ```csharp

@@ -19,6 +19,12 @@ model_get_materials_info(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the model file |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+
 ## Unity_RunCommand Template
 
 ```csharp

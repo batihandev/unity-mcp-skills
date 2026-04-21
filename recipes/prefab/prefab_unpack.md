@@ -31,6 +31,13 @@ Unpack a prefab instance, breaking its connection to the prefab asset.
 - After unpacking, the GameObject is a plain scene object with no prefab connection.
 - Operation is undoable — the snapshot is recorded before unpacking.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -41,17 +48,14 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-            var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
-            if (findErr != null) return findErr;
+        WorkflowManager.SnapshotObject(go);
+        var mode = completely ? PrefabUnpackMode.Completely : PrefabUnpackMode.OutermostRoot;
+        PrefabUtility.UnpackPrefabInstance(go, mode, InteractionMode.UserAction);
 
-            WorkflowManager.SnapshotObject(go);
-            var mode = completely ? PrefabUnpackMode.Completely : PrefabUnpackMode.OutermostRoot;
-            PrefabUtility.UnpackPrefabInstance(go, mode, InteractionMode.UserAction);
-
-            return new { success = true, unpacked = go.name };
-        */
+        { result.SetResult(new { success = true, unpacked = go.name }); return; }
     }
 }
 ```

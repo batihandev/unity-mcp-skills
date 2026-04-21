@@ -9,6 +9,12 @@ Create a `CinemachineMixingCamera` that blends between its child VCams by weight
 **Notes:**
 - After creation, add child VCams as children of this GameObject and set their weights with `cinemachine_mixing_camera_set_weight`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

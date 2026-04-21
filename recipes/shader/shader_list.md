@@ -13,6 +13,11 @@ List all shader assets in the project, with optional name filter and result limi
 - Each entry includes the shader's internal `name`, its `path`, and the number of exposed properties.
 - Built-in shaders (no path) are included when found via `AssetDatabase`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -26,27 +31,24 @@ internal class CommandScript : IRunCommand
         string filter = null; // e.g., "Custom" to filter by path substring
         int limit = 100;
 
-        /* Original Logic:
-
-            var guids = AssetDatabase.FindAssets("t:Shader");
-            var shaders = guids
-                .Select(g => AssetDatabase.GUIDToAssetPath(g))
-                .Where(p => string.IsNullOrEmpty(filter) || p.Contains(filter))
-                .Take(limit)
-                .Select(p =>
+        var guids = AssetDatabase.FindAssets("t:Shader");
+        var shaders = guids
+            .Select(g => AssetDatabase.GUIDToAssetPath(g))
+            .Where(p => string.IsNullOrEmpty(filter) || p.Contains(filter))
+            .Take(limit)
+            .Select(p =>
+            {
+                var shader = AssetDatabase.LoadAssetAtPath<Shader>(p);
+                { result.SetResult(new
                 {
-                    var shader = AssetDatabase.LoadAssetAtPath<Shader>(p);
-                    return new
-                    {
-                        path = p,
-                        name = shader?.name,
-                        propertyCount = shader != null ? ShaderUtil.GetPropertyCount(shader) : 0
-                    };
-                })
-                .ToArray();
+                    path = p,
+                    name = shader?.name,
+                    propertyCount = shader != null ? ShaderUtil.GetPropertyCount(shader) : 0
+                }); return; }
+            })
+            .ToArray();
 
-            return new { count = shaders.Length, shaders };
-        */
+        { result.SetResult(new { count = shaders.Length, shaders }); return; }
     }
 }
 ```

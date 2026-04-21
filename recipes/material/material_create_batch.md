@@ -13,6 +13,11 @@ Create multiple materials in a single call (efficient batch operation).
 - Each item delegates to `material_create` internally; pipeline auto-detection applies per item.
 - Prefer this over calling `material_create` repeatedly when creating 2+ materials.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -29,16 +34,13 @@ internal class CommandScript : IRunCommand
             { ""name"": ""GreenMat"", ""savePath"": ""Assets/Materials"" }
         ]";
 
-        /* Original Logic:
-
-            return BatchExecutor.Execute<BatchMaterialCreateItem>(items, item =>
-            {
-                var result = MaterialCreate(item.name, item.shaderName, item.savePath);
-                if (SkillResultHelper.TryGetError(result, out string errorText))
-                    throw new System.Exception(errorText);
-                return result;
-            }, item => item.name);
-        */
+        { result.SetResult(BatchExecutor.Execute<BatchMaterialCreateItem>(items, item =>
+        {
+            var result = MaterialCreate(item.name, item.shaderName, item.savePath);
+            if (SkillResultHelper.TryGetError(result, out string errorText))
+                throw new System.Exception(errorText);
+            return result;
+        }, item => item.name)); return; }
     }
 }
 ```

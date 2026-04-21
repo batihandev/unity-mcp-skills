@@ -15,6 +15,11 @@ Enable or disable the Clear on Play setting in the Unity console (console is cle
 - Sets console flag bit `16` via `SetConsoleFlag` (Unity 6+) or `s_ConsoleFlags` field (legacy).
 - Falls back to `EditorPrefs` if reflection fails.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -26,7 +31,7 @@ internal class CommandScript : IRunCommand
     public void Execute(ExecutionResult result)
     {
         bool enabled = true;  // set to desired value
-        result.Return(SetConsoleFlag(16, enabled, "ClearOnPlay"));
+        result.SetResult(SetConsoleFlag(16, enabled, "ClearOnPlay"));
     }
 
     private static object SetConsoleFlag(int flag, bool enabled, string name)

@@ -12,6 +12,13 @@ Configure Selectable component properties: transition mode, navigation, and colo
 - `navigationMode` values: `None`, `Horizontal`, `Vertical`, `Automatic`, `Explicit`.
 - Color channels are applied independently; omit any channel to keep its current value.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

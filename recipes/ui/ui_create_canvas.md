@@ -10,6 +10,12 @@ Create a new Canvas with the specified render mode.
 - `renderMode` accepts `ScreenSpaceOverlay`, `ScreenSpaceCamera`, or `WorldSpace` (case-insensitive).
 - Automatically adds `CanvasScaler` and `GraphicRaycaster` components.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

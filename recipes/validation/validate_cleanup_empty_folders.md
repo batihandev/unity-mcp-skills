@@ -11,6 +11,12 @@ Find (and optionally delete) empty folders under a given root path in the projec
 - When `dryRun = false`, folders are deleted deepest-first to handle nested empty hierarchies
 - Always preview with `dryRun = true` before committing deletions
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

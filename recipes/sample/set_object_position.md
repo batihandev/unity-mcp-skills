@@ -12,6 +12,12 @@ Set the world-space position of a GameObject.
 - Sets `transform.position` (world space).
 - The change is registered with Undo.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## Recipe
 
 ```csharp
@@ -27,14 +33,11 @@ internal class CommandScript : IRunCommand
         float y = 0f;
         float z = 0f;
 
-        /* Original Logic:
-
-            var (obj, err) = GameObjectFinder.FindOrError(objectName);
-            if (err != null) return err;
-            Undo.RecordObject(obj.transform, "Set Position");
-            obj.transform.position = new Vector3(x, y, z);
-            return new { success = true, name = objectName, position = new { x, y, z }, message = $"Set {objectName} position to ({x},{y},{z})" };
-        */
+        var (obj, err) = GameObjectFinder.FindOrError(objectName);
+        if (err != null) { result.SetResult(err); return; }
+        Undo.RecordObject(obj.transform, "Set Position");
+        obj.transform.position = new Vector3(x, y, z);
+        { result.SetResult(new { success = true, name = objectName, position = new { x, y, z }, message = $"Set {objectName} position to ({x},{y},{z})" }); return; }
     }
 }
 ```

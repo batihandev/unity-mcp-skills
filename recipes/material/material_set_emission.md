@@ -14,6 +14,12 @@ Set emission color with HDR intensity and auto-enable the emission keyword.
 - When `enableEmission = false` or `intensity <= 0`: disables the keyword and sets `globalIlluminationFlags = EmissiveIsBlack`.
 - There is no `alpha` parameter — emission alpha is always set to 1.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -31,56 +37,59 @@ internal class CommandScript : IRunCommand
         float  intensity       = 3.0f;      // >1 for HDR bloom
         bool   enableEmission  = true;      // auto-enable _EMISSION keyword
 
-        /* Original Logic:
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Material Emission");
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Material Emission");
+        // Calculate HDR color
+        var hdrColor = new Color(r * intensity, g * intensity, b * intensity, 1f);
 
-            var hdrColor = new Color(r * intensity, g * intensity, b * intensity, 1f);
-
-            string emissionProperty = null;
-            var emissionProps = new[] { "_EmissionColor", "_Emission" };
-            foreach (var prop in emissionProps)
+        // Try emission property names
+        string emissionProperty = null;
+        var emissionProps = new[] { "_EmissionColor", "_Emission" };
+        foreach (var prop in emissionProps)
+        {
+            if (material.HasProperty(prop))
             {
-                if (material.HasProperty(prop))
-                {
-                    material.SetColor(prop, hdrColor);
-                    emissionProperty = prop;
-                    break;
-                }
+                material.SetColor(prop, hdrColor);
+                emissionProperty = prop;
+                break;
             }
+        }
 
-            if (emissionProperty == null)
-                return new {
-                    error = "Material does not support emission",
-                    shaderName = material.shader.name,
-                    suggestion = "Use a shader that supports emission like Standard, URP/Lit, or HDRP/Lit"
-                };
+        if (emissionProperty == null)
+        {
+            { result.SetResult(new { 
+                error = "Material does not support emission",
+                shaderName = material.shader.name,
+                suggestion = "Use a shader that supports emission like Standard, URP/Lit, or HDRP/Lit"
+            }); return; }
+        }
 
-            if (enableEmission && intensity > 0)
-            {
-                material.EnableKeyword("_EMISSION");
-                material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
-            }
-            else if (!enableEmission || intensity <= 0)
-            {
-                material.DisableKeyword("_EMISSION");
-                material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
-            }
+        // Enable emission
+        if (enableEmission && intensity > 0)
+        {
+            material.EnableKeyword("_EMISSION");
+            material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+        }
+        else if (!enableEmission || intensity <= 0)
+        {
+            material.DisableKeyword("_EMISSION");
+            material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+        }
 
-            if (go == null) EditorUtility.SetDirty(material);
+        if (go == null) EditorUtility.SetDirty(material);
 
-            return new {
-                success = true,
-                target = go != null ? go.name : path,
-                emissionColor = new { r, g, b }, intensity,
-                hdrColor = new { r = hdrColor.r, g = hdrColor.g, b = hdrColor.b },
-                emissionEnabled = enableEmission && intensity > 0
-            };
-        */
+        { result.SetResult(new {
+            success = true,
+            target = go != null ? go.name : path,
+            emissionColor = new { r, g, b },
+            intensity,
+            hdrColor = new { r = hdrColor.r, g = hdrColor.g, b = hdrColor.b },
+            emissionEnabled = enableEmission && intensity > 0
+        }); return; }
     }
 }
 ```

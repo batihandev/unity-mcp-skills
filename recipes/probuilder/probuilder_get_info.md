@@ -13,6 +13,11 @@ Get face, vertex, edge, material, and bounds info for a ProBuilder mesh.
 - `shapeType` is detected via reflection (internal `ProBuilderShape` API).
 - `submeshFaceCounts` shows how many faces belong to each submesh/material slot.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -23,10 +28,45 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name = "MyShape";
+        #if !PROBUILDER
+                    { result.SetResult(NoProBuilder()); return; }
+        #else
+                    var (pbMesh, err) = FindProBuilderMesh(name, instanceId, path);
+                    if (err != null) { result.SetResult(err); return; }
 
-        var res = UnitySkillsBridge.Call("probuilder_get_info", new { name });
-        result.Log("Info: {0}", res);
+                    var go = pbMesh.gameObject;
+                    var renderer = pbMesh.GetComponent<MeshRenderer>();
+                    var bounds = pbMesh.GetComponent<MeshFilter>()?.sharedMesh?.bounds ?? new Bounds();
+
+                    // ProBuilderShape is internal — use reflection to get shape type name
+                    var shapeTypeName = GetShapeTypeName(go);
+
+                    // Collect submesh info
+                    var submeshes = new Dictionary<int, int>();
+                    foreach (var face in pbMesh.faces)
+                    {
+                        if (!submeshes.ContainsKey(face.submeshIndex))
+                            submeshes[face.submeshIndex] = 0;
+                        submeshes[face.submeshIndex]++;
+                    }
+
+                    { result.SetResult(new
+                    {
+                        success = true,
+                        name = go.name,
+                        instanceId = go.GetInstanceID(),
+                        isProBuilder = true,
+                        vertexCount = pbMesh.vertexCount,
+                        faceCount = pbMesh.faceCount,
+                        edgeCount = pbMesh.edgeCount,
+                        triangleCount = pbMesh.triangleCount,
+                        shapeType = shapeTypeName,
+                        position = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z },
+                        bounds = new { center = new { x = bounds.center.x, y = bounds.center.y, z = bounds.center.z }, size = new { x = bounds.size.x, y = bounds.size.y, z = bounds.size.z } },
+                        materials = renderer?.sharedMaterials?.Select((m, i) => new { index = i, name = m != null ? m.name : "(null)" }).ToArray(),
+                        submeshFaceCounts = submeshes.Select(kv => new { submeshIndex = kv.Key, faceCount = kv.Value }).ToArray()
+                    }); return; }
+        #endif
     }
 }
 ```

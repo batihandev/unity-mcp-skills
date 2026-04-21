@@ -60,6 +60,13 @@ Each item supports: `name`, `instanceId`, `path` (at least one required), `compo
 - Each item is processed independently; failures in one item do not block others.
 - Snapshots each component for workflow undo before modifying.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -70,64 +77,62 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        { result.SetResult(BatchExecutor.Execute<BatchSetPropertyItem>(items, item =>
+        {
+            if (string.IsNullOrEmpty(item.componentType) || string.IsNullOrEmpty(item.propertyName))
+                throw new System.Exception("componentType and propertyName required");
 
-            return BatchExecutor.Execute<BatchSetPropertyItem>(items, item =>
+            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (error != null) throw new System.Exception("Object not found");
+
+            var type = FindComponentType(item.componentType);
+            if (type == null)
+                throw new System.Exception($"Component type not found: {item.componentType}");
+
+            var comp = go.GetComponent(type);
+            if (comp == null)
+                throw new System.Exception($"Component not found: {item.componentType}");
+
+            // Find property or field (with caching)
+            var (prop, field) = FindMember(type, item.propertyName);
+
+            if (prop == null && field == null)
+                throw new System.Exception($"Property/field not found: {item.propertyName}");
+
+            WorkflowManager.SnapshotObject(comp);
+            Undo.RecordObject(comp, "Batch Set Property");
+
+            var targetType = prop?.PropertyType ?? field.FieldType;
+            object converted;
+
+            if (!string.IsNullOrEmpty(item.assetPath))
             {
-                if (string.IsNullOrEmpty(item.componentType) || string.IsNullOrEmpty(item.propertyName))
-                    throw new System.Exception("componentType and propertyName required");
+                converted = ResolveAssetReference(targetType, item.assetPath);
+                if (converted == null)
+                    throw new System.Exception($"Asset not found or type mismatch: '{item.assetPath}' (expected {targetType.Name})");
+            }
+            else if (!string.IsNullOrEmpty(item.referencePath) || !string.IsNullOrEmpty(item.referenceName))
+            {
+                converted = ResolveReference(targetType, item.referencePath, item.referenceName);
+                if (converted == null)
+                    throw new System.Exception($"Reference resolution failed for {item.propertyName}");
+            }
+            else
+            {
+                var valStr = item.value?.ToString();
+                converted = ConvertValue(valStr, targetType);
+            }
 
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
+            if (prop != null && prop.CanWrite)
+                prop.SetValue(comp, converted);
+            else if (field != null)
+                field.SetValue(comp, converted);
+            else
+                throw new System.Exception($"Property {item.propertyName} is read-only");
 
-                var type = FindComponentType(item.componentType);
-                if (type == null)
-                    throw new System.Exception($"Component type not found: {item.componentType}");
-
-                var comp = go.GetComponent(type);
-                if (comp == null)
-                    throw new System.Exception($"Component not found: {item.componentType}");
-
-                var (prop, field) = FindMember(type, item.propertyName);
-
-                if (prop == null && field == null)
-                    throw new System.Exception($"Property/field not found: {item.propertyName}");
-
-                WorkflowManager.SnapshotObject(comp);
-                Undo.RecordObject(comp, "Batch Set Property");
-
-                var targetType = prop?.PropertyType ?? field.FieldType;
-                object converted;
-
-                if (!string.IsNullOrEmpty(item.assetPath))
-                {
-                    converted = ResolveAssetReference(targetType, item.assetPath);
-                    if (converted == null)
-                        throw new System.Exception($"Asset not found or type mismatch: '{item.assetPath}' (expected {targetType.Name})");
-                }
-                else if (!string.IsNullOrEmpty(item.referencePath) || !string.IsNullOrEmpty(item.referenceName))
-                {
-                    converted = ResolveReference(targetType, item.referencePath, item.referenceName);
-                    if (converted == null)
-                        throw new System.Exception($"Reference resolution failed for {item.propertyName}");
-                }
-                else
-                {
-                    var valStr = item.value?.ToString();
-                    converted = ConvertValue(valStr, targetType);
-                }
-
-                if (prop != null && prop.CanWrite)
-                    prop.SetValue(comp, converted);
-                else if (field != null)
-                    field.SetValue(comp, converted);
-                else
-                    throw new System.Exception($"Property {item.propertyName} is read-only");
-
-                EditorUtility.SetDirty(comp);
-                return new { target = go.name, success = true, property = item.propertyName };
-            }, item => item.name ?? item.path);
-        */
+            EditorUtility.SetDirty(comp);
+            return new { target = go.name, success = true, property = item.propertyName };
+        }, item => item.name ?? item.path)); return; }
     }
 }
 ```

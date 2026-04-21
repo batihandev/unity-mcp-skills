@@ -30,6 +30,13 @@ SceneSpatialQuery(
 
 Returns `success`, `center` (x, y, z), `radius`, `totalFound`, `results` array with `name`, `path`, `distance`, `position`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType` (transitively needs `skills_common.md`)
+- `recipes/_shared/skills_common.md` — required by `component_type_finder.md` for `SkillsCommon.GetAllLoadedTypes`
+
 ## RunCommand Recipe
 
 ```csharp

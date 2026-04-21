@@ -13,6 +13,12 @@ Find scene objects within a sphere region centered at a world position, optional
 - Results are ordered by collider discovery; sort by `distance` if order matters.
 - Read-only; no undo entry is created.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -28,29 +34,26 @@ internal class CommandScript : IRunCommand
         string componentFilter = "Light";    // null = no filter
         int limit = 50;
 
-        /* Original Logic:
-
-            var center = new Vector3(x, y, z);
-            var colliders = Physics.OverlapSphere(center, radius);
-            var results = new List<object>();
-            foreach (var col in colliders)
+        var center = new Vector3(x, y, z);
+        var colliders = Physics.OverlapSphere(center, radius);
+        var results = new List<object>();
+        foreach (var col in colliders)
+        {
+            if (results.Count >= limit) break;
+            var go = col.gameObject;
+            if (!string.IsNullOrEmpty(componentFilter))
             {
-                if (results.Count >= limit) break;
-                var go = col.gameObject;
-                if (!string.IsNullOrEmpty(componentFilter))
-                {
-                    var type = GetTypeByName(componentFilter);
-                    if (type != null && go.GetComponent(type) == null) continue;
-                }
-                results.Add(new
-                {
-                    name = go.name, instanceId = go.GetInstanceID(),
-                    path = GameObjectFinder.GetPath(go),
-                    distance = Vector3.Distance(center, go.transform.position)
-                });
+                var type = GetTypeByName(componentFilter);
+                if (type != null && go.GetComponent(type) == null) continue;
             }
-            return new { success = true, count = results.Count, center = new { x, y, z }, radius, results };
-        */
+            results.Add(new
+            {
+                name = go.name, instanceId = go.GetInstanceID(),
+                path = GameObjectFinder.GetPath(go),
+                distance = Vector3.Distance(center, go.transform.position)
+            });
+        }
+        { result.SetResult(new { success = true, count = results.Count, center = new { x, y, z }, radius, results }); return; }
     }
 }
 ```

@@ -17,6 +17,12 @@ Export console logs to a file. Uses the in-memory capture buffer when `console_s
 - Direct mode format: `[LogType] message`
 - Direct mode reads up to 1000 entries.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ## Recipe
 
 ```csharp
@@ -31,7 +37,7 @@ internal class CommandScript : IRunCommand
 
         if (Validate.SafePath(savePath, "savePath") is object pathErr)
         {
-            result.Return(pathErr);
+            result.SetResult(pathErr);
             return;
         }
 
@@ -45,7 +51,7 @@ internal class CommandScript : IRunCommand
             {
                 var lines = _logs.Select(l => $"[{l.time:HH:mm:ss.fff}] [{l.type}] {l.message}");
                 System.IO.File.WriteAllLines(savePath, lines);
-                result.Return(new { success = true, path = savePath, count = _logs.Count, source = "capture" });
+                result.SetResult(new { success = true, path = savePath, count = _logs.Count, source = "capture" });
                 return;
             }
         }
@@ -55,7 +61,7 @@ internal class CommandScript : IRunCommand
         var entries = DebugSkills.ReadLogEntries(allMask, null, 1000);
         var directLines = entries.Select(e => { dynamic d = e; return $"[{d.type}] {d.message}"; });
         System.IO.File.WriteAllLines(savePath, directLines.Cast<string>());
-        result.Return(new { success = true, path = savePath, count = entries.Count, source = "console" });
+        result.SetResult(new { success = true, path = savePath, count = entries.Count, source = "console" });
     }
 }
 ```

@@ -12,6 +12,13 @@ Set properties on multiple lights in one call. Prefer over repeated `light_set_p
 - `range` is silently skipped for Directional/Area lights (not applicable).
 - Invalid `shadows` value throws and counts the item as a failure.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

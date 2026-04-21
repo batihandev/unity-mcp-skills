@@ -13,6 +13,13 @@ Set the tag for multiple GameObjects in one call.
 - `tag` must match a tag defined in the project (e.g., `"Player"`, `"Enemy"`, `"Untagged"`).
 - A missing object causes that item to fail without stopping the rest.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -29,19 +36,16 @@ internal class CommandScript : IRunCommand
             { ""instanceId"": 12345, ""tag"": ""Untagged"" }
         ]";
 
-        /* Original Logic:
+        { result.SetResult(BatchExecutor.Execute<BatchSetTagItem>(items, item =>
+        {
+            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (error != null) throw new System.Exception("Object not found");
 
-            return BatchExecutor.Execute<BatchSetTagItem>(items, item =>
-            {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
-
-                WorkflowManager.SnapshotObject(go);
-                Undo.RecordObject(go, "Batch Set Tag");
-                go.tag = item.tag;
-                return new { target = go.name, success = true, tag = item.tag };
-            }, item => item.name ?? item.path);
-        */
+            WorkflowManager.SnapshotObject(go);
+            Undo.RecordObject(go, "Batch Set Tag");
+            go.tag = item.tag;
+            return new { target = go.name, success = true, tag = item.tag };
+        }, item => item.name ?? item.path)); return; }
     }
 }
 ```

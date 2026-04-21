@@ -19,6 +19,11 @@ texture_get_platform_settings(assetPath: string, platform: string)
 | `assetPath` | string | yes | Project-relative path to the texture |
 | `platform` | string | yes | `Standalone`, `iPhone`, `Android`, `WebGL` |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ## Unity_RunCommand Template
 
 ```csharp

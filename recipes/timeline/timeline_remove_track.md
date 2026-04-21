@@ -10,6 +10,12 @@ Remove a track by name from a Timeline.
 - `trackName` is required; returns an error if the track is not found
 - Uses `timeline.GetOutputTracks()` to find the track by exact name match
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

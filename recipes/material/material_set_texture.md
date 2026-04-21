@@ -12,6 +12,13 @@ Set a texture on a material (auto-detects property name for the active render pi
 - `propertyName` auto-detects the main texture property for the active pipeline if omitted (`_BaseMap` for URP, `_BaseColorMap` for HDRP, `_MainTex` for Standard).
 - Target is resolved as a material asset path (if `path` ends in `.mat`) or via a GameObject renderer.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -28,28 +35,33 @@ internal class CommandScript : IRunCommand
         string texturePath  = "Assets/Textures/Wood.png";   // required
         string propertyName = null;                          // null → auto-detect
 
-        /* Original Logic:
+        if (Validate.Required(texturePath, "texturePath") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(texturePath, "texturePath") is object err) return err;
+        // Auto-detect texture property name if not specified
+        if (string.IsNullOrEmpty(propertyName))
+        {
+            propertyName = ProjectSkills.GetMainTexturePropertyName();
+        }
 
-            if (string.IsNullOrEmpty(propertyName))
-                propertyName = ProjectSkills.GetMainTexturePropertyName();
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        var texture = AssetDatabase.LoadAssetAtPath<Texture>(texturePath);
+        if (texture == null)
+            { result.SetResult(new { error = $"Texture not found: {texturePath}" }); return; }
 
-            var texture = AssetDatabase.LoadAssetAtPath<Texture>(texturePath);
-            if (texture == null)
-                return new { error = $"Texture not found: {texturePath}" };
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Texture");
+        material.SetTexture(propertyName, texture);
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Texture");
-            material.SetTexture(propertyName, texture);
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
-
-            return new { success = true, target = go != null ? go.name : path, texture = texturePath, propertyUsed = propertyName };
-        */
+        { result.SetResult(new { 
+            success = true, 
+            target = go != null ? go.name : path, 
+            texture = texturePath,
+            propertyUsed = propertyName
+        }); return; }
     }
 }
 ```

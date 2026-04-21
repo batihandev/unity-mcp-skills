@@ -10,6 +10,11 @@ Find shader assets in the project that have compilation errors.
 - Uses `UnityEditor.ShaderUtil.GetShaderMessageCount` to detect compilation errors
 - Scans all `t:Shader` assets in the project, not just those used in the active scene
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

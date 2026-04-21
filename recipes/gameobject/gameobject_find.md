@@ -15,6 +15,14 @@ Find GameObjects matching criteria.
 - `component` accepts a component type name string (e.g., `"Rigidbody"`, `"BoxCollider"`).
 - Each result includes the world `position` of the object.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType` (transitively needs `skills_common.md`)
+- `recipes/_shared/skills_common.md` — required by `component_type_finder.md` for `SkillsCommon.GetAllLoadedTypes`
+
 ## Recipe
 
 ```csharp
@@ -32,56 +40,60 @@ internal class CommandScript : IRunCommand
         string component = null;    // optional: e.g. "Rigidbody", "AudioSource"
         int limit = 50;
 
-        /* Original Logic:
+        // Efficiency: If tag is provided, use FindGameObjectsWithTag (faster).
+        // But we need to filter further anyway.
+        IEnumerable<GameObject> results;
+        if (!string.IsNullOrEmpty(tag))
+            results = GameObject.FindGameObjectsWithTag(tag);
+        else
+            results = GameObjectFinder.GetSceneObjects();
 
-            IEnumerable<GameObject> results;
-            if (!string.IsNullOrEmpty(tag))
-                results = GameObject.FindGameObjectsWithTag(tag);
+        // Filter by Name (Regex or Contains)
+        if (!string.IsNullOrEmpty(name))
+        {
+            if (useRegex)
+            {
+                var regex = new System.Text.RegularExpressions.Regex(name, System.Text.RegularExpressions.RegexOptions.None, System.TimeSpan.FromSeconds(1));
+                results = results.Where(go => regex.IsMatch(go.name));
+            }
             else
-                results = GameObjectFinder.GetSceneObjects();
-
-            if (!string.IsNullOrEmpty(name))
             {
-                if (useRegex)
-                {
-                    var regex = new System.Text.RegularExpressions.Regex(name, System.Text.RegularExpressions.RegexOptions.None, System.TimeSpan.FromSeconds(1));
-                    results = results.Where(go => regex.IsMatch(go.name));
-                }
-                else
-                {
-                    results = results.Where(go => go.name.IndexOf(name, System.StringComparison.OrdinalIgnoreCase) >= 0);
-                }
+                results = results.Where(go => go.name.IndexOf(name, System.StringComparison.OrdinalIgnoreCase) >= 0);
             }
+        }
 
-            if (!string.IsNullOrEmpty(tag))
-                results = results.Where(go => go.CompareTag(tag));
+        // Filter by Tag (if not already fetched by tag - double check in case we fell back)
+        if (!string.IsNullOrEmpty(tag))
+            results = results.Where(go => go.CompareTag(tag));
+    
+        // Filter by Layer
+        if (!string.IsNullOrEmpty(layer))
+        {
+            int layerId = LayerMask.NameToLayer(layer);
+            if (layerId != -1)
+                results = results.Where(go => go.layer == layerId);
+        }
 
-            if (!string.IsNullOrEmpty(layer))
-            {
-                int layerId = LayerMask.NameToLayer(layer);
-                if (layerId != -1)
-                    results = results.Where(go => go.layer == layerId);
-            }
+        // Filter by Component
+        if (!string.IsNullOrEmpty(component))
+        {
+            var compType = ComponentSkills.FindComponentType(component);
+    
+            if (compType != null)
+                results = results.Where(go => go.GetComponent(compType) != null);
+        }
 
-            if (!string.IsNullOrEmpty(component))
-            {
-                var compType = ComponentSkills.FindComponentType(component);
-                if (compType != null)
-                    results = results.Where(go => go.GetComponent(compType) != null);
-            }
+        var list = results.Take(limit).Select(go => new
+        {
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            path = GameObjectFinder.GetCachedPath(go),
+            tag = go.tag,
+            layer = LayerMask.LayerToName(go.layer),
+            position = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z }
+        }).ToArray();
 
-            var list = results.Take(limit).Select(go => new
-            {
-                name = go.name,
-                instanceId = go.GetInstanceID(),
-                path = GameObjectFinder.GetCachedPath(go),
-                tag = go.tag,
-                layer = LayerMask.LayerToName(go.layer),
-                position = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z }
-            }).ToArray();
-
-            return new { count = list.Length, objects = list };
-        */
+        { result.SetResult(new { count = list.Length, objects = list }); return; }
     }
 }
 ```

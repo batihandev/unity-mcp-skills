@@ -11,6 +11,13 @@ Quickly configure Lens settings on a Virtual Camera: Field of View, Near/Far Cli
 - `mode` is accepted but currently unused by the upstream implementation; it is reserved for future lens mode switching.
 - At least one of `fov`, `nearClip`, `farClip`, or `orthoSize` must be supplied.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -38,6 +38,13 @@ If the component type does not support `enabled`:
 - Use this instead of `component_set_property` with `propertyName: "enabled"` — this path is safer and uses explicit type checks.
 - Uses `Undo.RecordObject` — operation is undoable.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## C# Template
 
 ```csharp
@@ -48,26 +55,23 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        if (Validate.Required(componentType, "componentType") is object err) { result.SetResult(err); return; }
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-            if (Validate.Required(componentType, "componentType") is object err) return err;
-            var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (findErr != null) return findErr;
+        var type = FindComponentType(componentType);
+        if (type == null) { result.SetResult(new { error = $"Component type not found: {componentType}" }); return; }
 
-            var type = FindComponentType(componentType);
-            if (type == null) return new { error = $"Component type not found: {componentType}" };
+        var comp = go.GetComponent(type);
+        if (comp == null) { result.SetResult(new { error = $"No {componentType} on {go.name}" }); return; }
 
-            var comp = go.GetComponent(type);
-            if (comp == null) return new { error = $"No {componentType} on {go.name}" };
+        Undo.RecordObject(comp, "Set Component Enabled");
+        if (comp is Behaviour behaviour) behaviour.enabled = enabled;
+        else if (comp is Renderer renderer) renderer.enabled = enabled;
+        else if (comp is Collider collider) collider.enabled = enabled;
+        else { result.SetResult(new { error = $"{componentType} does not have an enabled property" }); return; }
 
-            Undo.RecordObject(comp, "Set Component Enabled");
-            if (comp is Behaviour behaviour) behaviour.enabled = enabled;
-            else if (comp is Renderer renderer) renderer.enabled = enabled;
-            else if (comp is Collider collider) collider.enabled = enabled;
-            else return new { error = $"{componentType} does not have an enabled property" };
-
-            return new { success = true, gameObject = go.name, componentType, enabled };
-        */
+        { result.SetResult(new { success = true, gameObject = go.name, componentType, enabled }); return; }
     }
 }
 ```

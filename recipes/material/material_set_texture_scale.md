@@ -12,6 +12,12 @@ Set the texture scale (UV tiling) for a texture property.
 - Scale defaults are `x = 1, y = 1` (one tile). A value of `2` tiles the texture twice.
 - Use `material_set_texture_offset` to control the starting UV position independently.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -29,22 +35,19 @@ internal class CommandScript : IRunCommand
         float  x            = 4f;       // tile 4x horizontally
         float  y            = 4f;       // tile 4x vertically
 
-        /* Original Logic:
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        if (string.IsNullOrEmpty(propertyName))
+            propertyName = ProjectSkills.GetMainTexturePropertyName();
 
-            if (string.IsNullOrEmpty(propertyName))
-                propertyName = ProjectSkills.GetMainTexturePropertyName();
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Texture Scale");
+        material.SetTextureScale(propertyName, new Vector2(x, y));
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Texture Scale");
-            material.SetTextureScale(propertyName, new Vector2(x, y));
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
-
-            return new { success = true, target = go != null ? go.name : path, property = propertyName, scale = new { x, y } };
-        */
+        { result.SetResult(new { success = true, target = go != null ? go.name : path, property = propertyName, scale = new { x, y } }); return; }
     }
 }
 ```

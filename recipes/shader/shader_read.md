@@ -12,6 +12,12 @@ Read the full source code of a shader file from disk.
 - Returns an error if the file does not exist.
 - `lines` is the number of newline-separated lines in the file.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ## Recipe
 
 ```csharp
@@ -24,17 +30,14 @@ internal class CommandScript : IRunCommand
     {
         string shaderPath = "Assets/Shaders/MyShader.shader";
 
-        /* Original Logic:
+        if (Validate.SafePath(shaderPath, "shaderPath") is object pathErr) { result.SetResult(pathErr); return; }
+        if (!File.Exists(shaderPath))
+            { result.SetResult(new { error = $"Shader not found: {shaderPath}" }); return; }
 
-            if (Validate.SafePath(shaderPath, "shaderPath") is object pathErr) return pathErr;
-            if (!File.Exists(shaderPath))
-                return new { error = $"Shader not found: {shaderPath}" };
+        var content = File.ReadAllText(shaderPath, System.Text.Encoding.UTF8);
+        var lines = content.Split('\n').Length;
 
-            var content = File.ReadAllText(shaderPath, System.Text.Encoding.UTF8);
-            var lines = content.Split('\n').Length;
-
-            return new { path = shaderPath, lines, content };
-        */
+        { result.SetResult(new { path = shaderPath, lines, content }); return; }
     }
 }
 ```

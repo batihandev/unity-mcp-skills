@@ -11,6 +11,12 @@ Cancel a running test job if supported.
 - `jobId` is validated as required even though the parameter has a default of `null`
 - `cancelled` is `true` only when `job.status == "cancelled"`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

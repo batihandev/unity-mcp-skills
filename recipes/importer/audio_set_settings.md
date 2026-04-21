@@ -33,6 +33,11 @@ audio_set_settings(
 | `quality` | float | no | 0.0–1.0 quality for Vorbis compression |
 | `sampleRateSetting` | string | no | `PreserveSampleRate`, `OptimizeSampleRate`, `OverrideSampleRate` |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ## Unity_RunCommand Template
 
 ```csharp

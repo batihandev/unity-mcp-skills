@@ -11,6 +11,12 @@ Set the binding object for a track on a Timeline Director.
 - Binds the entire found GameObject (not just its Animator); use `timeline_add_animation_track` to auto-bind an Animator specifically
 - Does not save assets; call `AssetDatabase.SaveAssets()` separately if persistence is needed
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

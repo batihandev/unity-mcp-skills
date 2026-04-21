@@ -29,6 +29,11 @@ texture_set_import_settings(
 | `generateMipMaps` | bool | no | Generate mipmaps |
 | `textureType` | string | no | `Default`, `NormalMap`, `Sprite`, `Cursor`, `Cookie`, `Lightmap` |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Unity_RunCommand Template
 
 ```csharp

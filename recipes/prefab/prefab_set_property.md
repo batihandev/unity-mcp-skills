@@ -57,6 +57,15 @@ On property not found:
 | Vector2/3/4 | `"1,0,0"` |
 | Color | `"1,0,0,1"` (RGBA) |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType` (transitively needs `skills_common.md`)
+- `recipes/_shared/skills_common.md` — required by `component_type_finder.md` for `SkillsCommon.GetAllLoadedTypes`
+
 ## C# Template
 
 ```csharp
@@ -67,80 +76,84 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        if (Validate.Required(prefabPath, "prefabPath") is object reqErr1) { result.SetResult(reqErr1); return; }
+        if (Validate.SafePath(prefabPath, "prefabPath") is object pathErr) { result.SetResult(pathErr); return; }
+        if (Validate.Required(componentType, "componentType") is object reqErr2) { result.SetResult(reqErr2); return; }
+        if (Validate.Required(propertyName, "propertyName") is object reqErr3) { result.SetResult(reqErr3); return; }
 
-            if (Validate.Required(prefabPath, "prefabPath") is object reqErr1) return reqErr1;
-            if (Validate.SafePath(prefabPath, "prefabPath") is object pathErr) return pathErr;
-            if (Validate.Required(componentType, "componentType") is object reqErr2) return reqErr2;
-            if (Validate.Required(propertyName, "propertyName") is object reqErr3) return reqErr3;
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+        if (prefab == null) { result.SetResult(new { error = $"Prefab not found: {prefabPath}" }); return; }
 
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-            if (prefab == null) return new { error = $"Prefab not found: {prefabPath}" };
-
-            GameObject targetGo = prefab;
-            if (!string.IsNullOrEmpty(gameObjectName))
+        // Find target GameObject inside prefab (root or child by name)
+        GameObject targetGo = prefab;
+        if (!string.IsNullOrEmpty(gameObjectName))
+        {
+            var child = prefab.transform.Find(gameObjectName);
+            if (child == null)
             {
-                var child = prefab.transform.Find(gameObjectName);
-                if (child == null)
+                // Deep search
+                foreach (var t in prefab.GetComponentsInChildren<Transform>(true))
                 {
-                    foreach (var t in prefab.GetComponentsInChildren<Transform>(true))
-                    {
-                        if (t.name == gameObjectName) { child = t; break; }
-                    }
+                    if (t.name == gameObjectName) { child = t; break; }
                 }
-                if (child == null)
-                    return new { error = $"Child GameObject '{gameObjectName}' not found in prefab" };
-                targetGo = child.gameObject;
             }
+            if (child == null)
+                { result.SetResult(new { error = $"Child GameObject '{gameObjectName}' not found in prefab" }); return; }
+            targetGo = child.gameObject;
+        }
 
-            var compType = ComponentSkills.FindComponentType(componentType);
-            if (compType == null)
-                return new { error = $"Component type not found: {componentType}" };
+        // Find component
+        var compType = ComponentSkills.FindComponentType(componentType);
+        if (compType == null)
+            { result.SetResult(new { error = $"Component type not found: {componentType}" }); return; }
 
-            var comp = targetGo.GetComponent(compType);
-            if (comp == null)
-                return new { error = $"Component '{componentType}' not found on '{targetGo.name}' in prefab" };
+        var comp = targetGo.GetComponent(compType);
+        if (comp == null)
+            { result.SetResult(new { error = $"Component '{componentType}' not found on '{targetGo.name}' in prefab" }); return; }
 
-            var so = new SerializedObject(comp);
-            var prop = FindSerializedProperty(so, propertyName);
-            if (prop == null)
-                return new { error = $"Property '{propertyName}' not found on {componentType}", availableProperties = ListSerializedProperties(so) };
+        // Use SerializedObject to edit prefab asset
+        var so = new SerializedObject(comp);
+        var prop = FindSerializedProperty(so, propertyName);
+        if (prop == null)
+            { result.SetResult(new { error = $"Property '{propertyName}' not found on {componentType}", availableProperties = ListSerializedProperties(so) }); return; }
 
-            WorkflowManager.SnapshotObject(comp);
+        WorkflowManager.SnapshotObject(comp);
 
-            if (!string.IsNullOrEmpty(assetReferencePath))
-            {
-                if (prop.propertyType != SerializedPropertyType.ObjectReference)
-                    return new { error = $"Property '{propertyName}' is not an Object reference field (type: {prop.propertyType})" };
-                var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetReferencePath);
-                if (asset == null)
-                    return new { error = $"Asset not found: {assetReferencePath}" };
-                prop.objectReferenceValue = asset;
-            }
-            else if (!string.IsNullOrEmpty(value))
-            {
-                if (!SetSerializedPropertyValue(prop, value))
-                    return new { error = $"Failed to set value '{value}' on property '{propertyName}' (type: {prop.propertyType})" };
-            }
-            else
-            {
-                return new { error = "Either 'value' or 'assetReferencePath' must be provided" };
-            }
+        // Set value based on property type
+        if (!string.IsNullOrEmpty(assetReferencePath))
+        {
+            if (prop.propertyType != SerializedPropertyType.ObjectReference)
+                { result.SetResult(new { error = $"Property '{propertyName}' is not an Object reference field (type: {prop.propertyType})" }); return; }
 
-            so.ApplyModifiedProperties();
-            EditorUtility.SetDirty(comp);
-            AssetDatabase.SaveAssets();
+            var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetReferencePath);
+            if (asset == null)
+                { result.SetResult(new { error = $"Asset not found: {assetReferencePath}" }); return; }
 
-            return new
-            {
-                success = true,
-                prefabPath,
-                gameObject = targetGo.name,
-                component = componentType,
-                property = propertyName,
-                valueSet = !string.IsNullOrEmpty(assetReferencePath) ? assetReferencePath : value
-            };
-        */
+            prop.objectReferenceValue = asset;
+        }
+        else if (!string.IsNullOrEmpty(value))
+        {
+            if (!SetSerializedPropertyValue(prop, value))
+                { result.SetResult(new { error = $"Failed to set value '{value}' on property '{propertyName}' (type: {prop.propertyType})" }); return; }
+        }
+        else
+        {
+            { result.SetResult(new { error = "Either 'value' or 'assetReferencePath' must be provided" }); return; }
+        }
+
+        so.ApplyModifiedProperties();
+        EditorUtility.SetDirty(comp);
+        AssetDatabase.SaveAssets();
+
+        { result.SetResult(new
+        {
+            success = true,
+            prefabPath,
+            gameObject = targetGo.name,
+            component = componentType,
+            property = propertyName,
+            valueSet = !string.IsNullOrEmpty(assetReferencePath) ? assetReferencePath : value
+        }); return; }
     }
 }
 ```

@@ -55,6 +55,12 @@ model_set_settings(
 | `importAnimation` | bool | no | Import animation clips |
 | `materialImportMode` | string | no | `None`, `ImportViaMaterialDescription`, `ImportStandard` |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Unity_RunCommand Template
 
 ```csharp

@@ -12,6 +12,13 @@ Assign a `SplineContainer` to a VCam's `CinemachineSplineDolly` component (Body 
 - The VCam must already have `CinemachineSplineDolly` on the Body stage. Use `cinemachine_set_component` with `stage="Body"`, `componentType="CinemachineSplineDolly"` first.
 - The spline GameObject must have a `SplineContainer` component.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -9,6 +9,11 @@ Set mesh compression for all 3D model assets (`t:Model`) matching an optional fi
 - `compressionLevel` — `Off` | `Low` | `Medium` | `High` (case-insensitive; invalid values fall back to `Medium`)
 - `modified` — array of `{ path, name }` for each reimported asset
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

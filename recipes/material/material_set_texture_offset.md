@@ -12,6 +12,12 @@ Set the texture offset (UV scroll position) for a texture property.
 - Offset values are in UV space (0–1 = one full tile).
 - Use `material_set_texture_scale` to control tiling count independently.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -29,22 +35,19 @@ internal class CommandScript : IRunCommand
         float  x            = 0.5f;     // horizontal offset (UV space)
         float  y            = 0.0f;     // vertical offset
 
-        /* Original Logic:
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        if (string.IsNullOrEmpty(propertyName))
+            propertyName = ProjectSkills.GetMainTexturePropertyName();
 
-            if (string.IsNullOrEmpty(propertyName))
-                propertyName = ProjectSkills.GetMainTexturePropertyName();
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Texture Offset");
+        material.SetTextureOffset(propertyName, new Vector2(x, y));
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Texture Offset");
-            material.SetTextureOffset(propertyName, new Vector2(x, y));
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
-
-            return new { success = true, target = go != null ? go.name : path, property = propertyName, offset = new { x, y } };
-        */
+        { result.SetResult(new { success = true, target = go != null ? go.name : path, property = propertyName, offset = new { x, y } }); return; }
     }
 }
 ```

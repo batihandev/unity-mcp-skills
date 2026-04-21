@@ -12,6 +12,12 @@ Detach faces from shared vertices, creating independent geometry on a ProBuilder
 - `deleteSourceFaces`: if `true`, removes the original faces after detach (default `false`).
 - Detached faces share no vertices with adjacent faces, breaking smooth shading across the boundary.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -22,14 +28,35 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name = "MyShape";
-        string faceIndexes = "1";
-        bool deleteSourceFaces = false;
+        #if !PROBUILDER
+                    { result.SetResult(NoProBuilder()); return; }
+        #else
+                    var (pbMesh, err) = FindProBuilderMesh(name, instanceId, path);
+                    if (err != null) { result.SetResult(err); return; }
 
-        var res = UnitySkillsBridge.Call("probuilder_detach_faces", new {
-            name, faceIndexes, deleteSourceFaces
-        });
-        result.Log("Detached: {0}", res);
+                    var faces = SelectFaces(pbMesh, faceIndexes);
+                    if (faces.Count == 0)
+                        { result.SetResult(new { error = "No faces selected. Provide faceIndexes or omit to detach all." }); return; }
+
+                    Undo.RecordObject(pbMesh, "Detach Faces");
+                    WorkflowManager.SnapshotObject(pbMesh);
+
+                    var newFaces = pbMesh.DetachFaces(faces, deleteSourceFaces);
+
+                    pbMesh.ToMesh();
+                    pbMesh.Refresh();
+
+                    { result.SetResult(new
+                    {
+                        success = true,
+                        name = pbMesh.gameObject.name,
+                        instanceId = pbMesh.gameObject.GetInstanceID(),
+                        detachedFaceCount = newFaces?.Count ?? 0,
+                        deleteSourceFaces,
+                        totalFaces = pbMesh.faceCount,
+                        totalVertices = pbMesh.vertexCount
+                    }); return; }
+        #endif
     }
 }
 ```

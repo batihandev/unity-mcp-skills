@@ -8,6 +8,13 @@ Enable or disable multiple lights in one call. Prefer over repeated `light_set_e
 
 **Returns:** `{ success, totalItems, successCount, failCount, results: [{ success, name, enabled }] }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

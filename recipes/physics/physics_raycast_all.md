@@ -6,6 +6,12 @@ Cast a ray and return ALL hits (penetrating), ordered by distance.
 
 **Returns:** `{ count, hits: [{ objectName, instanceId, path, point, normal, distance }] }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

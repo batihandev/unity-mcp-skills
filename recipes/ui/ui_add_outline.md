@@ -11,6 +11,13 @@ Add a Shadow or Outline visual effect component to a UI element.
 - Each call adds a new component instance; multiple calls will stack effects.
 - `distanceY` defaults to `-1` (downward for shadow convention).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

@@ -19,6 +19,11 @@ audio_create_mixer(mixerName?: string = "NewAudioMixer", folder?: string = "Asse
 | `mixerName` | string | no | `"NewAudioMixer"` | Name of the mixer asset (no path separators) |
 | `folder` | string | no | `"Assets"` | Destination folder in the project |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+
 ## Unity_RunCommand Template
 
 ```csharp

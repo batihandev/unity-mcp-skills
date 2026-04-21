@@ -14,6 +14,13 @@ Set the layer for multiple GameObjects in one call.
 - `recursive` (bool, default `false`): when `true`, the layer change is applied to the object and all of its children recursively.
 - A missing object or invalid layer name causes that item to fail without stopping the rest.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -30,33 +37,30 @@ internal class CommandScript : IRunCommand
             { ""instanceId"": 12345, ""layer"": ""Default"" }
         ]";
 
-        /* Original Logic:
+        { result.SetResult(BatchExecutor.Execute<BatchSetLayerItem>(items, item =>
+        {
+            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (error != null) throw new System.Exception("Object not found");
 
-            return BatchExecutor.Execute<BatchSetLayerItem>(items, item =>
+            int layerId = LayerMask.NameToLayer(item.layer);
+            if (layerId == -1)
+                throw new System.Exception($"Layer not found: {item.layer}");
+
+            WorkflowManager.SnapshotObject(go);
+            Undo.RecordObject(go, "Batch Set Layer");
+            go.layer = layerId;
+
+            if (item.recursive)
             {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
-
-                int layerId = LayerMask.NameToLayer(item.layer);
-                if (layerId == -1)
-                    throw new System.Exception($"Layer not found: {item.layer}");
-
-                WorkflowManager.SnapshotObject(go);
-                Undo.RecordObject(go, "Batch Set Layer");
-                go.layer = layerId;
-
-                if (item.recursive)
+                foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
                 {
-                    foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
-                    {
-                        Undo.RecordObject(child.gameObject, "Batch Set Layer Recursive");
-                        child.gameObject.layer = layerId;
-                    }
+                    Undo.RecordObject(child.gameObject, "Batch Set Layer Recursive");
+                    child.gameObject.layer = layerId;
                 }
+            }
 
-                return new { target = go.name, success = true, layer = item.layer };
-            }, item => item.name ?? item.path);
-        */
+            return new { target = go.name, success = true, layer = item.layer };
+        }, item => item.name ?? item.path)); return; }
     }
 }
 ```

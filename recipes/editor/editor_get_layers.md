@@ -8,6 +8,11 @@ Get all named layers (indices 0–31) defined in the project's layer settings.
 
 Note: no top-level `success` key.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

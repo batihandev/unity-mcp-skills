@@ -13,6 +13,11 @@ Get the list of keywords declared in a shader's keyword space.
 - To enable or disable a global keyword, use `shader_set_global_keyword`.
 - To control per-material keywords, use `material_set_keyword` from the material module.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -25,13 +30,10 @@ internal class CommandScript : IRunCommand
     {
         string shaderNameOrPath = "Universal Render Pipeline/Lit"; // or "Assets/Shaders/My.shader"
 
-        /* Original Logic:
-
-            var shader = FindShaderByNameOrPath(shaderNameOrPath);
-            if (shader == null) return new { error = $"Shader not found: {shaderNameOrPath}" };
-            var keywords = shader.keywordSpace.keywords.Select(k => new { name = k.name, type = k.type.ToString() }).ToArray();
-            return new { shaderName = shader.name, keywordCount = keywords.Length, keywords };
-        */
+        var shader = FindShaderByNameOrPath(shaderNameOrPath);
+        if (shader == null) { result.SetResult(new { error = $"Shader not found: {shaderNameOrPath}" }); return; }
+        var keywords = shader.keywordSpace.keywords.Select(k => new { name = k.name, type = k.type.ToString() }).ToArray();
+        { result.SetResult(new { shaderName = shader.name, keywordCount = keywords.Length, keywords }); return; }
     }
 }
 ```

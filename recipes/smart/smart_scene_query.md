@@ -13,6 +13,13 @@ Query scene objects by component property values (SQL-like filter).
 - Numeric comparison uses a tolerance of 0.0001 for `==`/`!=`.
 - Read-only; no undo entry is created.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -27,57 +34,55 @@ internal class CommandScript : IRunCommand
         string value = "2";
         int limit = 50;
 
-        /* Original Logic:
-
-            if (string.IsNullOrWhiteSpace(componentName) && !string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrWhiteSpace(componentName) && !string.IsNullOrWhiteSpace(query))
+        {
+            { result.SetResult(new
             {
-                return new
+                success = false,
+                error = "query shorthand is not supported. Use componentName/propertyName/op/value, e.g. componentName='Light', propertyName='intensity', op='>', value='2'."
+            }); return; }
+        }
+
+        if (Validate.Required(componentName, "componentName") is object componentErr) { result.SetResult(componentErr); return; }
+        if (Validate.Required(propertyName, "propertyName") is object propertyErr) { result.SetResult(propertyErr); return; }
+
+        var results = new List<object>();
+
+        // Resolve Type
+        var type = GetTypeByName(componentName);
+        if (type == null) 
+            { result.SetResult(new { success = false, error = $"Component type '{componentName}' not found. Try: Light, MeshRenderer, Camera, etc." }); return; }
+
+        var components = Object.FindObjectsOfType(type);
+
+        foreach (var comp in components)
+        {
+            if (results.Count >= limit) break;
+
+            var val = GetMemberValue(comp, propertyName);
+            if (val == null) continue;
+
+            if (Compare(val, op, value))
+            {
+                var go = (comp is Component c) ? c.gameObject : null;
+                if (go == null) continue;
+                results.Add(new 
                 {
-                    success = false,
-                    error = "query shorthand is not supported. Use componentName/propertyName/op/value, e.g. componentName='Light', propertyName='intensity', op='>', value='2'."
-                };
+                    name = go.name,
+                    instanceId = go.GetInstanceID(),
+                    path = GameObjectFinder.GetPath(go),
+                    propertyValue = FormatValue(val)
+                });
             }
+        }
 
-            if (Validate.Required(componentName, "componentName") is object componentErr) return componentErr;
-            if (Validate.Required(propertyName, "propertyName") is object propertyErr) return propertyErr;
-
-            var results = new List<object>();
-
-            var type = GetTypeByName(componentName);
-            if (type == null)
-                return new { success = false, error = $"Component type '{componentName}' not found. Try: Light, MeshRenderer, Camera, etc." };
-
-            var components = Object.FindObjectsOfType(type);
-
-            foreach (var comp in components)
-            {
-                if (results.Count >= limit) break;
-
-                var val = GetMemberValue(comp, propertyName);
-                if (val == null) continue;
-
-                if (Compare(val, op, value))
-                {
-                    var go = (comp is Component c) ? c.gameObject : null;
-                    if (go == null) continue;
-                    results.Add(new
-                    {
-                        name = go.name,
-                        instanceId = go.GetInstanceID(),
-                        path = GameObjectFinder.GetPath(go),
-                        propertyValue = FormatValue(val)
-                    });
-                }
-            }
-
-            return new
-            {
-                success = true,
-                count = results.Count,
-                query = $"{componentName}.{propertyName} {op} {value}",
-                results
-            };
-        */
+        { result.SetResult(new 
+        { 
+            success = true, 
+            count = results.Count, 
+            query = $"{componentName}.{propertyName} {op} {value}",
+            results
+        }); return; }
     }
 }
 ```

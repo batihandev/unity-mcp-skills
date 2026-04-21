@@ -11,6 +11,11 @@ Get an aggregated test summary across all recorded runs.
 - `allFailedTests` is a deduplicated union of all failed test names across every run
 - Returns `success = true` even when no runs have been recorded (counts will be zero)
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

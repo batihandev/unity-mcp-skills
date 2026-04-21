@@ -13,6 +13,13 @@ Find all GameObjects whose name contains the given string (case-insensitive).
 - Read-only — does not modify the scene.
 - Prefer `gameobject_find` for richer filtering (tag, layer, component).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+
 ## Recipe
 
 ```csharp
@@ -26,25 +33,22 @@ internal class CommandScript : IRunCommand
         string nameContains = "Cube"; // required (or use `name` alias)
         string name = null; // optional alias for nameContains
 
-        /* Original Logic:
+        nameContains = nameContains ?? name;
+        if (Validate.Required(nameContains, "nameContains") is object err) { result.SetResult(err); return; }
 
-            nameContains = nameContains ?? name;
-            if (Validate.Required(nameContains, "nameContains") is object err) return err;
-
-            var allObjects = FindHelper.FindAll<GameObject>();
-            var matches = System.Array.FindAll(allObjects,
-                go => go != null && go.name.IndexOf(nameContains, System.StringComparison.OrdinalIgnoreCase) >= 0);
-            return new
+        var allObjects = FindHelper.FindAll<GameObject>();
+        var matches = System.Array.FindAll(allObjects,
+            go => go != null && go.name.IndexOf(nameContains, System.StringComparison.OrdinalIgnoreCase) >= 0);
+        { result.SetResult(new
+        {
+            query = nameContains,
+            count = matches.Length,
+            objects = System.Array.ConvertAll(matches, go => new
             {
-                query = nameContains,
-                count = matches.Length,
-                objects = System.Array.ConvertAll(matches, go => new
-                {
-                    name = go.name,
-                    position = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z }
-                })
-            };
-        */
+                name = go.name,
+                position = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z }
+            })
+        }); return; }
     }
 }
 ```

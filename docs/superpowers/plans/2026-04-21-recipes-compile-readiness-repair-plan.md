@@ -1,7 +1,7 @@
 # Recipes Compile-Readiness Repair Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-> **Status:** Active plan as of 2026-04-21. Supersedes no prior plan; complements the earlier per-command split plan and the MCP recipe cleanup plan.
+> **Status:** Active plan; session 2 scope appended 2026-04-21 evening. Session 1 delivered ext 484/484, pre 484/484, comp 19/484. Session 2 scope is Tasks 11–21 below; revised execution order at the end of the doc supersedes the Task 0–10 wave for remaining work.
 
 **Goal:** Make every non-async recipe in `recipes/**` compile and execute successfully inside the current official Unity MCP `Unity_RunCommand` environment, document the small set of genuinely async recipes honestly, and fix the broken recipe-discovery path in every `SKILL.md` so AI agents can find the right template instead of inventing their own.
 
@@ -410,4 +410,183 @@ body into real executable code.
 ### Execution note
 
 - Tasks 1–4 are near-independent and can be parallelized across subagents. Task 5 must happen serially with its own scoped subagent. Task 6 depends on Tasks 1–4 being done (since it declares the prerequisites those tasks produce). Tasks 7 and 10 are main-agent owned (verification gates).
+
+---
+
+## Session 2 scope (appended 2026-04-21 evening)
+
+Session 1 closed with ext 484/484, pre 484/484, comp 19/484, run 1/484. Mid-session work revealed scope the original Tasks 0–10 did not cover. This section defines the remaining work; the revised execution order at the end of this section replaces the Tasks 0–10 wave for anything not already done.
+
+### Mid-session findings that change the plan
+
+1. **REST-era plumbing rejected, not ported.** Upstream `BatchExecutor<T>.Execute`, `SkillResultHelper.TryGetError`, and Newtonsoft.Json-based deserialization are REST-call glue with no purpose in stateless `Unity_RunCommand`. `*_batch` recipes are rewritten as `foreach` loops taking typed arrays.
+2. **Version-compat shims rejected.** Upstream `CinemachineAdapter` (562 lines; Cinemachine 2↔3 shim) and `XRReflectionHelper` (558 lines; XRI 2↔3 reflection shim) are not ported as `_shared/*.md`. Repo commits to Cinemachine 3, XRI 3, and direct v3 API use.
+3. **Native MCP coverage replaces entire domains for retirement.** `package/*` (11 recipes), `script/*`, `asset/batch_query_assets`, `camera/camera_screenshot`, `sample/*` (8), `console/console_get_logs`, `console/console_clear` duplicate first-class MCP tools and are retired — but `skills/<domain>/SKILL.md` files are **kept** as routing stubs, not deleted.
+4. **Extractor transform bug.** `tools/reextract_recipes.py` `transform_returns` converts `return <expr>;` inside `Select`/`Where` lambda bodies — invalid, since the lambda must return a value. Caught on `shader_list`, `component_list`; likely affects more of the 73 recipes using Select-block-lambdas.
+5. **Unity project package inventory established.** Installed: timeline, inputsystem, test-framework, newtonsoft-json, ugui, modules.ai, modules.terrain, modules.animation, modules.physics, render-pipelines.universal, ide.visualstudio, and more. Missing: `com.unity.cinemachine`, `com.unity.xr.interaction.toolkit`, `com.unity.probuilder`, `com.unity.ai.navigation`.
+6. **Unity 6000+ is the only supported baseline.** No back-compat branches. `#if UNITY_6000_0_OR_NEWER` conditionals are dropped in favor of the new-API-only path.
+
+### Locked decisions (do not revisit without evidence)
+
+- Do not port `CinemachineAdapter`, `XRReflectionHelper`, `BatchExecutor`, `SkillResultHelper` as `_shared/*.md`.
+- Do not delete any `skills/<domain>/SKILL.md` file even if every recipe in that domain is retired. Rewrite as a routing stub pointing at the MCP replacement.
+- Do not delete retired recipe files. Replace body with a tombstone noting the MCP tool or alternative recipe path. Preserve filenames so external links don't 404.
+- Do not replace a deprecated API based on model-memory alone. Web-confirm the replacement + semantics against Unity's official docs; record source URL in the notes file before applying.
+- Do not add back-compat to older Unity versions. Unity 6000+ is the baseline; root `README.md` states this once.
+
+### Task 11: Fix `reextract_recipes.py` lambda-scope `return` transform
+
+**Intent:** the current `transform_returns` tokenizer cannot distinguish a `return <expr>;` inside a `Select`/`Where`/`.Where(x => { ... })` lambda body from a top-level statement. Wrapping the former in `{ result.SetResult(<expr>); return; }` breaks the lambda's value-return contract and shadows `result` when paired with the `(expr)` form.
+
+**Files:** Modify: `tools/reextract_recipes.py`.
+
+**Required outcomes:**
+- Tokenizer tracks `=> {` openings as a lambda-scope marker. A `return <expr>;` inside an active lambda scope is emitted unchanged; only returns outside lambda scope get the `SetResult` rewrite.
+- Scripted audit: for every recipe whose csharp block contains `=> {`, the post-extraction body must compile against a stub `CommandScript` (dry compile via `python3 -m mypy`-equivalent C# tool, or reflection-smoke in Unity).
+- Re-run extractor on the recipes the original pass affected. Tracker `ext` cell is re-verified per recipe.
+
+**Verification target:** `shader_list`, `component_list` extract cleanly. No `{ result.SetResult(...); return; }` wrappers inside lambda bodies anywhere in `recipes/`.
+
+### Task 12: Session-2 pre-flight
+
+**Intent:** establish ground truth before mutating anything.
+
+**Files:** Modify: `docs/superpowers/notes/2026-04-21-recipes-compile-readiness-notes.md`.
+
+**Required outcomes:**
+- Read and annotate `mcp-tools.md`. For every retirement candidate in Task 13, record the line-item match. **No retirement without a confirmed match.**
+- Re-run `UnityEditor.PackageManager.Client.List(true, true)` via `Unity_RunCommand`; confirm the "missing 4" inventory.
+- Web-search Unity's official upgrade guide / scripting API docs for each deprecation candidate surfaced so far:
+  - `FindObjectsOfType<T>()` → replacement name + `FindObjectsSortMode` enum values + whether sort mode is required vs optional.
+  - `FindObjectOfType<T>()` → replacement name + any behavioral difference.
+  - `UnityEditor.AI.NavMeshBuilder.BuildNavMesh()` / `.ClearAllNavMeshes()` → confirm whether `[Obsolete]` attribute is actually applied in Unity 6000+, and the `NavMeshSurface` workflow details (single-surface vs multi-surface, how to match legacy "bake whole scene" semantics).
+- Record source URLs (e.g. `https://docs.unity3d.com/6000.2/...`) in the notes file alongside each confirmation. Any replacement that cannot be web-confirmed is deferred, not applied from memory.
+
+### Task 13: Retire-to-MCP (tombstone recipes, route skills)
+
+**Intent:** remove recipes that duplicate native Unity MCP tools while preserving discoverability.
+
+**Files:**
+- Modify: each retired recipe `.md` (tombstone form).
+- Modify: `skills/<domain>/SKILL.md` for every domain with retirements.
+- Modify: `skills/SKILL.md` (domain index) and `recipes/README.md` if an entire domain is retired.
+- Modify: tracker.
+
+**Required outcomes:**
+- Every retired recipe has its body replaced with a tombstone that names the MCP tool + the required parameter names + a one-line example invocation. The recipe's original title + signature block is kept so link-backs don't break.
+- `skills/<domain>/SKILL.md` for domains with retirements is rewritten so the skill description points the reader at the MCP tool directly. Example: `skills/package/SKILL.md` becomes a one-page pointer to `Unity_PackageManager_ExecuteAction` + `Unity_PackageManager_GetData` with one example per operation.
+- If every recipe in a domain is retired, the `SKILL.md` stays; root `SKILL.md` moves that domain from the active list to an "MCP-covered" list; `recipes/README.md` mirrors the change. No SKILL.md deletion.
+- Tracker rows for retired recipes use the new `R` cell value (see Task 19).
+
+**Retirement candidates (require Task 12 web-confirm + mcp-tools.md match):**
+- `package/*` (11) → `Unity_PackageManager_ExecuteAction`, `Unity_PackageManager_GetData`.
+- `script/*` → `Unity_CreateScript`, `Unity_DeleteScript`, `Unity_FindInFile`, `Unity_ScriptApplyEdits`, `Unity_ValidateScript`.
+- `asset/batch_query_assets` → `Unity_FindProjectAssets`.
+- `camera/camera_screenshot` → `Unity_Camera_Capture`.
+- `sample/*` (8 recipes) → same-repo duplicates of `recipes/gameobject/*`; consolidate the pointers, retain sample SKILL.md as a pointer stub.
+- `console/console_get_logs`, `console/console_clear` → `Unity_GetConsoleLogs`, `Unity_ReadConsole`.
+
+**Verification target:** a cold-start AI reading any updated `SKILL.md` knows which MCP tool to call without opening the tombstone recipe file.
+
+### Task 14: Install 4 packages, drop compat shims, rewrite 2 navmesh recipes
+
+**Files:**
+- Install: `com.unity.cinemachine` (v3.x), `com.unity.xr.interaction.toolkit` (v3.x), `com.unity.probuilder`, `com.unity.ai.navigation`. Use `UnityEditor.PackageManager.Client.Add` via `Unity_RunCommand`.
+- Modify: all `recipes/cinemachine/*.md` — remove `CinemachineAdapter.*` references; use direct `CinemachineCamera` API.
+- Modify: all `recipes/xr/*.md` — remove `XRReflectionHelper.*`; drop `#if !XRI` gates; use direct XRI 3.x API.
+- Modify: all `recipes/probuilder/*.md` — drop `#if !PROBUILDER` gates; remove `NoProBuilder()` fallbacks.
+- Modify: `recipes/navmesh/navmesh_bake.md`, `recipes/navmesh/navmesh_clear.md` — use `NavMeshSurface.BuildNavMesh()` / `.RemoveData()` component API. Find-or-add `NavMeshSurface` components on scene roots to preserve "bake whole scene" semantics.
+- Modify: `skills/cinemachine/SKILL.md`, `skills/xr/SKILL.md`, `skills/probuilder/SKILL.md`, `skills/navmesh/SKILL.md` — add `## Requirements` block naming the required package + version.
+
+**Verification target:** one representative recipe per domain smokes green at comp gate. Package-install is recorded in tracker notes.
+
+### Task 15: Rewrite `*_batch` recipes as `foreach` loops
+
+**Files:** Modify: every recipe ending in `_batch.md` that currently calls `BatchExecutor.Execute<T>(...)` or references `SkillResultHelper`.
+
+**Required outcomes:**
+- Parameter shape changes: `string items` (JSON blob) becomes `T[] items` (typed array matching the item struct).
+- Body is a straight `foreach (var item in items) { ... }` loop. Per-item errors are captured into a `List<object>` results array; aggregated success/fail counts go into the final `result.SetResult(...)`.
+- No `JsonConvert.DeserializeObject` calls.
+- The non-batch sibling's logic is inlined inside the loop body, or extracted into a private static method within the same `CommandScript` class if it's long.
+
+**Verification target:** `material_assign_batch`, `event_add_listener_batch`, `uitk_create_batch`, `prefab_instantiate_batch`, `gameobject_set_transform_batch` compile + execute with the new shape.
+
+### Task 16: Inline private upstream helpers per recipe
+
+**Files:** Modify: recipes calling upstream private static methods that were not ported as `_shared/*.md`.
+
+**Required outcomes:**
+- For each such method, paste the upstream body (verbatim from SHA `55b03ef3`) directly into the calling recipe as a `private static` method in the `CommandScript` class.
+- Do not create new `_shared/*.md` files. These are recipe-local helpers.
+
+**Scope as of 2026-04-21:**
+- `FindShaderByNameOrPath` → 1 recipe (`shader_check_errors`).
+- `GetSimilarTypes`, `AllowMultiple` → 1 recipe (`component_add`).
+- Any others surfaced by Task 18 reflection sweep.
+
+### Task 17: Unity 6000+ commitment + web-confirmed deprecation replacement
+
+**Files:**
+- Modify: `recipes/_shared/gameobject_finder.md` — drop `#if UNITY_6000_0_OR_NEWER` branches; keep only the new-API path.
+- Modify: 3 recipes with `#if UNITY_*` — `recipes/physics/physics_set_material.md`, `recipes/physics/physics_create_material.md`, `recipes/uitoolkit/uitk_get_panel_settings.md`. Collapse to the new-API path.
+- Modify: `README.md` — add `**Requires:** Unity 6000+` once.
+- Modify: recipe bodies using deprecated APIs, per Task 12 web confirmations.
+
+**Required outcomes:**
+- No `#if UNITY_` conditionals remain in `recipes/` (including `_shared/`).
+- `FindObjectsOfType<T>()` → `FindObjectsByType<T>(FindObjectsSortMode.None)` across 2 recipes, after Task 12 confirms the exact call signature.
+- `FindObjectOfType<T>()` → `FindFirstObjectByType<T>()` across 9 recipes, after Task 12 confirms.
+- Source URL from Task 12's web confirmation is referenced in the notes file per replacement, not inline in recipes.
+
+**Verification target:** grep for `#if UNITY_`, `FindObjectsOfType`, `FindObjectOfType` returns zero matches in `recipes/` (excluding `Resources.FindObjectsOfTypeAll` which is a different, non-deprecated API).
+
+### Task 18: Reflection-based `[Obsolete]` sweep
+
+**Intent:** catch deprecations missed by grep + memory.
+
+**Required outcomes:**
+- One `Unity_RunCommand` script iterates every rendered recipe, attempts to resolve every referenced type and member, and reports any `ObsoleteAttribute` hits. OR: enable `-warnaserror` for the comp smoke and let Unity's compiler surface deprecations as build failures.
+- Every new deprecation found is handled per Task 17 (web-confirm → replace). Recipes that fail comp because of a newly-found deprecation become `comp:B` pending confirmation.
+
+### Task 19: Tracker `R` (retired) state
+
+**Files:** Modify: `docs/superpowers/notes/recipe-validation-tracker.md` legend; `tools/tracker_update.py`; `tools/tracker_next.py`.
+
+**Required outcomes:**
+- Tracker legend gains `R` = retired with a redirect target recorded in the notes column (MCP tool name or other recipe path).
+- `tracker_update.py` accepts `R` as a valid value (current acceptance list is `x`/`-`/`B`).
+- `tracker_next.py` skips rows where any gate is `R` — they are not pending work.
+- Summary counters at top of tracker add a `retired: N / total` line alongside the existing gate counters.
+
+**Verification target:** `python3 tools/tracker_update.py package_list comp R --note "retired → Unity_PackageManager_GetData"` updates the cell and the summary. `tracker_next.py --gate comp` does not surface that recipe.
+
+### Task 20: Re-smoke comp gate across all domains
+
+**Required outcomes:**
+- `tools/render_recipe.py` renders every non-retired recipe.
+- `Unity_RunCommand` comp-smokes each (body in `if (false)`). Target: every recipe is `comp:x` or `R`. Remaining `B` cells are documented individually with reason.
+- Existing session 1 `B` cells are re-verified per the disposition table in `2026-04-21-recipes-compile-readiness-notes.md` §4.
+
+### Task 21: Selective `run` gate
+
+**Required outcomes:**
+- `run:x` verified for read-only recipes: queries that don't create, delete, or mutate scene/asset state. Target set includes most `*_get_*`, `*_list`, `*_find*`, `*_check_*` recipes.
+- Recipes that mutate state stay `run:-` with a "fixture required" note. A follow-up plan seeds fixtures; not in this cycle.
+
+### Revised execution order (replaces Tasks 0–10 wave for remaining work)
+
+1. **Task 19** — tracker `R` state + tool updates. Done first because it unblocks clean retirement accounting for Task 13.
+2. **Task 11** — fix extractor lambda bug; re-extract affected recipes.
+3. **Task 12** — pre-flight: mcp-tools.md review, package list, web-confirm deprecations.
+4. **Task 13** — retire-to-MCP (tombstone + skill routing).
+5. **Task 14** — install packages + drop compat shims + rewrite 2 navmesh recipes.
+6. **Task 15** — `*_batch` → `foreach` rewrite.
+7. **Task 16** — inline private upstream helpers.
+8. **Task 17** — Unity 6+ commit + apply web-confirmed deprecations.
+9. **Task 5** (from original plan, unchanged) — test async split.
+10. **Task 18** — reflection-based obsolete sweep; handle any new findings.
+11. **Task 20** — full comp re-smoke.
+12. **Task 21** — selective run gate.
+13. **Task 10** (from original plan, unchanged) — final audit + plan-exit notes.
 

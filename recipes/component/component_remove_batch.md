@@ -44,6 +44,13 @@ The `count` field reports how many instances of the component were removed from 
 - Each item is processed independently; failures in one item do not block others.
 - Snapshots each component for workflow undo before removing.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -54,35 +61,32 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        { result.SetResult(BatchExecutor.Execute<BatchRemoveComponentItem>(items, item =>
+        {
+            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (error != null) throw new System.Exception("Object not found");
 
-            return BatchExecutor.Execute<BatchRemoveComponentItem>(items, item =>
+            if (string.IsNullOrEmpty(item.componentType))
+                throw new System.Exception("componentType required");
+
+            var type = FindComponentType(item.componentType);
+            if (type == null)
+                throw new System.Exception($"Component type not found: {item.componentType}");
+
+            var components = go.GetComponents(type);
+            if (components.Length == 0)
+                throw new System.Exception($"Component not found: {item.componentType}");
+
+            Undo.RecordObject(go, "Batch Remove Component");
+            foreach (var c in components)
             {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
+                WorkflowManager.SnapshotObject(c);
+                Undo.DestroyObjectImmediate(c);
+            }
 
-                if (string.IsNullOrEmpty(item.componentType))
-                    throw new System.Exception("componentType required");
-
-                var type = FindComponentType(item.componentType);
-                if (type == null)
-                    throw new System.Exception($"Component type not found: {item.componentType}");
-
-                var components = go.GetComponents(type);
-                if (components.Length == 0)
-                    throw new System.Exception($"Component not found: {item.componentType}");
-
-                Undo.RecordObject(go, "Batch Remove Component");
-                foreach (var c in components)
-                {
-                    WorkflowManager.SnapshotObject(c);
-                    Undo.DestroyObjectImmediate(c);
-                }
-
-                EditorUtility.SetDirty(go);
-                return new { target = go.name, success = true, removed = type.Name, count = components.Length };
-            }, item => item.name ?? item.path);
-        */
+            EditorUtility.SetDirty(go);
+            return new { target = go.name, success = true, removed = type.Name, count = components.Length };
+        }, item => item.name ?? item.path)); return; }
     }
 }
 ```

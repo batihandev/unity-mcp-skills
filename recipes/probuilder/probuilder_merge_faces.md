@@ -12,6 +12,12 @@ Merge 2 or more faces into a single face on a ProBuilder mesh.
 - Returns an error if fewer than 2 valid faces are selected.
 - Useful to clean up over-subdivided areas or combine coplanar faces.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -22,11 +28,36 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name = "MyShape";
-        string faceIndexes = "2,3";
+        #if !PROBUILDER
+                    { result.SetResult(NoProBuilder()); return; }
+        #else
+                    var (pbMesh, err) = FindProBuilderMesh(name, instanceId, path);
+                    if (err != null) { result.SetResult(err); return; }
 
-        var res = UnitySkillsBridge.Call("probuilder_merge_faces", new { name, faceIndexes });
-        result.Log("Merged: {0}", res);
+                    var faces = SelectFaces(pbMesh, faceIndexes);
+                    if (faces.Count < 2)
+                        { result.SetResult(new { error = "At least 2 faces are required to merge. Provide faceIndexes as comma-separated indices." }); return; }
+
+                    Undo.RecordObject(pbMesh, "Merge Faces");
+                    WorkflowManager.SnapshotObject(pbMesh);
+
+                    var merged = MergeElements.Merge(pbMesh, faces);
+                    if (merged == null)
+                        { result.SetResult(new { error = "Failed to merge faces. Ensure the selected faces are valid." }); return; }
+
+                    pbMesh.ToMesh();
+                    pbMesh.Refresh();
+
+                    { result.SetResult(new
+                    {
+                        success = true,
+                        name = pbMesh.gameObject.name,
+                        instanceId = pbMesh.gameObject.GetInstanceID(),
+                        mergedFromCount = faces.Count,
+                        totalFaces = pbMesh.faceCount,
+                        totalVertices = pbMesh.vertexCount
+                    }); return; }
+        #endif
     }
 }
 ```

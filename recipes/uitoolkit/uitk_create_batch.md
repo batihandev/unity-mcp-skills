@@ -11,6 +11,11 @@ Create multiple USS and/or UXML files in a single batched call.
 - `type` and `savePath` are required for each item; `content` and `ussPath` are optional.
 - Asset editing is suspended for the duration of the batch for performance.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

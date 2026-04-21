@@ -13,6 +13,13 @@ Export a ScriptableObject's data to JSON format.
 | `assetPath` | string | Yes | - | Asset path of the ScriptableObject to export |
 | `savePath` | string | No | null | File path to save the JSON output; if omitted, JSON is returned inline |
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+
 ## Notes
 
 - Uses `EditorJsonUtility.ToJson` with pretty-print enabled.

@@ -11,6 +11,11 @@ Get information about the currently active scene.
 - Read-only — does not modify the scene.
 - Returns only root-level GameObject names; use `gameobject_find` or `gameobject_get_info` for deeper inspection.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -21,18 +26,15 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
-
-            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            var roots = scene.GetRootGameObjects();
-            return new
-            {
-                sceneName = scene.name,
-                scenePath = scene.path,
-                rootObjectCount = roots.Length,
-                rootObjects = System.Array.ConvertAll(roots, go => go.name)
-            };
-        */
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        var roots = scene.GetRootGameObjects();
+        { result.SetResult(new
+        {
+            sceneName = scene.name,
+            scenePath = scene.path,
+            rootObjectCount = roots.Length,
+            rootObjects = System.Array.ConvertAll(roots, go => go.name)
+        }); return; }
     }
 }
 ```

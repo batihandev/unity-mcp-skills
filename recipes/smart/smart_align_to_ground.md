@@ -13,6 +13,12 @@ Raycast selected objects downward to snap them to the ground surface. Requires o
 - `alignRotation = true` tilts the object so its up-axis matches the surface normal.
 - Supports undo and workflow snapshots.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -24,24 +30,21 @@ internal class CommandScript : IRunCommand
         float maxDistance = 100f;     // maximum raycast distance downward
         bool alignRotation = false;   // true = align up-axis to surface normal
 
-        /* Original Logic:
-
-            var selected = Selection.gameObjects;
-            if (selected.Length == 0) return new { error = "No objects selected" };
-            int aligned = 0;
-            foreach (var go in selected)
+        var selected = Selection.gameObjects;
+        if (selected.Length == 0) { result.SetResult(new { error = "No objects selected" }); return; }
+        int aligned = 0;
+        foreach (var go in selected)
+        {
+            WorkflowManager.SnapshotObject(go.transform);
+            Undo.RecordObject(go.transform, "Align To Ground");
+            if (Physics.Raycast(go.transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, maxDistance))
             {
-                WorkflowManager.SnapshotObject(go.transform);
-                Undo.RecordObject(go.transform, "Align To Ground");
-                if (Physics.Raycast(go.transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, maxDistance))
-                {
-                    go.transform.position = hit.point;
-                    if (alignRotation) go.transform.up = hit.normal;
-                    aligned++;
-                }
+                go.transform.position = hit.point;
+                if (alignRotation) go.transform.up = hit.normal;
+                aligned++;
             }
-            return new { success = true, aligned, total = selected.Length };
-        */
+        }
+        { result.SetResult(new { success = true, aligned, total = selected.Length }); return; }
     }
 }
 ```

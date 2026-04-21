@@ -15,6 +15,11 @@ Enable or disable the Error Pause setting in Play mode (equivalent to the pause 
 - Sets console flag bit `256` in `s_ConsoleFlags` via reflection.
 - Falls back to `EditorPrefs.SetBool("DeveloperMode_ErrorPause", enabled)` if the internal field is not found (e.g., future Unity versions).
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ## Recipe
 
 ```csharp
@@ -30,7 +35,7 @@ internal class CommandScript : IRunCommand
         var consoleType = System.Type.GetType("UnityEditor.ConsoleWindow, UnityEditor");
         if (consoleType == null)
         {
-            result.Return(new { error = "ConsoleWindow not found" });
+            result.SetResult(new { error = "ConsoleWindow not found" });
             return;
         }
 
@@ -39,14 +44,14 @@ internal class CommandScript : IRunCommand
         if (flagField == null)
         {
             EditorPrefs.SetBool("DeveloperMode_ErrorPause", enabled);
-            result.Return(new { success = true, enabled, note = "Set via EditorPrefs" });
+            result.SetResult(new { success = true, enabled, note = "Set via EditorPrefs" });
             return;
         }
 
         int flags = (int)flagField.GetValue(null);
         flags = enabled ? flags | 256 : flags & ~256;
         flagField.SetValue(null, flags);
-        result.Return(new { success = true, enabled });
+        result.SetResult(new { success = true, enabled });
     }
 }
 ```

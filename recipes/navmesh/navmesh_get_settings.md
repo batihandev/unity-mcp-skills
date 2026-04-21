@@ -6,6 +6,11 @@ Get the NavMesh build settings for the default agent (index 0). Returns agent ra
 
 **Returns:** `{ success, agentRadius, agentHeight, agentSlope, agentClimb }`
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.AI;

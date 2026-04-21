@@ -12,6 +12,13 @@ Configure Image component properties: type, fill, sprite, and pixel density.
 - `fillMethod` values: `Horizontal`, `Vertical`, `Radial90`, `Radial180`, `Radial360`.
 - Returns an error if the sprite at `spritePath` is not found.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

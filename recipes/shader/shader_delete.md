@@ -13,6 +13,13 @@ Delete a shader asset file from the project.
 - A workflow snapshot is taken before deletion for undo support.
 - The asset is removed via `AssetDatabase.DeleteAsset`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -25,18 +32,15 @@ internal class CommandScript : IRunCommand
     {
         string shaderPath = "Assets/Shaders/MyShader.shader";
 
-        /* Original Logic:
+        if (Validate.SafePath(shaderPath, "shaderPath", isDelete: true) is object pathErr) { result.SetResult(pathErr); return; }
+        if (!File.Exists(shaderPath))
+            { result.SetResult(new { error = $"Shader not found: {shaderPath}" }); return; }
 
-            if (Validate.SafePath(shaderPath, "shaderPath", isDelete: true) is object pathErr) return pathErr;
-            if (!File.Exists(shaderPath))
-                return new { error = $"Shader not found: {shaderPath}" };
+        var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shaderPath);
+        if (asset != null) WorkflowManager.SnapshotObject(asset);
 
-            var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shaderPath);
-            if (asset != null) WorkflowManager.SnapshotObject(asset);
-
-            AssetDatabase.DeleteAsset(shaderPath);
-            return new { success = true, deleted = shaderPath };
-        */
+        AssetDatabase.DeleteAsset(shaderPath);
+        { result.SetResult(new { success = true, deleted = shaderPath }); return; }
     }
 }
 ```

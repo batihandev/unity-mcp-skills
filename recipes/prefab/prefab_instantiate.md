@@ -33,6 +33,13 @@ Instantiate a single prefab asset into the current scene.
 - `prefab_spawn` does not exist — use this command.
 - Operation is registered with `Undo.RegisterCreatedObjectUndo`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## C# Template
 
 ```csharp
@@ -43,37 +50,35 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        // Resolve parent first
+        GameObject parentGo = null;
+        if (!string.IsNullOrEmpty(parentName) || parentInstanceId != 0 || !string.IsNullOrEmpty(parentPath))
+        {
+            var (found, parentErr) = GameObjectFinder.FindOrError(parentName, parentInstanceId, parentPath);
+            if (parentErr != null) { result.SetResult(parentErr); return; }
+            parentGo = found;
+        }
 
-            GameObject parentGo = null;
-            if (!string.IsNullOrEmpty(parentName) || parentInstanceId != 0 || !string.IsNullOrEmpty(parentPath))
-            {
-                var (found, parentErr) = GameObjectFinder.FindOrError(parentName, parentInstanceId, parentPath);
-                if (parentErr != null) return parentErr;
-                parentGo = found;
-            }
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+        if (prefab == null)
+            { result.SetResult(new { error = $"Prefab not found: {prefabPath}" }); return; }
 
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-            if (prefab == null)
-                return new { error = $"Prefab not found: {prefabPath}" };
+        var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+        if (instance == null)
+            { result.SetResult(new { error = $"Failed to instantiate prefab: {prefabPath}" }); return; }
 
-            var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
-            if (instance == null)
-                return new { error = $"Failed to instantiate prefab: {prefabPath}" };
+        if (parentGo != null)
+            instance.transform.SetParent(parentGo.transform, false);
 
-            if (parentGo != null)
-                instance.transform.SetParent(parentGo.transform, false);
+        instance.transform.localPosition = new Vector3(x, y, z);
 
-            instance.transform.localPosition = new Vector3(x, y, z);
+        if (!string.IsNullOrEmpty(name))
+            instance.name = name;
 
-            if (!string.IsNullOrEmpty(name))
-                instance.name = name;
+        Undo.RegisterCreatedObjectUndo(instance, "Instantiate Prefab");
+        WorkflowManager.SnapshotObject(instance, SnapshotType.Created);
 
-            Undo.RegisterCreatedObjectUndo(instance, "Instantiate Prefab");
-            WorkflowManager.SnapshotObject(instance, SnapshotType.Created);
-
-            return new { success = true, name = instance.name, instanceId = instance.GetInstanceID(), path = GameObjectFinder.GetPath(instance) };
-        */
+        { result.SetResult(new { success = true, name = instance.name, instanceId = instance.GetInstanceID(), path = GameObjectFinder.GetPath(instance) }); return; }
     }
 }
 ```

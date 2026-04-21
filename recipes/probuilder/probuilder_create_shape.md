@@ -14,6 +14,12 @@ Create a parametric ProBuilder shape in the scene.
 - For 2+ shapes prefer `probuilder_create_batch`.
 - Requires `com.unity.probuilder` package.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ## Recipe
 
 ```csharp
@@ -24,17 +30,33 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string shape = "Cube";
-        string name = "MyShape";
-        float x = 0f, y = 0f, z = 0f;
-        float sizeX = 1f, sizeY = 1f, sizeZ = 1f;
-        float rotX = 0f, rotY = 0f, rotZ = 0f;
-        string parent = null;
+        #if !PROBUILDER
+                    { result.SetResult(NoProBuilder()); return; }
+        #else
+                    if (!ShapeTypeMap.TryGetValue(shape, out var shapeType))
+                        { result.SetResult(new { error = $"Unknown shape: {shape}. Available: {string.Join(", ", ShapeTypeMap.Keys)}" }); return; }
 
-        var res = UnitySkillsBridge.Call("probuilder_create_shape", new {
-            shape, name, x, y, z, sizeX, sizeY, sizeZ, rotX, rotY, rotZ, parent
-        });
-        result.Log("Created shape: {0}", res);
+                    var pbMesh = CreatePBShape(shapeType, name, new Vector3(x, y, z), new Vector3(sizeX, sizeY, sizeZ), new Vector3(rotX, rotY, rotZ), parent);
+                    if (pbMesh == null)
+                        { result.SetResult(new { error = $"Failed to create ProBuilder shape: {shape}" }); return; }
+
+                    var go = pbMesh.gameObject;
+
+                    Undo.RegisterCreatedObjectUndo(go, "Create ProBuilder Shape");
+                    WorkflowManager.SnapshotObject(go, SnapshotType.Created);
+
+                    { result.SetResult(new
+                    {
+                        success = true,
+                        name = go.name,
+                        instanceId = go.GetInstanceID(),
+                        shape,
+                        position = new { x, y, z },
+                        size = new { x = sizeX, y = sizeY, z = sizeZ },
+                        vertexCount = pbMesh.vertexCount,
+                        faceCount = pbMesh.faceCount
+                    }); return; }
+        #endif
     }
 }
 ```

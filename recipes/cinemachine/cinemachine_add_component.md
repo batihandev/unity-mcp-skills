@@ -10,6 +10,13 @@ Add a Cinemachine component to a VCam by type name. **Legacy / CM2** — for CM3
 - The type name is resolved via `CinemachineAdapter.FindCinemachineType`; the `"Cinemachine"` prefix is added automatically if omitted.
 - This command does not remove existing components at the same pipeline stage. Use `cinemachine_set_component` on CM3 for proper stage management.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
