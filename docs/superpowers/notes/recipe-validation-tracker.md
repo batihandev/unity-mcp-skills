@@ -9,7 +9,7 @@ State as of 2026-04-21. Updated in-place by `tools/tracker_update.py`; queried b
 - **comp** — passes compile-only Unity_RunCommand (body in `if (false)`).
 - **run** — passes end-to-end Unity_RunCommand.
 
-Cell values: `x` = done, `-` = pending, `B` = blocker (see notes).
+Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired (all gates share this value; notes column records the redirect target — MCP tool name or replacement recipe path).
 
 ## Summary
 
@@ -18,6 +18,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes).
 - pre: **484** / 484
 - comp: **19** / 484
 - run: **1** / 484
+- retired: **0** / 484
 
 ## Domains
 

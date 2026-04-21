@@ -18,16 +18,24 @@ from pathlib import Path
 
 TRACKER = Path(__file__).resolve().parents[1] / "docs" / "superpowers" / "notes" / "recipe-validation-tracker.md"
 GATE_IDX = {"ext": 1, "pre": 2, "comp": 3, "run": 4}
-ROW = re.compile(r'^\|\s*([^|]+?)\s*\|\s*([-xB])\s*\|\s*([-xB])\s*\|\s*([-xB])\s*\|\s*([-xB])\s*\|([^|]*)\|$')
+# Cell values: x=done, -=pending, B=blocker, R=retired (redirect target in notes).
+ROW = re.compile(r'^\|\s*([^|]+?)\s*\|\s*([-xBR])\s*\|\s*([-xBR])\s*\|\s*([-xBR])\s*\|\s*([-xBR])\s*\|([^|]*)\|$')
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("recipe", help="Recipe stem (no .md extension)")
     ap.add_argument("gate", choices=list(GATE_IDX))
-    ap.add_argument("value", choices=["x", "-", "B"])
+    ap.add_argument("value", choices=["x", "-", "B", "R"])
     ap.add_argument("--note", default=None)
+    ap.add_argument("--retire-all", action="store_true",
+                    help="Set all four gates to the value (use with value=R). "
+                         "The note should name the redirect target.")
     args = ap.parse_args()
+
+    if args.retire_all and args.value != "R":
+        print("error: --retire-all is only valid with value=R", file=sys.stderr)
+        return 1
 
     lines = TRACKER.read_text(encoding="utf-8").splitlines()
     target = args.recipe.strip()
@@ -38,7 +46,10 @@ def main() -> int:
         if not m or m.group(1).strip() != target:
             continue
         cells = [m.group(1).strip(), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6).strip()]
-        cells[GATE_IDX[args.gate]] = args.value
+        if args.retire_all:
+            cells[1] = cells[2] = cells[3] = cells[4] = "R"
+        else:
+            cells[GATE_IDX[args.gate]] = args.value
         if args.note:
             stamp = date.today().isoformat()
             snippet = f"{stamp}: {args.note}"
@@ -52,12 +63,16 @@ def main() -> int:
         return 1
 
     totals = {"ext": 0, "pre": 0, "comp": 0, "run": 0}
+    retired = 0
     total_recipes = 0
     for line in lines:
         m = ROW.match(line)
         if not m:
             continue
         total_recipes += 1
+        # A recipe is retired when every gate cell is R.
+        if m.group(2) == m.group(3) == m.group(4) == m.group(5) == "R":
+            retired += 1
         for g, col in (("ext", 2), ("pre", 3), ("comp", 4), ("run", 5)):
             if m.group(col) == "x":
                 totals[g] += 1
@@ -74,6 +89,9 @@ def main() -> int:
         if in_summary:
             if line.startswith("- Total recipes:"):
                 new_lines.append(f"- Total recipes: **{total_recipes}**")
+                continue
+            if line.startswith("- retired:"):
+                new_lines.append(f"- retired: **{retired}** / {total_recipes}")
                 continue
             matched = False
             for g in ("ext", "pre", "comp", "run"):

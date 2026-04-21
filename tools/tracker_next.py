@@ -14,8 +14,9 @@ from pathlib import Path
 
 TRACKER = Path(__file__).resolve().parents[1] / "docs" / "superpowers" / "notes" / "recipe-validation-tracker.md"
 DOMAIN_HEADER = re.compile(r'^## (?P<name>[a-z_]+) \(\d+ recipes\)\s*$')
+# Cell values: x=done, -=pending, B=blocker, R=retired.
 ROW = re.compile(
-    r'^\|\s*(?P<recipe>[^|]+?)\s*\|\s*(?P<ext>[-xB])\s*\|\s*(?P<pre>[-xB])\s*\|\s*(?P<comp>[-xB])\s*\|\s*(?P<run>[-xB])\s*\|(?P<notes>[^|]*)\|'
+    r'^\|\s*(?P<recipe>[^|]+?)\s*\|\s*(?P<ext>[-xBR])\s*\|\s*(?P<pre>[-xBR])\s*\|\s*(?P<comp>[-xBR])\s*\|\s*(?P<run>[-xBR])\s*\|(?P<notes>[^|]*)\|'
 )
 
 
@@ -49,7 +50,11 @@ def main() -> int:
     args = ap.parse_args()
 
     rows = parse_tracker(TRACKER)
-    pending = [r for r in rows if r[args.gate] == "-"]
+    # Skip rows where any gate is R — retired recipes are not pending work,
+    # they've been replaced by an MCP tool or another recipe (see notes column).
+    pending = [r for r in rows
+               if r[args.gate] == "-"
+               and "R" not in (r["ext"], r["pre"], r["comp"], r["run"])]
     if args.domain:
         pending = [r for r in pending if r["domain"] == args.domain]
 
