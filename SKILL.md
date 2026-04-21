@@ -65,7 +65,6 @@ Do not attempt to work around missing files by fabricating recipe content.
 | package | `skills/package/SKILL.md` | Native MCP only (`Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData`) |
 | project | `skills/project/SKILL.md` | `Unity_GetProjectData` |
 | optimization | `skills/optimization/SKILL.md` | `Unity_RunCommand` |
-| sample | `skills/sample/SKILL.md` | Redirect skill — `sample/*` recipes map to `recipes/gameobject/*` / `recipes/scene/*` |
 | test | `skills/test/SKILL.md` | `Unity_RunCommand` |
 | scriptableobject | `skills/scriptableobject/SKILL.md` | `Unity_RunCommand` |
 

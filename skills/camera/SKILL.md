@@ -7,7 +7,7 @@ description: "Use when users want to move, rotate, or align the editor camera vi
 
 > Recipe path rule: `../../recipes/camera/<command>.md`
 >
-> Native-tool overlap: `camera_screenshot` overlaps with the native `Unity_Camera_Capture` tool. Prefer the native tool for simple captures; use `camera_screenshot` for precise resolution control or a specific camera target.
+> For Game Camera screenshots, use the native `Unity_Camera_Capture` tool.
 
 ## Overview
 
@@ -19,13 +19,13 @@ Control the Scene View camera.
 **DO NOT** (common hallucinations):
 - `camera_move` / `camera_rotate` do not exist → use `camera_set_transform` (Scene View) or `gameobject_set_transform` (Game Camera)
 - `camera_set_fov` does not exist → use `camera_set_properties` with `fieldOfView` parameter
-- `camera_*` skills control **two different cameras**: `camera_set_transform`/`camera_look_at`/`camera_align_view_to_object` control the **Scene View camera**; `camera_create`/`camera_set_properties`/`camera_screenshot` control **Game Cameras**
+- `camera_*` skills control **two different cameras**: `camera_set_transform`/`camera_look_at`/`camera_align_view_to_object` control the **Scene View camera**; `camera_create`/`camera_set_properties` control **Game Cameras**
 - `camera_delete` does not exist → use `gameobject_delete` on the camera GameObject
 
 **Routing**:
 - For Cinemachine virtual cameras → use `cinemachine` module
 - For Game Camera component properties → `camera_set_properties` / `camera_get_properties` (this module)
-- For scene screenshots → `scene_screenshot` (scene module) uses the Scene View; `camera_screenshot` uses a Game Camera
+- For scene screenshots → `scene_screenshot` (scene module) uses the Scene View; for a Game Camera capture use the native `Unity_Camera_Capture` tool
 
 ## Skills
 
@@ -108,20 +108,6 @@ Set Game Camera culling mask by layer names (comma-separated).
 
 **Returns:** `{ success, cullingMask }`
 
-### `camera_screenshot`
-Capture a screenshot from a Game Camera to file.
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| savePath | string | No | "Assets/screenshot.png" | File path to save the screenshot |
-| width | int | No | 1920 | Screenshot width in pixels |
-| height | int | No | 1080 | Screenshot height in pixels |
-| name | string | No | null | Name of the camera GameObject |
-| instanceId | int | No | 0 | Instance ID of the camera GameObject |
-| path | string | No | null | Hierarchy path of the camera GameObject |
-
-**Returns:** `{ success, path, width, height }`
-
 ### `camera_set_orthographic`
 Switch Game Camera between orthographic and perspective mode.
 
@@ -142,9 +128,3 @@ List all cameras in the scene.
 |-----------|------|----------|---------|-------------|
 
 **Returns:** `{ count, cameras: [{ name, instanceId, path, depth, orthographic, enabled }] }`
-
----
-
-## Redirects
-
-- `camera_screenshot` → use the native MCP tool `Unity_Camera_Capture` to render a specific Camera component. The recipe file is a redirect pointer.

@@ -110,4 +110,4 @@ Session 2 scope is in `docs/superpowers/plans/2026-04-21-recipes-compile-readine
 3. Task 19 (tracker `R` state) should land before Task 13 (retirements need the `R` cell value to exist).
 4. Follow the revised execution order 1–13 at the bottom of the plan doc.
 
-Do not revisit the locked decisions in the plan doc without evidence: no back-port of `CinemachineAdapter` / `XRReflectionHelper` / `BatchExecutor`, no SKILL.md deletions, no recipe deletions (tombstone only), no memory-based deprecation replacement (web-confirm first).
+Do not revisit the locked decisions in the plan doc without evidence: no back-port of `CinemachineAdapter` / `XRReflectionHelper` / `BatchExecutor`; retired recipes are deleted (no tombstones outside `docs/`); a SKILL.md is deleted only when another skill carries the same info; no memory-based deprecation replacement (web-confirm first).

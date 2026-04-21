@@ -430,7 +430,7 @@ Session 1 closed with ext 484/484, pre 484/484, comp 19/484, run 1/484. Mid-sess
 
 - Do not port `CinemachineAdapter`, `XRReflectionHelper`, `BatchExecutor`, `SkillResultHelper` as `_shared/*.md`.
 - Do not delete any `skills/<domain>/SKILL.md` file even if every recipe in that domain is retired. Rewrite as a routing stub pointing at the MCP replacement.
-- Do not delete retired recipe files. Replace body with a tombstone noting the MCP tool or alternative recipe path. Preserve filenames so external links don't 404.
+- Retired recipe files are deleted. The owning `skills/<domain>/SKILL.md` carries the routing info directly (names the MCP tool or points at the replacement recipe). `.md` files outside `docs/` are post-mortem only — no tombstones, no redirect files, no dated retirement narratives.
 - Do not replace a deprecated API based on model-memory alone. Web-confirm the replacement + semantics against Unity's official docs; record source URL in the notes file before applying.
 - Do not add back-compat to older Unity versions. Unity 6000+ is the baseline; root `README.md` states this once.
 
@@ -462,21 +462,22 @@ Session 1 closed with ext 484/484, pre 484/484, comp 19/484, run 1/484. Mid-sess
   - `UnityEditor.AI.NavMeshBuilder.BuildNavMesh()` / `.ClearAllNavMeshes()` → confirm whether `[Obsolete]` attribute is actually applied in Unity 6000+, and the `NavMeshSurface` workflow details (single-surface vs multi-surface, how to match legacy "bake whole scene" semantics).
 - Record source URLs (e.g. `https://docs.unity3d.com/6000.2/...`) in the notes file alongside each confirmation. Any replacement that cannot be web-confirmed is deferred, not applied from memory.
 
-### Task 13: Retire-to-MCP (tombstone recipes, route skills)
+### Task 13: Retire-to-MCP (delete recipes, route via skills)
 
-**Intent:** remove recipes that duplicate native Unity MCP tools while preserving discoverability.
+**Intent:** remove recipes that duplicate native Unity MCP tools. The owning skill file carries the routing directly — no tombstone recipe files.
 
 **Files:**
-- Modify: each retired recipe `.md` (tombstone form).
-- Modify: `skills/<domain>/SKILL.md` for every domain with retirements.
-- Modify: `skills/SKILL.md` (domain index) and `recipes/README.md` if an entire domain is retired.
-- Modify: tracker.
+- Delete: each retired recipe `.md`.
+- Modify: `skills/<domain>/SKILL.md` for every domain with retirements — the skill itself names the MCP tool and its usage.
+- Modify: `skills/SKILL.md` (internal index) and root `SKILL.md` (domain map) to drop any entry for a fully-retired domain (including its directory, e.g. `skills/sample/`) whose capability is covered elsewhere.
+- Delete: a `SKILL.md` whose only purpose is forwarding — treat "fully useless" as "carries no info another skill doesn't already carry." Mixed skills (asset / camera / console) stay but drop references to the deleted recipes; they mention the native MCP tool inline as the primary route.
+- Modify: tracker. Retired recipes use the `R` cell value (Task 19). Tracker rows remain as a historical record — tracker lives in `docs/` where dated entries are allowed.
 
 **Required outcomes:**
-- Every retired recipe has its body replaced with a tombstone that names the MCP tool + the required parameter names + a one-line example invocation. The recipe's original title + signature block is kept so link-backs don't break.
-- `skills/<domain>/SKILL.md` for domains with retirements is rewritten so the skill description points the reader at the MCP tool directly. Example: `skills/package/SKILL.md` becomes a one-page pointer to `Unity_PackageManager_ExecuteAction` + `Unity_PackageManager_GetData` with one example per operation.
-- If every recipe in a domain is retired, the `SKILL.md` stays; root `SKILL.md` moves that domain from the active list to an "MCP-covered" list; `recipes/README.md` mirrors the change. No SKILL.md deletion.
-- Tracker rows for retired recipes use the new `R` cell value (see Task 19).
+- Every retired recipe file is deleted. External links can still route via the skill.
+- No new redirect / tombstone files are created outside `docs/`.
+- The owning `skills/<domain>/SKILL.md` contains a post-mortem statement of what to do (e.g. "For Game Camera screenshots, use the native `Unity_Camera_Capture` tool.") with no "retired 2026-04-21" framing, no "this recipe is a redirect" narrative, no dates.
+- Fully-redundant skills are deleted entirely. Partially-retired skills stay with corrected content.
 
 **Retirement candidates (require Task 12 web-confirm + mcp-tools.md match):**
 - `package/*` (11) → `Unity_PackageManager_ExecuteAction`, `Unity_PackageManager_GetData`.
