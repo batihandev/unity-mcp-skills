@@ -22,6 +22,12 @@ See **[SETUP_GUIDE.md](docs/SETUP_GUIDE.md)** for how to connect this to your ag
 
 ---
 
+### Works with
+
+Skills follow the [superpowers](https://github.com/obra/superpowers) format.
+
+---
+
 ### Credits
 
 Skill library structure and data originally curated by [Besty0728](https://github.com/Besty0728/Unity-Skills).
