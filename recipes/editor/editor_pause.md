@@ -6,10 +6,7 @@ Toggle the pause state of play mode.
 
 **Returns:** `{ success, paused }` — `paused` reflects the new state after the toggle.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

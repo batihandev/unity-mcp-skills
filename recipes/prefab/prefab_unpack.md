@@ -31,12 +31,7 @@ Unpack a prefab instance, breaking its connection to the prefab asset.
 - After unpacking, the GameObject is a plain scene object with no prefab connection.
 - Operation is undoable — the snapshot is recorded before unpacking.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## C# Template
 

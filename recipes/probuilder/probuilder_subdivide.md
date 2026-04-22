@@ -12,12 +12,7 @@ Subdivide faces by connecting edge midpoints on a ProBuilder mesh.
 - Each subdivision pass multiplies face count roughly by 4 — use sparingly on high-poly meshes.
 - Use `probuilder_get_info` to check face count before subdividing.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.probuilder` package.
 

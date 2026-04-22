@@ -8,10 +8,7 @@ Set terrain heights in a rectangular region using a 2D array. Heights array is i
 
 > **Note:** `heights` is a jagged array where the outer index is Z and the inner index is X. All values must be in the 0-1 range (normalized, not world units).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

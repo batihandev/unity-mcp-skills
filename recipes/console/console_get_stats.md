@@ -13,10 +13,7 @@ Get log statistics (count by type). Uses the in-memory capture buffer when `cons
 - Capture mode differentiates `Exception` and `Assert` types; direct mode maps these to `Error`.
 - Direct mode reads up to 10 000 entries to build the count.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

@@ -24,11 +24,7 @@ Provide either `assetPath` (project asset) or a scene target (`name`/`instanceId
 | `instanceId` | int | no | Scene GameObject instance ID |
 | `path` | string | no | Scene hierarchy path |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ## Unity_RunCommand Template
 

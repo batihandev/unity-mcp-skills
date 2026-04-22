@@ -11,10 +11,7 @@ List all available Cinemachine component type names from the installed Cinemachi
 - Read-only — does not modify anything.
 - Useful for discovering valid values for `componentType` in `cinemachine_set_component`, `cinemachine_add_component`, and `cinemachine_add_extension`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

@@ -20,10 +20,7 @@ SceneSummarize(bool includeComponentStats = true, int topComponentsLimit = 10)
 
 Returns `success`, `sceneName`, `scenePath`, `isDirty`, `stats` (totalObjects, activeObjects, inactiveObjects, rootObjects, maxHierarchyDepth, lights, cameras, canvases), and `topComponents` array (component name + count, excluding Transform).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## RunCommand Recipe
 

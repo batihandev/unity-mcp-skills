@@ -19,10 +19,7 @@ SceneMaterials(bool includeProperties = false)
 
 Returns `success`, `totalMaterials`, `totalShaders`, `shaders` array grouped by shader name — each entry has `shader`, `materialCount`, `materials` (name, path, renderQueue, userCount, users[0..4], properties when requested).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## RunCommand Recipe
 

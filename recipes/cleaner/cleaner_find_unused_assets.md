@@ -34,10 +34,7 @@ Find potentially unused assets of a specific type by scanning dependencies acros
 - Use `cleaner_get_asset_usage` to confirm an individual asset before deletion.
 - To delete found assets, use `cleaner_delete_assets` (two-step confirmation required).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+**Prerequisites:** [`validate`](../_shared/validate.md)
 
 ## C# Template
 

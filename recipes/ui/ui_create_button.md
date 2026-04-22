@@ -10,11 +10,7 @@ Create a Button UI element with a text child label.
 - Text child uses TMP (`TextMeshProUGUI`) if available, otherwise legacy `Text`.
 - Use `ui_set_text` to change button label text after creation.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

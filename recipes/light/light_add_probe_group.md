@@ -11,11 +11,7 @@ Add a Light Probe Group component to a GameObject. Optionally populates a 3-D gr
 - Grid is only generated when all three of `gridX`, `gridY`, `gridZ` are > 0.
 - Probes are centered on the object (offset applied on X and Z axes).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;

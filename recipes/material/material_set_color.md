@@ -14,12 +14,7 @@ Set a color property on a material with optional HDR intensity.
 - `intensity > 1.0` creates HDR bloom (the stored color values exceed 1.0).
 - Target is resolved as a material asset path (if `path` ends in `.mat`) or via a GameObject renderer.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Recipe
 

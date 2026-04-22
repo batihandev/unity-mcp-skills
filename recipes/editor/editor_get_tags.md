@@ -8,10 +8,7 @@ Get all tags defined in the project's tag manager.
 
 Note: no top-level `success` key. `tags` is a string array from `InternalEditorUtility.tags`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

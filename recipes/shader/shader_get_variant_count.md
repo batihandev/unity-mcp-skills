@@ -13,10 +13,7 @@ Get the subshader and pass count for a shader as a proxy for variant complexity.
 - High pass counts can increase build times and GPU overhead; review shaders with many passes before shipping.
 - This does not enumerate keyword-driven variants; it counts declared passes only.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

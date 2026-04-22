@@ -52,11 +52,7 @@ With `includeProperties: true`, components that have key properties (Transform, 
 - Use this command to discover component type names before calling `component_set_property` or `component_get_properties`.
 - `path` in the response is the full hierarchy path as returned by `GameObjectFinder.GetPath`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## C# Template
 

@@ -12,12 +12,7 @@ Creates a stationary teleport destination at a specific position and rotation. A
 - The cylinder visual child ("Anchor Visual") has its auto-generated collider removed and is scaled `(1, 0.02, 1)`.
 - `parent`: name of a GameObject to parent the anchor under (optional).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
 

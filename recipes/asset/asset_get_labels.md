@@ -6,10 +6,7 @@ Get the labels currently attached to an asset.
 
 **Returns:** `{ success, assetPath, labels: [string] }`
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

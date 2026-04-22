@@ -11,12 +11,7 @@ Create a CM3 FreeLook rig: `CinemachineCamera` + `CinemachineOrbitalFollow(Three
 - `followName` and `lookAtName` can be set later with `cinemachine_set_targets`.
 - Tune the three-ring orbit with `cinemachine_configure_body` (`orbitStyle`, `topHeight`/`topRadius`, `midHeight`/`midRadius`, `bottomHeight`/`bottomRadius`).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

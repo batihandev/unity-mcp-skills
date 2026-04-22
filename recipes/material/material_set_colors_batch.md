@@ -15,12 +15,7 @@ Set colors on multiple GameObjects or material assets in a single call (efficien
 - Color channels are in the **0–1** range (not 0–255).
 - Prefer this over calling `material_set_color` repeatedly when setting colors on 2+ objects.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Recipe
 

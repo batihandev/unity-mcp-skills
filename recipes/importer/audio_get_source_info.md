@@ -23,10 +23,7 @@ Target resolution — provide at least one of `name`, `instanceId`, or `path`:
 | `instanceId` | int | no | GameObject instance ID |
 | `path` | string | no | Hierarchy path (e.g. `Player/Body`) |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## Unity_RunCommand Template
 

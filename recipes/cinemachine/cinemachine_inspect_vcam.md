@@ -11,11 +11,7 @@ Deeply inspect a VCam, returning name, priority, Follow/LookAt targets, lens set
 - `components` is an array of objects with `_type`, `settings`, and optionally `stage` (`Body`, `Aim`, `Noise`, `Extension`).
 - Read-only — does not modify anything.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;

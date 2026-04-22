@@ -6,10 +6,7 @@ Flatten terrain to a specific height in a circular region with cosine falloff.
 
 **Returns:** `{ success, centerX, centerZ, targetHeight, radius, strength }`
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

@@ -12,10 +12,7 @@ Get the active build target, build target group, and the list of scenes register
 - `scenes` lists only scenes added in Build Settings, not all scenes in the project.
 - `enabled` reflects whether a scene is checked on in the Build Settings panel.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## C# Template
 

@@ -31,10 +31,7 @@ model_set_import_settings(
 | `readable` | bool | no | CPU-readable mesh data |
 | `meshCompression` | string | no | `Off`, `Low`, `Medium`, `High` |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 

@@ -10,11 +10,7 @@ Parse a UXML file and return its element hierarchy.
 - `depth` controls how many levels of the XML tree are traversed before truncating.
 - Returns an error if the file does not exist or cannot be parsed as valid XML.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;

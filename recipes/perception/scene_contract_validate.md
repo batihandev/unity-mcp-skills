@@ -26,12 +26,7 @@ SceneContractValidate(
 
 Returns `success`, `sceneName`, `checkedRoots`, `checkedTags`, `checkedLayers`, `summary` (passed, errors, warnings, info), and `findings` array with `type`, `severity`, `name`, `message`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/perception_helpers.md` — for `PerceptionHelpers.*` / scene metric + hotspot types
-- `recipes/_shared/gameobject_finder.md` — required by `perception_helpers.md` for `GameObjectFinder.GetSceneObjects` / `GetDepth` / `GetCachedPath`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`perception_helpers`](../_shared/perception_helpers.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## RunCommand Recipe
 

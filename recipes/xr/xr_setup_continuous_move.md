@@ -12,12 +12,7 @@ Adds continuous stick locomotion to the XR Origin via ContinuousMoveProvider.
 - `enableFly`: when true, disables gravity-locked movement.
 - XRI 3 collapsed `ActionBasedContinuousMoveProvider` into `ContinuousMoveProvider`; this recipe uses the unified type.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
 

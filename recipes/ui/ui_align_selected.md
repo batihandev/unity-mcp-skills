@@ -11,10 +11,7 @@ Align the currently selected UI elements along a common edge or axis.
 - `alignment` values: `Left`, `Center`, `Right` (horizontal axis) or `Top`, `Middle`, `Bottom` (vertical axis).
 - `Center` aligns to the average X position; `Middle` aligns to the average Y position.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

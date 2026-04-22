@@ -28,10 +28,7 @@ List all available shaders in the project, combining asset-database shaders with
 - Results are deduplicated and sorted before the `limit` cap is applied.
 - To find all shaders, omit `filter` and raise `limit`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## C# Template
 

@@ -10,11 +10,7 @@ Lists all XR interactors in the scene (XRRayInteractor, XRDirectInteractor, XRSo
 - Pass `verbose=true` to include a short `properties` map for each interactor entry.
 - Read-only; does not modify the scene.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 **Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
 

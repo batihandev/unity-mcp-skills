@@ -29,10 +29,7 @@ sprite_set_import_settings(
 | `pivotX` | string | no | Pivot X as float string (e.g. `"0.5"`) |
 | `pivotY` | string | no | Pivot Y as float string (e.g. `"0.5"`) |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 

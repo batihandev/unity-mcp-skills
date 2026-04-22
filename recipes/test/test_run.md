@@ -17,10 +17,7 @@ Kick off all tests in a mode. Fire-and-forget: creates a `Filter` and calls
   `TestResults/PlayMode-all-menu.xml` depending on mode. `test_get_result`
   reads the newest matching XML.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

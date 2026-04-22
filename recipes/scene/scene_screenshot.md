@@ -8,10 +8,7 @@ Capture a screenshot of the Game View.
 
 `filename` is a bare filename only — no path separators. The file is always saved under `Assets/Screenshots/`. The directory is created if it does not exist. If `filename` has no extension, `.png` is appended automatically.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

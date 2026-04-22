@@ -11,12 +11,7 @@ Adds TeleportationProvider to the XR Origin. Auto-finds XR Origin if no target i
 - After this call, create teleport destinations with `xr_add_teleport_area` or `xr_add_teleport_anchor`.
 - Requires an XR Origin to already exist; create one with `xr_setup_rig` first.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
 

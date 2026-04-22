@@ -17,13 +17,7 @@ None.
 
 Returns `success`, `unityVersion`, `renderPipeline` (type, defaultShader, unlitShader), `input` (mode, inputSystemInstalled, legacyInputManagerAvailable), `ui` (route, uguiDetected, uiToolkitDetected), `packages` (cinemachine, timeline, navMesh, xr, proBuilder, inputSystem), `tests` (detected, nunitLoaded), `projectFolders` (scripts, scenes, prefabs, materials, tests), and `projectProfile`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/project_skills.md` — for `ProjectSkills.*` / `RenderPipelineType`
-- `recipes/_shared/perception_helpers.md` — for `PerceptionHelpers.*` / scene metric + hotspot types
-- `recipes/_shared/gameobject_finder.md` — required by `perception_helpers.md` for `GameObjectFinder.GetSceneObjects` / `GetDepth` / `GetCachedPath`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`project_skills`](../_shared/project_skills.md), [`perception_helpers`](../_shared/perception_helpers.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## RunCommand Recipe
 

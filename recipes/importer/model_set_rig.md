@@ -20,11 +20,7 @@ model_set_rig(assetPath: string, animationType: string, avatarSetup?: string)
 | `animationType` | string | yes | `None`, `Legacy`, `Generic`, `Humanoid` |
 | `avatarSetup` | string | no | `NoAvatar`, `CreateFromThisModel`, `CopyFromOther` |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 

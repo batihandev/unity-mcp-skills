@@ -12,10 +12,7 @@ Get all layer definitions from the project's TagManager. Read-only; no parameter
 - The returned array contains only non-empty layer names (Unity skips empty slots).
 - Layer indices are not returned; use `LayerMask.NameToLayer(name)` in code to get them.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## C# Template
 

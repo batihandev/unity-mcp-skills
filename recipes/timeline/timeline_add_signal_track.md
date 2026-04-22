@@ -10,11 +10,7 @@ Add a Signal track for event markers to a Timeline.
 - Locate the Director GameObject via `name`, `instanceId`, or `path` (at least one required)
 - Signal tracks hold `SignalEmitter` markers that fire `SignalAsset` events at specific times
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;

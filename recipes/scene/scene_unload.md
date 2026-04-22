@@ -8,10 +8,7 @@ Unload an additively loaded scene.
 
 `sceneName` can be the scene name (without `.unity`) or a path suffix. The scene is auto-saved if it has unsaved changes before being unloaded. Cannot unload the only loaded scene.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

@@ -29,12 +29,7 @@ Apply all overrides from a prefab instance to its source prefab asset. Equivalen
 - All instances of the prefab in the scene will reflect the saved changes.
 - Use `prefab_get_overrides` first to confirm what will be pushed to the asset.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## C# Template
 

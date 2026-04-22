@@ -17,11 +17,7 @@ Export console logs to a file. Uses the in-memory capture buffer when `console_s
 - Direct mode format: `[LogType] message`
 - Direct mode reads up to 1000 entries.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ## Recipe
 

@@ -11,12 +11,7 @@ Duplicate a GameObject. The copy is placed under the same parent and gets the su
 - At least one identifier (`name`, `instanceId`, or `path`) is required.
 - The copy is named `<originalName>_Copy` and placed at the same hierarchy level as the original.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Recipe
 

@@ -20,10 +20,7 @@ ScriptAnalyze(string scriptName, bool includePrivate = false)
 
 Returns `success`, `script`, `fullName`, `kind` (`MonoBehaviour` / `ScriptableObject` / `Class`), `baseClass`, `fields` (name, type, isSerializable), `properties` (name, type, canWrite), `methods` (name, returnType, parameters), `unityCallbacks` (list of implemented Unity lifecycle methods, MonoBehaviour only).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+**Prerequisites:** [`skills_common`](../_shared/skills_common.md)
 
 ## RunCommand Recipe
 

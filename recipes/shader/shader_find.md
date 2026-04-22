@@ -13,10 +13,7 @@ Find a shader by its exact internal name (case-sensitive).
 - `path` is `"(built-in)"` for Unity built-in shaders that have no asset file.
 - Returns an error if no shader with that name exists.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

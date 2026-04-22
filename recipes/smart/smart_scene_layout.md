@@ -16,11 +16,7 @@ Organize selected objects into a spatial layout (Linear, Grid, Circle, Arc). Req
 - `lookAtCenter` rotates each object to face the center; applies to Circle and Arc only.
 - Supports undo and workflow snapshots.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

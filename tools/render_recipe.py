@@ -19,6 +19,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 PREREQ_BULLET = re.compile(r'^-\s+`(recipes/_shared/[^`]+\.md)`')
+COMPACT_PREREQ_LINE = re.compile(r'^\*\*Prerequisites:\*\*\s+(.+)$')
+COMPACT_PREREQ_LINK = re.compile(r'\[`[^`]+`\]\(\.\./_shared/([^)]+)\)')
 CSHARP_FENCE = re.compile(r'^```csharp\s*$')
 PASTE_IN_HEADING = re.compile(r'^##\s+Paste-in\s*$', re.IGNORECASE)
 
@@ -57,6 +59,13 @@ def helper_block(helper_path: Path) -> str:
 
 
 def parse_prereqs(recipe_lines: list[str]) -> list[Path]:
+    # Compact form: single `**Prerequisites:** [`stem`](../_shared/file.md), ...` line.
+    for line in recipe_lines:
+        m = COMPACT_PREREQ_LINE.match(line.strip())
+        if m:
+            return [REPO / 'recipes/_shared' / stem
+                    for stem in COMPACT_PREREQ_LINK.findall(m.group(1))]
+    # Legacy bulleted form under `## Prerequisites`.
     in_section = False
     paths: list[Path] = []
     for line in recipe_lines:

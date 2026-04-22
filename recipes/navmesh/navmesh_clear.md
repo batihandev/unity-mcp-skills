@@ -6,10 +6,7 @@ Clear baked NavMesh data from every `NavMeshSurface` in the active scene. **This
 
 **Returns:** `{ success, surfaces, warning }`
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 **Requires:** `com.unity.ai.navigation` package.
 

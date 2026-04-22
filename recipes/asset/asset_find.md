@@ -17,10 +17,7 @@ Find assets using an AssetDatabase search filter.
 | `name` | `player` | By name (partial match) |
 | Combined | `t:Material player` | Multiple filters |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

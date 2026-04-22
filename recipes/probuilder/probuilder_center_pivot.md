@@ -12,12 +12,7 @@ Center the pivot to mesh bounds, or move it to a specific world position.
 - Provide any combination of `worldX`, `worldY`, `worldZ` to pin individual axes while auto-centering the rest.
 - Adjusting the pivot shifts the transform position without moving the visual mesh in the scene.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.probuilder` package.
 

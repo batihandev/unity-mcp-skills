@@ -13,10 +13,7 @@ List all shader assets in the project, with optional name filter and result limi
 - Each entry includes the shader's internal `name`, its `path`, and the number of exposed properties.
 - Built-in shaders (no path) are included when found via `AssetDatabase`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

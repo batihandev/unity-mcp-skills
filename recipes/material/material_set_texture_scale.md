@@ -12,12 +12,7 @@ Set the texture scale (UV tiling) for a texture property.
 - Scale defaults are `x = 1, y = 1` (one tile). A value of `2` tiles the texture twice.
 - Use `material_set_texture_offset` to control the starting UV position independently.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Recipe
 

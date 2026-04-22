@@ -13,10 +13,7 @@ Get all properties of a material (colors, floats, vectors, textures, integers, a
 - `keywords` is the raw array of enabled shader keywords.
 - Use this to discover property names before calling setters like `material_set_float` or `material_set_color`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

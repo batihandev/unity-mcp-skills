@@ -13,10 +13,7 @@ Read the project's UPM `Packages/manifest.json` and return its raw text + a hand
 - `manifestJson` is the raw file text, for callers who need `scopedRegistries` / `lock` / etc.
 - No package resolution is performed; this mirrors the on-disk manifest.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## C# Template
 

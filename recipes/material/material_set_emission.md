@@ -14,11 +14,7 @@ Set emission color with HDR intensity and auto-enable the emission keyword.
 - When `enableEmission = false` or `intensity <= 0`: disables the keyword and sets `globalIlluminationFlags = EmissiveIsBlack`.
 - There is no `alpha` parameter — emission alpha is always set to 1.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Recipe
 

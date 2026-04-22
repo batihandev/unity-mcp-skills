@@ -19,10 +19,7 @@ texture_get_info(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the texture |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+**Prerequisites:** [`validate`](../_shared/validate.md)
 
 ## Unity_RunCommand Template
 

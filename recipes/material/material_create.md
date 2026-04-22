@@ -15,12 +15,7 @@ Create a new material (auto-detects render pipeline if shader not specified). `s
 - Without `savePath` the material is created in memory only — it will be lost on editor restart. Specify `savePath` or call `asset_save` to persist it.
 - `savePath` is smart: a folder path or a path without `.mat` extension is resolved automatically.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Recipe
 

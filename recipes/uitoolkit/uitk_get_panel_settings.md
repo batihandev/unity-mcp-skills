@@ -10,11 +10,7 @@ Read all properties from an existing PanelSettings asset.
 - `renderMode`, `colliderUpdateMode`, and `colliderIsTrigger` are internal fields read via `SerializedObject`.
 - `textureSlotCount` requires Unity 6000.3+; earlier 6000.x returns only `vertexBudget`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;

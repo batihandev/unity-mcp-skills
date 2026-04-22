@@ -6,7 +6,8 @@ Assign a `SplineContainer` to a `CinemachineCamera`'s `CinemachineSplineDolly` c
 
 **Returns:** `{ success, message }` or `{ error }`
 
-**Prerequisites:**
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 - The `com.unity.splines` package must be installed alongside `com.unity.cinemachine`.
 - The VCam must already have `CinemachineSplineDolly` on the Body stage. Use `cinemachine_set_component` with `stage="Body"`, `componentType="CinemachineSplineDolly"` first.
 - The spline GameObject must have a `SplineContainer` component.

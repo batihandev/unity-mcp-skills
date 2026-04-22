@@ -11,10 +11,7 @@ Get the scripting define symbols (preprocessor symbols) configured for the curre
 - Uses `EditorUserBuildSettings.selectedBuildTargetGroup` to resolve the target.
 - Use `debug_set_defines` to modify the symbols.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

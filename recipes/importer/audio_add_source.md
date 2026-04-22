@@ -33,10 +33,7 @@ Target resolution — provide at least one of `name`, `instanceId`, or `path`:
 | `loop` | bool | no | `false` | Loop the clip |
 | `volume` | float | no | `1` | Initial volume |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## Unity_RunCommand Template
 

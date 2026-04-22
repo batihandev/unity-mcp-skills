@@ -11,11 +11,7 @@ Create a new light GameObject in the scene.
 - `range` applies to Point and Spot only; `spotAngle` applies to Spot only.
 - `shadows` defaults to `"soft"`; invalid value falls back to `None`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

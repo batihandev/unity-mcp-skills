@@ -41,10 +41,7 @@ Target resolution — provide at least one of `name`, `instanceId`, or `path`:
 | `spatialBlend` | float | no | 0 = 2D, 1 = 3D |
 | `priority` | int | no | 0–256 (0 = highest) |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## Unity_RunCommand Template
 

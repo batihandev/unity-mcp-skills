@@ -16,10 +16,7 @@ Write a custom message to the Unity console.
 - `type` matching is case-insensitive: `"Log"`, `"log"`, and `"LOG"` all produce `Debug.Log`.
 - Any unrecognized type value defaults to `Debug.Log`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

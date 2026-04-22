@@ -13,12 +13,7 @@ Duplicate an existing material asset.
 - If `savePath` is omitted, the duplicate is saved in the same folder as `sourcePath`.
 - `savePath` accepts a folder or a full path; `.mat` extension is appended automatically.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Recipe
 

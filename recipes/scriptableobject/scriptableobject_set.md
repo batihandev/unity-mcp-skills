@@ -6,12 +6,7 @@ Set a field or property on a ScriptableObject asset.
 
 **Returns:** `{ success, field, value }`
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
-- `recipes/_shared/value_converter.md` — for `ComponentSkills.ConvertValue`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md), [`value_converter`](../_shared/value_converter.md)
 
 ## Notes
 

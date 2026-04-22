@@ -6,11 +6,7 @@ List available ScriptableObject types in the project.
 
 **Returns:** `{ count, types }`
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`skills_common`](../_shared/skills_common.md)
 
 ## Parameters
 

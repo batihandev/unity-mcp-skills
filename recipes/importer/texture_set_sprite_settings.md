@@ -20,11 +20,7 @@ texture_set_sprite_settings(assetPath: string, pixelsPerUnit?: float, spriteMode
 | `pixelsPerUnit` | float | no | How many pixels correspond to one Unity unit |
 | `spriteMode` | string | no | `Single`, `Multiple`, `Polygon` |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 

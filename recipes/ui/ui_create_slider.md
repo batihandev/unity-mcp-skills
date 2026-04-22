@@ -10,11 +10,7 @@ Create a Slider UI element with background, fill area, and handle.
 - Background is grey `(0.8, 0.8, 0.8)`, fill is blue `(0.3, 0.6, 1)`, handle is white.
 - Fill area and handle area both get a 10-unit margin on each side via `sizeDelta`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

@@ -11,10 +11,7 @@ Create a URP shader from template (Unlit or Lit).
 - `savePath` must end in `.shader` and the parent directory must exist (or will be created)
 - Fails if the file already exists
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

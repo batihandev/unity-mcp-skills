@@ -24,10 +24,7 @@ ScriptDependencyGraph(
 
 Returns `success`, `entryScript`, `totalScriptsReached`, `maxHops`, `scripts` array (name, hop, kind, baseClass, filePath, dependsOn, dependedBy, fields, unityCallbacks), `edges` array (from, to, type, detail), `suggestedReadOrder`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+**Prerequisites:** [`skills_common`](../_shared/skills_common.md)
 
 ## RunCommand Recipe
 

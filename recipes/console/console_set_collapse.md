@@ -15,10 +15,7 @@ Enable or disable the Collapse mode in the Unity console (identical repeated mes
 - Sets console flag bit `32` via `SetConsoleFlag` (Unity 6+) or `s_ConsoleFlags` field (legacy).
 - Falls back to `EditorPrefs` if reflection fails.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

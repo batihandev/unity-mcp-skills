@@ -10,11 +10,7 @@ Generates a comprehensive XR scene diagnostic report listing all XR component ty
 - `summary` contains counts for `interactionManagers`, `origins`, `interactors`, `interactables`, `teleportTargets`.
 - Pass `verbose=true` to include a short `properties` map for each component entry.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 **Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
 

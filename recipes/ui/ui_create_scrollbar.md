@@ -11,11 +11,7 @@ Create a standalone Scrollbar UI element with a sliding area and handle.
 - Size is automatically set to 160x20 for horizontal directions and 20x160 for vertical.
 - `numberOfSteps = 0` means continuous (no snapping).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

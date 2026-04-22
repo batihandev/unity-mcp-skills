@@ -11,11 +11,7 @@ Create a `CinemachineSequencerCamera` that plays child cameras in order.
 - After creation, add child camera instructions with `cinemachine_sequencer_add_instruction`.
 - Configure loop behavior later with `cinemachine_configure_camera_manager`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

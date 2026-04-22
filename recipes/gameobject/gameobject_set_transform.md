@@ -51,12 +51,7 @@ GameObjectSetTransform(
 - The skill auto-detects whether the object has a `RectTransform` and applies UI params accordingly.
 - UI params (`anchoredPos*`, `anchor*`, `pivot*`, `sizeDelta*`, `width`, `height`) are silently ignored for non-UI objects.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Recipe
 

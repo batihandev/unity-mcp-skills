@@ -29,11 +29,7 @@ Create a prefab variant from an existing prefab. The variant inherits the source
 - The variant maintains a parent-child relationship with the source — changes to the source propagate unless overridden.
 - Workflow snapshot records the created variant asset.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ## C# Template
 

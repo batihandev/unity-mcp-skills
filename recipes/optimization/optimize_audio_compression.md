@@ -11,10 +11,7 @@ Batch-apply audio compression settings to all `AudioClip` assets matching an opt
 - `quality` — clamped to `[0, 1]`
 - `modified` — array of `{ path }` for each reimported clip
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

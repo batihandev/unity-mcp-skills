@@ -14,13 +14,7 @@ Create a new shader file at the given path. If `template` is omitted, a default 
 - If `template` is provided, its content is written verbatim; otherwise a full CG Unlit shader is generated.
 - The asset is imported and snapshot-tracked after creation.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
-- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md), [`skills_common`](../_shared/skills_common.md)
 
 ## Recipe
 

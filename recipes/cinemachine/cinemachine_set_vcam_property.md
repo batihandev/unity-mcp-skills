@@ -15,12 +15,7 @@ Set any property on a VCam or one of its pipeline components. Also routes to `ci
 - Supports dot-notation paths for nested fields, e.g. `propertyName = "TrackerSettings.BindingMode"`.
 - When `propertyName` is omitted and any of `fov`/`nearClip`/`farClip`/`orthoSize` are provided, the call is automatically forwarded to `CinemachineSetLens`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

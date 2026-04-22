@@ -10,11 +10,7 @@ Validates XR package installation, rig presence, managers, event system, collide
 - `xriInstalled` is always `true`, `xriMajorVersion` is always `3` — XRI 3.x is a hard dependency.
 - Pass `verbose=true` to include `interactorDetails` and `interactableDetails` arrays.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 **Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
 

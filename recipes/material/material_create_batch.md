@@ -13,11 +13,7 @@ Create multiple materials in a single call (efficient batch operation).
 - Each item delegates to `material_create` internally; pipeline auto-detection applies per item.
 - Prefer this over calling `material_create` repeatedly when creating 2+ materials.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Recipe
 

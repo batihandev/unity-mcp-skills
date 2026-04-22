@@ -6,11 +6,7 @@ List all parameters defined in an Animator Controller asset. Returns name, type 
 
 **Returns:** `{ controller, parameters: [{ name, type, defaultFloat, defaultInt, defaultBool }] }`
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;

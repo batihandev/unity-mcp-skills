@@ -12,11 +12,7 @@ Query vertex positions of a ProBuilder mesh. Essential before any vertex edit.
 - `verbose`: when `true` (default), returns all vertices even on large meshes. When `false` and mesh has more than 100 vertices, returns a summary with bounds instead.
 - Read-only — does not modify the mesh.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 **Requires:** `com.unity.probuilder` package.
 

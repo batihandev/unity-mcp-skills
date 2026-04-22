@@ -11,11 +11,7 @@ Find all UI elements in the scene, optionally filtered by UI type.
 - Each element entry contains `name`, `instanceId`, `path`, `uiType`, and `active`.
 - Search walks all Canvas trees in the scene including inactive children.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;

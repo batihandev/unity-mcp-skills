@@ -29,10 +29,7 @@ texture_set_platform_settings(
 | `compressionQuality` | int | no | 0–100 quality for compressed formats |
 | `overridden` | bool | no | Whether platform override is active (default `true` when any value supplied) |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
+**Prerequisites:** [`validate`](../_shared/validate.md)
 
 ## Unity_RunCommand Template
 

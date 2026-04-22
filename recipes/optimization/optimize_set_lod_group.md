@@ -9,11 +9,7 @@ Add or reconfigure an `LODGroup` component on a GameObject. LOD levels are assig
 - `lodDistances` — screen-relative heights in descending order, e.g. `"0.6,0.3,0.1"`. A culled LOD at `0` is appended automatically.
 - `lodLevels` — total LOD count including the zero-height culled level.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;

@@ -27,10 +27,7 @@ On duplicate:
 - The tag is written directly to `TagManager.asset` via `SerializedObject`; the change is immediately visible in the editor.
 - Does not support adding layers; for layers open Project Settings manually.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## C# Template
 

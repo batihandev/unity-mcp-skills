@@ -13,10 +13,7 @@ Get the list of keywords declared in a shader's keyword space.
 - To enable or disable a global keyword, use `shader_set_global_keyword`.
 - To control per-material keywords, use `material_set_keyword` from the material module.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

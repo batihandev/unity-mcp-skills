@@ -21,12 +21,7 @@ SceneFindHotspots(int deepHierarchyThreshold = 8, int largeChildCountThreshold =
 
 Returns `success`, `sceneName`, `thresholds`, `hotspotCount`, and `hotspots` array with `type`, `severity`, `name`, `path`, `count`, `depth`, `message`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/perception_helpers.md` — for `PerceptionHelpers.*` / scene metric + hotspot types
-- `recipes/_shared/gameobject_finder.md` — required by `perception_helpers.md` for `GameObjectFinder.GetSceneObjects` / `GetDepth` / `GetCachedPath`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`perception_helpers`](../_shared/perception_helpers.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## RunCommand Recipe
 

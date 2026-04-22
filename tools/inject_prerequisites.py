@@ -33,6 +33,7 @@ from pathlib import Path
 CSHARP_FENCE = re.compile(r'^```csharp\s*$')
 HEADING = re.compile(r'^##\s+\S')
 PREREQ_HEADING = re.compile(r'^##\s+Prerequisites\s*$')
+COMPACT_PREREQ = re.compile(r'^\*\*Prerequisites:\*\*')
 
 # (detection regex, shared filename, one-line purpose for the bullet)
 DETECTORS: list[tuple[re.Pattern[str], str, str]] = [
@@ -98,22 +99,24 @@ def detect_prereqs(csharp_text: str) -> list[tuple[str, str]]:
 
 
 def render_section(prereqs: list[tuple[str, str]]) -> list[str]:
-    lines = [
-        '## Prerequisites',
-        '',
-        'Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:',
-    ]
-    for fname, purpose in prereqs:
-        lines.append(f'- `recipes/_shared/{fname}` — {purpose}')
-    lines.append('')
-    return lines
+    """Compact single-line form:
+    **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
+    """
+    links = [f'[`{fname[:-3]}`](../_shared/{fname})' for fname, _ in prereqs]
+    return [f'**Prerequisites:** {", ".join(links)}', '']
 
 
 def find_existing_prereq_span(lines: list[str]) -> tuple[int, int] | None:
-    """Return (start_idx, end_idx_exclusive) of an existing `## Prerequisites` section, or None.
-    The section body is: optional description line(s), then `- ` bullets separated by blanks.
-    End the span at the first non-bullet non-blank non-description line (so footers like
-    `**Requires:** ...` that sit between the bullets and the next heading are preserved)."""
+    """Return (start_idx, end_idx_exclusive) of an existing Prerequisites section.
+    Handles both the compact single-line form (`**Prerequisites:** [...]`) and the
+    legacy `## Prerequisites` + description + bullets form. Legacy span ends at the
+    last bullet so footers like `**Requires:** ...` between bullets and next heading
+    are preserved."""
+    # Compact form
+    for i, line in enumerate(lines):
+        if COMPACT_PREREQ.match(line.strip()):
+            return i, i + 1
+    # Legacy section form
     for i, line in enumerate(lines):
         if PREREQ_HEADING.match(line):
             saw_bullet = False
@@ -129,13 +132,10 @@ def find_existing_prereq_span(lines: list[str]) -> tuple[int, int] | None:
                 elif stripped == '':
                     pass
                 elif not saw_bullet and stripped.startswith('Concatenate '):
-                    # generator description line
                     last_content = j
                 elif not saw_bullet:
-                    # unknown lead-in text before any bullet — absorb (old-style section)
                     last_content = j
                 else:
-                    # bullets ended; whatever this is belongs to following content
                     break
                 j += 1
             return i, last_content + 1

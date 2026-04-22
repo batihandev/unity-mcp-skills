@@ -12,10 +12,7 @@ Get Player Settings including product name, company name, bundle version, defaul
 - `apiCompatibility` and `scriptingBackend` reflect the currently selected build target group.
 - `fullscreen` is a string representation of the `FullScreenMode` enum (e.g. `"ExclusiveFullScreen"`, `"Windowed"`).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## C# Template
 

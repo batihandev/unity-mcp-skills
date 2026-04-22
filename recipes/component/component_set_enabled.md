@@ -38,12 +38,7 @@ If the component type does not support `enabled`:
 - Use this instead of `component_set_property` with `propertyName: "enabled"` — this path is safer and uses explicit type checks.
 - Uses `Undo.RecordObject` — operation is undoable.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## C# Template
 

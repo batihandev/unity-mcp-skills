@@ -8,10 +8,7 @@ Get all currently selected GameObjects.
 
 Note: no top-level `success` key — check that `count >= 0` to confirm a valid response.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

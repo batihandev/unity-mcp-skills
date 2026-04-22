@@ -10,11 +10,7 @@ Create a Panel UI element (full-stretch Image container) under a Canvas.
 - If `parent` is not found, the skill auto-creates or reuses the first Canvas in the scene.
 - The panel stretches to fill its parent by default (`anchorMin = 0,0` / `anchorMax = 1,1`).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

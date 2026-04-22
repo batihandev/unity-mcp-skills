@@ -11,11 +11,7 @@ Create a ScrollRect (ScrollView) UI element with viewport and content children.
 - Content is pre-sized to 400 height; resize with `ui_set_rect` after creation.
 - Viewport uses `RectMask2D` for clipping.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;

@@ -10,10 +10,7 @@ Calculate a path between two world-space points on the NavMesh. Returns the path
 - `valid`: `true` only when `status == "PathComplete"`
 - `corners`: array of `{ x, y, z }` waypoints
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

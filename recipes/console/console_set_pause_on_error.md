@@ -15,10 +15,7 @@ Enable or disable the Error Pause setting in Play mode (equivalent to the pause 
 - Sets console flag bit `256` in `s_ConsoleFlags` via reflection.
 - Falls back to `EditorPrefs.SetBool("DeveloperMode_ErrorPause", enabled)` if the internal field is not found (e.g., future Unity versions).
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

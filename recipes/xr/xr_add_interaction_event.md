@@ -12,13 +12,7 @@ Wires a persistent UnityEvent listener from an XR interactable's interaction eve
 - The target method must be public, instance, and parameterless (void) on a MonoBehaviour component of `targetName`.
 - Uses `UnityEventTools.AddVoidPersistentListener` — the listener persists across play mode.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
 

@@ -11,10 +11,7 @@ Force Unity to refresh the asset database and request immediate script recompila
 - Calls `AssetDatabase.Refresh()` then `CompilationPipeline.RequestScriptCompilation()`.
 - Unity will reload assemblies after compilation — subsequent `Unity_RunCommand` calls queue during that window.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

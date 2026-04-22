@@ -12,10 +12,7 @@ Start capturing Unity console logs into an in-memory buffer. Once active, `conso
 - Buffer capacity: 1000 entries (oldest are dropped when exceeded).
 - Call `console_stop_capture` when done to detach the log listener.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Recipe
 

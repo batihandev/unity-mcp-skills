@@ -11,10 +11,7 @@ Kick off test discovery via `TestRunnerApi.RetrieveTestList` and cache the resul
 - Read results via `test_list_read` (full list) or `test_list_categories` (distinct `[Category]` values) in a subsequent call.
 - Previous cache is overwritten.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

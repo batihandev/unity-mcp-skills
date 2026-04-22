@@ -14,11 +14,7 @@ Trigger a Cinemachine Impulse from the first `CinemachineImpulseSource` found in
 - Requires a `CinemachineImpulseListener` on the VCam(s) to perceive the impulse.
 - To configure the source definition (shape, duration, radius), use `cinemachine_configure_impulse_source`.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;

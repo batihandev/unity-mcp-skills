@@ -11,10 +11,7 @@ List distinct NUnit `[Category]` values from the test list cache. Stateless — 
 - Categories are deduplicated case-insensitively and sorted.
 - If the cache doesn't exist, the caller needs to run `test_list` first and retry after ~1s.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

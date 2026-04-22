@@ -30,10 +30,7 @@ Each object in the JSON array may contain:
 | `compressionFormat` | string | `PCM`, `Vorbis`, `ADPCM` |
 | `quality` | float | 0.0–1.0 Vorbis quality |
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## Unity_RunCommand Template
 

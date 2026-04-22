@@ -11,10 +11,7 @@ Read the cached test list produced by a prior `test_list` call. Stateless — no
 - If the cache doesn't exist, the caller needs to run `test_list` first and wait one or two seconds for the async callback to write the file.
 - `limit` is clamped to a minimum of 1.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

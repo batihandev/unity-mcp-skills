@@ -11,12 +11,7 @@ Adds XRSocketInteractor and a trigger SphereCollider (if no collider is present)
 - `recycleDelay`: seconds before the socket can accept another object after release.
 - `showHoverMesh` controls whether a ghost mesh appears when an interactable hovers over the socket.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
 

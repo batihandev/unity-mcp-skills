@@ -8,10 +8,7 @@ Search GameObjects in the scene by name pattern, tag, or component type.
 
 All filter parameters are optional and combinable. `namePattern` is a case-insensitive substring match. For regex, layer, or path-based search use `gameobject_find` (Full-Auto) instead.
 
-## Prerequisites
-
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
