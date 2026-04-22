@@ -20,6 +20,7 @@ Duplicate an existing material asset.
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {
@@ -63,6 +64,18 @@ internal class CommandScript : IRunCommand
             sourcePath,
             shader = newMaterial.shader.name
         }); return; }
+    }
+
+    private static string ResolveSavePath(string savePath, string name)
+    {
+        if (!savePath.EndsWith(".mat")) savePath = savePath.TrimEnd('/') + "/" + name + ".mat";
+        return savePath.Replace("\\", "/");
+    }
+
+    private static void EnsureDirectoryExists(string path)
+    {
+        var dir = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
     }
 }
 ```
