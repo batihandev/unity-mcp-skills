@@ -29,6 +29,16 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
 
+internal sealed class _MatInfo_sm
+{
+    public string name;
+    public string shader;
+    public int renderQueue;
+    public string path;
+    public List<string> users;
+    public List<object> properties;
+}
+
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -36,7 +46,7 @@ internal class CommandScript : IRunCommand
         bool includeProperties = false;
 
         var renderers = FindHelper.FindAll<Renderer>();
-        var materialMap = new Dictionary<string, MaterialInfo>();
+        var materialMap = new Dictionary<string, _MatInfo_sm>();
 
         foreach (var renderer in renderers)
         {
@@ -46,7 +56,7 @@ internal class CommandScript : IRunCommand
                 var key = mat.GetInstanceID().ToString();
                 if (!materialMap.ContainsKey(key))
                 {
-                    materialMap[key] = new MaterialInfo
+                    materialMap[key] = new _MatInfo_sm
                     {
                         name = mat.name,
                         shader = mat.shader != null ? mat.shader.name : "null",
@@ -90,7 +100,7 @@ internal class CommandScript : IRunCommand
             .OrderByDescending(g => g.materialCount)
             .ToList();
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             totalMaterials = materialMap.Count,

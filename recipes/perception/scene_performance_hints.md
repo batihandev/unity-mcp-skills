@@ -72,7 +72,7 @@ internal class CommandScript : IRunCommand
             hints.Add(new { priority = 0, category = "OK", issue = "No obvious performance issues",
                 suggestion = "Scene looks good", fixSkill = (string)null });
 
-        result.SetValue(new { success = true, hintCount = hints.Count, hints });
+        result.SetResult(new { success = true, hintCount = hints.Count, hints });
     }
 }
 ```

@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **328** / 485
+- comp: **337** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -353,22 +353,22 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| hierarchy_describe | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| hierarchy_describe | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: SetValue→SetResult; added BuildHierarchyTree impl |
 | project_stack_detect | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: depends on 6+ upstream private helpers (CollectSceneMetrics, ReadInstalledPackageIds, FindTypeInAssemblies, DetermineUiRoute, DetectInputHandling, DetermineProjectProfile) plus ProjectSkills surface. Full inline would 3-4x the recipe. Also calls result.SetValue (wrong API). Follow-up task: either fully inline (~200 lines) or split into narrower recipes (project_get_render_pipeline, project_get_input_system, project_get_ui_route).; 2026-04-22: Created _shared/project_skills.md + _shared/perception_helpers.md for shared upstream surface; recipe now uses ProjectSkills.* + PerceptionHelpers.* prefixes. Helpers live-smoked (URP + 59 packages detected). |
 | scene_analyze | R | R | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Retired: meta-aggregator delegating to scene_component_stats + scene_health_check + scene_contract_validate + project_stack_detect. Agents call the 4 recipes sequentially. |
 | scene_component_stats | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult; 2026-04-22: Task 21: live — CollectSceneMetrics walks 87 scene objects cleanly; top components RectTransform(57)/CanvasRenderer(47)/Image(26); all downstream recipe logic is pure transform over this dict |
-| scene_context | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scene_context | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: top-level internal struct _CodeDepEdge_sc; SetValue→SetResult; stubs added |
 | scene_contract_validate | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult; 2026-04-22: Task 21: live — CollectSceneMetrics walks 87 scene objects cleanly; top components RectTransform(57)/CanvasRenderer(47)/Image(26); all downstream recipe logic is pure transform over this dict |
-| scene_dependency_analyze | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scene_dependency_analyze | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: top-level internal struct _DepEdge_sda; SetValue→SetResult; stubs added |
 | scene_diff | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: snapshots scene + diffs; ~135-line recipe with upstream private helpers. Inline scope deferred; similar treatment to project_stack_detect.; 2026-04-22: Rewrite: typed _SceneDiffEntry + CaptureSceneSnapshot inline; replaced Newtonsoft.Json with hand-parsed snapshot JSON; SetValue→SetResult |
-| scene_export_report | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scene_export_report | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: top-level internal struct _DepEdge_ser; SetValue→SetResult; stubs added |
 | scene_find_hotspots | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult; 2026-04-22: Task 21: live — CollectSceneMetrics walks 87 scene objects cleanly; top components RectTransform(57)/CanvasRenderer(47)/Image(26); all downstream recipe logic is pure transform over this dict |
 | scene_health_check | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult; 2026-04-22: Task 21: live — CollectSceneMetrics walks 87 scene objects cleanly; top components RectTransform(57)/CanvasRenderer(47)/Image(26); all downstream recipe logic is pure transform over this dict |
-| scene_materials | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_performance_hints | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_spatial_query | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_summarize | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_tag_layer_stats | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scene_materials | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: SetValue→SetResult; added _MatInfo_sm class |
+| scene_performance_hints | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: SetValue→SetResult |
+| scene_spatial_query | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: SetValue→SetResult (2 occurrences) |
+| scene_summarize | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: SetValue→SetResult |
+| scene_tag_layer_stats | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: SetValue→SetResult |
 | script_analyze | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: 2026-04-22: Task 20: full rewrite — BindingFlags removed, missing helpers added, result.SetValue→SetResult, static string[] for callbacks |
 | script_dependency_graph | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: 2026-04-22: Task 20: full rewrite — BindingFlags removed, missing helpers added, HashSet→List for dict values, result.SetValue→SetResult |
 

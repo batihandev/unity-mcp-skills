@@ -58,7 +58,7 @@ internal class CommandScript : IRunCommand
             var go = GameObjectFinder.Find(nearObject);
             if (go == null)
             {
-                result.SetValue(new { success = false, error = $"Object '{nearObject}' not found" });
+                result.SetResult(new { success = false, error = $"Object '{nearObject}' not found" });
                 return;
             }
             center = go.transform.position;
@@ -99,7 +99,7 @@ internal class CommandScript : IRunCommand
             ? found.Select(f => f.info).ToList()
             : found.OrderBy(f => f.dist).Take(maxResults).Select(f => f.info).ToList();
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             center = new { x = center.x, y = center.y, z = center.z },

@@ -82,7 +82,7 @@ internal class CommandScript : IRunCommand
             .Select(kv => (object)new { component = kv.Key, count = kv.Value })
             .ToArray();
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = scene.name,

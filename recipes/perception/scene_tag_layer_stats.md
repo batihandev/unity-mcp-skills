@@ -56,7 +56,7 @@ internal class CommandScript : IRunCommand
                 emptyLayers.Add(layerName);
         }
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             totalObjects = allObjects.Count,

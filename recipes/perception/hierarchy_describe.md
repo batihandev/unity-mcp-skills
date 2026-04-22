@@ -60,13 +60,32 @@ internal class CommandScript : IRunCommand
         if (allRoots.Length > maxItemsPerLevel)
             sb.AppendLine($"... and {allRoots.Length - maxItemsPerLevel} more root objects");
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = scene.name,
             hierarchy = sb.ToString(),
             totalObjectsShown = totalShown
         });
+    }
+
+    private static void BuildHierarchyTree(System.Text.StringBuilder sb, Transform t, int depth, int maxDepth, bool includeInactive, int maxItemsPerLevel, ref int totalShown, List<Component> componentBuffer)
+    {
+        if (depth > maxDepth) return;
+        var indent = new string(' ', depth * 2);
+        componentBuffer.Clear();
+        t.gameObject.GetComponents(componentBuffer);
+        var comps = string.Join(", ", componentBuffer.ConvertAll(c => c != null && !(c is Transform) ? c.GetType().Name : null).FindAll(s => s != null));
+        sb.AppendLine($"{indent}{t.gameObject.name}{(comps.Length > 0 ? $" [{comps}]" : "")}");
+        totalShown++;
+        int childCount = 0;
+        foreach (Transform child in t)
+        {
+            if (!includeInactive && !child.gameObject.activeInHierarchy) continue;
+            if (childCount >= maxItemsPerLevel) { sb.AppendLine($"{indent}  ... more"); break; }
+            BuildHierarchyTree(sb, child, depth + 1, maxDepth, includeInactive, maxItemsPerLevel, ref totalShown, componentBuffer);
+            childCount++;
+        }
     }
 }
 ```

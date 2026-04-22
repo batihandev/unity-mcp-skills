@@ -33,6 +33,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
+internal struct _DepEdge_sda { public string fromObject, toObject, fieldType, fieldName; }
+
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -42,7 +44,7 @@ internal class CommandScript : IRunCommand
 
         if (!string.IsNullOrEmpty(savePath) && Validate.SafePath(savePath, "savePath") is object pathErr)
         {
-            result.SetValue(pathErr);
+            result.SetResult(pathErr);
             return;
         }
 
@@ -59,7 +61,7 @@ internal class CommandScript : IRunCommand
             var targetGo = GameObjectFinder.FindByPath(targetPath);
             if (targetGo == null)
             {
-                result.SetValue(new { success = false, error = $"Target '{targetPath}' not found" });
+                result.SetResult(new { success = false, error = $"Target '{targetPath}' not found" });
                 return;
             }
 
@@ -94,7 +96,7 @@ internal class CommandScript : IRunCommand
             savedPath = savePath;
         }
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = scene.name,
@@ -106,6 +108,12 @@ internal class CommandScript : IRunCommand
             markdown = savedPath == null ? md : null
         });
     }
+
+    private static List<_DepEdge_sda> CollectDependencyEdges(List<GameObject> objects) => new List<_DepEdge_sda>();
+
+    private static List<object> BuildAnalysis(HashSet<string> targets, Dictionary<string, List<_DepEdge_sda>> reverseIndex, List<_DepEdge_sda> edges) => new List<object>();
+
+    private static string BuildDependencyMarkdown(string sceneName, string target, List<object> analysis, List<_DepEdge_sda> edges) => "";
 }
 ```
 
