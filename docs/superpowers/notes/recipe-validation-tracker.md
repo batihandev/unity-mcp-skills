@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **182** / 485
+- comp: **197** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -266,16 +266,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| light_add_probe_group | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_add_reflection_probe | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_create | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_find_all | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_get_lightmap_settings | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: Task 21 |
-| light_set_enabled | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_set_enabled_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
-| light_set_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_set_properties_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
+| light_add_probe_group | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| light_add_reflection_probe | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| light_create | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| light_find_all | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| light_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| light_get_lightmap_settings | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: Task 21; 2026-04-22: Task 20: comp-smoke live |
+| light_set_enabled | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| light_set_enabled_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; 2026-04-22: Task 20: comp-smoke live |
+| light_set_properties | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| light_set_properties_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; 2026-04-22: Task 20: comp-smoke live |
 
 ## material (21 recipes)
 
@@ -307,16 +307,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| navmesh_add_agent | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| navmesh_add_obstacle | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| navmesh_bake | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: NavMeshSurface rewrite (Task 14) |
-| navmesh_calculate_path | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| navmesh_clear | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: NavMeshSurface rewrite (Task 14) |
-| navmesh_get_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| navmesh_sample_position | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| navmesh_set_agent | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| navmesh_set_area_cost | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| navmesh_set_obstacle | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| navmesh_add_agent | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| navmesh_add_obstacle | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| navmesh_bake | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: NavMeshSurface rewrite (Task 14); 2026-04-22: Task 20: comp-smoke live |
+| navmesh_calculate_path | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| navmesh_clear | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: NavMeshSurface rewrite (Task 14); 2026-04-22: Task 20: comp-smoke live |
+| navmesh_get_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| navmesh_sample_position | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| navmesh_set_agent | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| navmesh_set_area_cost | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| navmesh_set_obstacle | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
 
 ## optimization (10 recipes)
 
