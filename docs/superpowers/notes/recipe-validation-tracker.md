@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **255** / 485
+- comp: **265** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -167,18 +167,18 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| editor_execute_menu | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_get_context | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_get_layers | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_get_selection | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_get_state | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_get_tags | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 9 tags returned (Task 21) |
-| editor_pause | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_play | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
-| editor_redo | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_select | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_stop | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_undo | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| editor_execute_menu | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: EditorApplication.ExecuteMenuItem, clean |
+| editor_get_context | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: Selection+AssetDatabase+SceneManager, GameObjectFinder.GetPath stub |
+| editor_get_layers | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: Enumerable.Range LINQ, clean |
+| editor_get_selection | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: Selection.gameObjects LINQ, clean |
+| editor_get_state | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: EditorApplication properties only |
+| editor_get_tags | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 9 tags returned (Task 21); 2026-04-23: InternalEditorUtility.tags, clean |
+| editor_pause | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: EditorApplication.isPaused toggle |
+| editor_play | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign; 2026-04-23: EditorApplication.isPlaying, clean |
+| editor_redo | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: Undo.PerformRedo, clean |
+| editor_select | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: Selection.activeGameObject+GameObjectFinder.FindOrError |
+| editor_stop | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: EditorApplication.isPlaying=false, clean |
+| editor_undo | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: Undo.PerformUndo, clean |
 
 ## event (10 recipes)
 
