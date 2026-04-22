@@ -24,19 +24,33 @@ ScriptDependencyGraph(
 
 Returns `success`, `entryScript`, `totalScriptsReached`, `maxHops`, `scripts` array (name, hop, kind, baseClass, filePath, dependsOn, dependedBy, fields, unityCallbacks), `edges` array (from, to, type, detail), `suggestedReadOrder`.
 
-**Prerequisites:** [`skills_common`](../_shared/skills_common.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`skills_common`](../_shared/skills_common.md)
 
 ## RunCommand Recipe
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
+internal class _DepEdge
+{
+    public string fromObject, toObject, fieldType, fieldName;
+    public _DepEdge(string f, string t, string ft, string fn) { fromObject=f; toObject=t; fieldType=ft; fieldName=fn; }
+}
+
 internal class CommandScript : IRunCommand
 {
+    static readonly string[] _UnityCallbacks =
+    {
+        "Awake","Start","Update","FixedUpdate","LateUpdate","OnEnable","OnDisable","OnDestroy",
+        "OnApplicationQuit","OnTriggerEnter","OnTriggerExit","OnTriggerStay",
+        "OnCollisionEnter","OnCollisionExit","OnCollisionStay",
+        "OnMouseDown","OnMouseUp","OnMouseDrag","OnMouseEnter","OnMouseExit",
+        "OnGUI","OnDrawGizmos","OnDrawGizmosSelected","OnValidate","Reset"
+    };
+
     public void Execute(ExecutionResult result)
     {
         string scriptName = "MyScript"; // replace with target class name
@@ -45,7 +59,7 @@ internal class CommandScript : IRunCommand
 
         if (string.IsNullOrEmpty(scriptName))
         {
-            result.SetValue(new { success = false, error = "scriptName is required" });
+            result.SetResult(new { success = false, error = "scriptName is required" });
             return;
         }
 
@@ -53,44 +67,42 @@ internal class CommandScript : IRunCommand
             .Where(t => t.IsClass && IsUserScript(t))
             .ToList();
 
-        var entryType = allTypes.FirstOrDefault(t => t.Name.Equals(scriptName, StringComparison.OrdinalIgnoreCase));
+        var entryType = allTypes.FirstOrDefault(t => t.Name.Equals(scriptName, System.StringComparison.OrdinalIgnoreCase));
         if (entryType == null)
         {
-            result.SetValue(new { success = false, error = $"Script '{scriptName}' not found among user scripts" });
+            result.SetResult(new { success = false, error = $"Script '{scriptName}' not found among user scripts" });
             return;
         }
 
         var entryName = entryType.Name;
-        var codeEdges = CollectCodeDependencies();
+        var codeEdges = CollectCodeDependencies(allTypes);
 
-        var outgoing = new Dictionary<string, HashSet<string>>();
-        var incoming = new Dictionary<string, HashSet<string>>();
+        var outgoing = new Dictionary<string, List<string>>();
+        var incoming = new Dictionary<string, List<string>>();
         foreach (var e in codeEdges)
         {
-            if (!outgoing.ContainsKey(e.fromObject)) outgoing[e.fromObject] = new HashSet<string>();
-            outgoing[e.fromObject].Add(e.toObject);
-            if (!incoming.ContainsKey(e.toObject)) incoming[e.toObject] = new HashSet<string>();
-            incoming[e.toObject].Add(e.fromObject);
+            if (!outgoing.ContainsKey(e.fromObject)) outgoing[e.fromObject] = new List<string>();
+            if (!outgoing[e.fromObject].Contains(e.toObject)) outgoing[e.fromObject].Add(e.toObject);
+            if (!incoming.ContainsKey(e.toObject)) incoming[e.toObject] = new List<string>();
+            if (!incoming[e.toObject].Contains(e.fromObject)) incoming[e.toObject].Add(e.fromObject);
         }
 
         var visited = new Dictionary<string, int>();
-        var queue = new Queue<(string name, int hop)>();
-        visited[entryName] = 0;
-        queue.Enqueue((entryName, 0));
+        var bfsQueue = new Queue<string>();
+        var bfsHops = new Dictionary<string, int>();
+        visited[entryName] = 0; bfsHops[entryName] = 0; bfsQueue.Enqueue(entryName);
 
-        while (queue.Count > 0)
+        while (bfsQueue.Count > 0)
         {
-            var (current, hop) = queue.Dequeue();
+            var current = bfsQueue.Dequeue();
+            var hop = bfsHops[current];
             if (hop >= maxHops) continue;
-
             if (outgoing.TryGetValue(current, out var outs))
-                foreach (var n in outs) if (!visited.ContainsKey(n)) { visited[n] = hop + 1; queue.Enqueue((n, hop + 1)); }
-
+                foreach (var n in outs) if (!visited.ContainsKey(n)) { visited[n] = hop + 1; bfsHops[n] = hop + 1; bfsQueue.Enqueue(n); }
             if (incoming.TryGetValue(current, out var ins))
-                foreach (var n in ins) if (!visited.ContainsKey(n)) { visited[n] = hop + 1; queue.Enqueue((n, hop + 1)); }
+                foreach (var n in ins) if (!visited.ContainsKey(n)) { visited[n] = hop + 1; bfsHops[n] = hop + 1; bfsQueue.Enqueue(n); }
         }
 
-        // Build file path lookup
         var filePathMap = new Dictionary<string, string>();
         foreach (var guid in AssetDatabase.FindAssets("t:MonoScript", new[] { "Assets" }))
         {
@@ -98,20 +110,17 @@ internal class CommandScript : IRunCommand
             var ms = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
             if (ms == null) continue;
             var cls = ms.GetClass();
-            if (cls != null && visited.ContainsKey(cls.Name))
-                filePathMap[cls.Name] = path;
+            if (cls != null && visited.ContainsKey(cls.Name)) filePathMap[cls.Name] = path;
         }
 
-        var typeMap = new Dictionary<string, Type>();
+        var typeMap = new Dictionary<string, System.Type>();
         foreach (var t in allTypes)
-            if (visited.ContainsKey(t.Name) && !typeMap.ContainsKey(t.Name))
-                typeMap[t.Name] = t;
+            if (visited.ContainsKey(t.Name) && !typeMap.ContainsKey(t.Name)) typeMap[t.Name] = t;
 
         var scripts = new List<object>();
         foreach (var kv in visited.OrderBy(k => k.Value).ThenBy(k => k.Key))
         {
-            var sName = kv.Key;
-            var hop = kv.Value;
+            var sName = kv.Key; var hop = kv.Value;
             var type = typeMap.ContainsKey(sName) ? typeMap[sName] : null;
 
             var dependsOn = outgoing.ContainsKey(sName) ? outgoing[sName].Where(visited.ContainsKey).OrderBy(n => n).ToList() : new List<string>();
@@ -124,35 +133,36 @@ internal class CommandScript : IRunCommand
             if (type != null)
             {
                 kind = typeof(MonoBehaviour).IsAssignableFrom(type) ? "MonoBehaviour"
-                    : typeof(ScriptableObject).IsAssignableFrom(type) ? "ScriptableObject"
-                    : "Class";
+                    : typeof(ScriptableObject).IsAssignableFrom(type) ? "ScriptableObject" : "Class";
                 baseClass = type.BaseType?.Name;
 
                 if (includeDetails)
                 {
-                    fields = type.GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly)
-                        .Where(f => !f.Name.StartsWith("<"))
-                        .Select(f => (object)new { name = f.Name, type = GetFriendlyTypeName(f.FieldType), serializable = f.IsPublic || f.GetCustomAttribute<SerializeField>() != null })
-                        .ToList();
-
+                    fields = new List<object>();
+                    foreach (var f in type.GetFields())
+                    {
+                        if (f.DeclaringType != type || f.Name.StartsWith("<")) continue;
+                        fields.Add(new { name = f.Name, type = GetFriendlyTypeName(f.FieldType),
+                            serializable = f.IsPublic || f.GetCustomAttributes(typeof(SerializeField), false).Length > 0 });
+                    }
                     if (typeof(MonoBehaviour).IsAssignableFrom(type))
-                        callbacks = type.GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly)
-                            .Where(m => UnityCallbacks.Contains(m.Name))
-                            .Select(m => m.Name).ToList();
+                    {
+                        callbacks = new List<string>();
+                        foreach (var m in type.GetMethods())
+                            if (m.DeclaringType == type && System.Array.IndexOf(_UnityCallbacks, m.Name) >= 0) callbacks.Add(m.Name);
+                    }
                 }
             }
-
-            scripts.Add(new { name = sName, hop, kind, baseClass, filePath = filePathMap.ContainsKey(sName) ? filePathMap[sName] : null, dependsOn, dependedBy, fields, unityCallbacks = callbacks });
+            scripts.Add(new { name = sName, hop, kind, baseClass,
+                filePath = filePathMap.ContainsKey(sName) ? filePathMap[sName] : null,
+                dependsOn, dependedBy, fields, unityCallbacks = callbacks });
         }
 
-        var reachedEdges = codeEdges
-            .Where(e => visited.ContainsKey(e.fromObject) && visited.ContainsKey(e.toObject))
-            .Select(e => (object)new { from = e.fromObject, to = e.toObject, type = e.fieldType, detail = e.fieldName })
-            .ToList();
+        var filteredEdges = codeEdges.Where(e => visited.ContainsKey(e.fromObject) && visited.ContainsKey(e.toObject)).ToList();
+        var reachedEdges = filteredEdges.Select(e => (object)new { from = e.fromObject, to = e.toObject, type = e.fieldType, detail = e.fieldName }).ToList();
+        var readOrder = TopologicalSort(visited.Keys.ToList(), filteredEdges, entryName);
 
-        var readOrder = TopologicalSort(visited.Keys.ToList(), codeEdges.Where(e => visited.ContainsKey(e.fromObject) && visited.ContainsKey(e.toObject)).ToList(), entryName);
-
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             entryScript = entryName,
@@ -162,6 +172,76 @@ internal class CommandScript : IRunCommand
             edges = reachedEdges,
             suggestedReadOrder = readOrder
         });
+    }
+
+    bool IsUserScript(System.Type t)
+    {
+        if (!t.IsClass || t.IsAbstract) return false;
+        if (typeof(MonoBehaviour).IsAssignableFrom(t) || typeof(ScriptableObject).IsAssignableFrom(t)) return true;
+        if (t.Namespace == null) return false;
+        return !t.Namespace.StartsWith("Unity") && !t.Namespace.StartsWith("System") &&
+               !t.Namespace.StartsWith("Microsoft") && !t.Namespace.StartsWith("Mono");
+    }
+
+    List<_DepEdge> CollectCodeDependencies(List<System.Type> userTypes)
+    {
+        var userNames = new HashSet<string>();
+        foreach (var t in userTypes) userNames.Add(t.Name);
+
+        var edges = new List<_DepEdge>();
+        foreach (var t in userTypes)
+        {
+            foreach (var f in t.GetFields())
+            {
+                if (!f.IsPublic && f.GetCustomAttributes(typeof(SerializeField), false).Length == 0) continue;
+                var ft = f.FieldType;
+                if (ft.IsArray) ft = ft.GetElementType();
+                if (ft != null && ft.IsGenericType) { var ga = ft.GetGenericArguments(); if (ga.Length > 0) ft = ga[0]; }
+                if (ft != null && userNames.Contains(ft.Name) && ft.Name != t.Name)
+                    edges.Add(new _DepEdge(t.Name, ft.Name, ft.Name, f.Name));
+            }
+        }
+        return edges;
+    }
+
+    List<string> TopologicalSort(List<string> nodes, List<_DepEdge> edges, string entryName)
+    {
+        var inDeg = new Dictionary<string, int>();
+        foreach (var n in nodes) inDeg[n] = 0;
+        foreach (var e in edges) if (inDeg.ContainsKey(e.toObject)) inDeg[e.toObject]++;
+
+        var q = new Queue<string>();
+        foreach (var n in nodes.OrderBy(x => x)) if (inDeg[n] == 0) q.Enqueue(n);
+
+        var sorted = new List<string>();
+        while (q.Count > 0)
+        {
+            var n = q.Dequeue(); sorted.Add(n);
+            foreach (var e in edges)
+            {
+                if (e.fromObject != n || !inDeg.ContainsKey(e.toObject)) continue;
+                if (--inDeg[e.toObject] == 0) q.Enqueue(e.toObject);
+            }
+        }
+        foreach (var n in nodes) if (!sorted.Contains(n)) sorted.Add(n);
+        return sorted;
+    }
+
+    string GetFriendlyTypeName(System.Type t)
+    {
+        if (t == null) return "null";
+        if (t == typeof(int)) return "int";
+        if (t == typeof(float)) return "float";
+        if (t == typeof(bool)) return "bool";
+        if (t == typeof(string)) return "string";
+        if (t == typeof(void)) return "void";
+        if (t.IsArray) return GetFriendlyTypeName(t.GetElementType()) + "[]";
+        if (t.IsGenericType)
+        {
+            var args = string.Join(", ", System.Array.ConvertAll(t.GetGenericArguments(), x => GetFriendlyTypeName(x)));
+            return t.Name.Split('`')[0] + "<" + args + ">";
+        }
+        return t.Name;
     }
 }
 ```

@@ -101,6 +101,10 @@ everywhere. Listed here so a fresh session knows the shape.
   prefix (see `_GameObjectFinderCache`).
 - `BindingFlags.Public | BindingFlags.Instance` triggers an NRE in the
   reformatter. Use `GetProperties()` / `GetFields()` without args.
+- `static readonly HashSet<string>` at class level triggers
+  `CS0012: ISet<> not referenced`. Use `static readonly string[]` + `System.Array.IndexOf`.
+  Same error hits `Dictionary<string, HashSet<string>>` as local or field — use
+  `Dictionary<string, List<string>>` instead.
 - The same reformatter NRE also hits when `BindingFlags` is passed to
   `Type.GetMethod(name, flags, binder, types, modifiers)`. Use
   `type.GetMethods()` + a `foreach` filter on `Name` / `IsStatic` /

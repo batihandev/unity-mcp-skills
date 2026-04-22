@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **223** / 485
+- comp: **225** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -369,8 +369,8 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | scene_spatial_query | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_summarize | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_tag_layer_stats | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| script_analyze | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| script_dependency_graph | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| script_analyze | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: 2026-04-22: Task 20: full rewrite — BindingFlags removed, missing helpers added, result.SetValue→SetResult, static string[] for callbacks |
+| script_dependency_graph | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: 2026-04-22: Task 20: full rewrite — BindingFlags removed, missing helpers added, HashSet→List for dict values, result.SetValue→SetResult |
 
 ## physics (12 recipes)
 
