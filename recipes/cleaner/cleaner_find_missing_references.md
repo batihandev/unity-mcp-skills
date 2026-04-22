@@ -50,11 +50,16 @@ Find components with missing scripts or null serialized object references in the
 - Use `cleaner_fix_missing_scripts` to automatically remove MissingScript components.
 - MissingReference issues must be fixed manually by reassigning the field in the Inspector.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -110,7 +115,7 @@ internal class CommandScript : IRunCommand
             }
         }
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             issueCount = issues.Count,

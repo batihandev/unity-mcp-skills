@@ -59,15 +59,20 @@ Delete specified assets using a mandatory two-step confirmation flow. Step 1 pre
 - Confirmation tokens expire after **5 minutes**. If expired, restart from Step 1.
 - Invalid or expired tokens return `{ "success": false, "error": "..." }`.
 - Each asset path is validated with `Validate.SafePath(..., isDelete: true)` before deletion.
-- A workflow snapshot is taken for each asset before `AssetDatabase.DeleteAsset` is called.
+- A workflow snapshot is taken for each asset before `AssetDatabase.MoveAssetToTrash` is called.
 - `AssetDatabase.Refresh()` is called after all deletions complete.
 - Use `cleaner_find_unused_assets`, `cleaner_find_duplicates`, or `cleaner_find_large_assets` to identify candidates first.
+
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -105,9 +110,15 @@ internal class CommandScript : IRunCommand
             });
         }
 
-        // The skill generates the confirmToken server-side.
-        // Log the preview, then call again with the returned token to confirm.
-        Debug.Log($"Preview: {previewResults.Count(r => ((dynamic)r).exists)} assets, {totalBytes / (1024.0 * 1024.0):F2} MB");
+        result.SetResult(new
+        {
+            success = true,
+            mode = "preview",
+            previewCount = previewResults.Count,
+            totalBytes,
+            totalMB = totalBytes / (1024.0 * 1024.0),
+            assets = previewResults
+        });
     }
 }
 ```

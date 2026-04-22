@@ -43,11 +43,16 @@ The path is also validated by `Validate.SafePath`; invalid paths return an error
 - A `usedByCount` of 0 means no tracked asset directly references this path — but runtime loading via `Resources.Load` or Addressables will not be detected.
 - Use this before `cleaner_delete_assets` to confirm an asset is truly safe to remove.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -87,7 +92,7 @@ internal class CommandScript : IRunCommand
 
         var targetAsset = AssetDatabase.LoadMainAssetAtPath(assetPath);
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             asset = new

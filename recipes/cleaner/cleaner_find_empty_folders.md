@@ -31,11 +31,16 @@ Find empty folders in the project. A folder is considered empty if it contains n
 - Folders are returned in discovery order (depth-first). Use `cleaner_delete_empty_folders` to remove them — it processes longest paths first to avoid parent-before-child deletion errors.
 - This skill is read-only; it does not delete anything.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -46,7 +51,7 @@ internal class CommandScript : IRunCommand
         var empty = new List<string>();
         FindEmptyFoldersRecursive(searchPath, empty);
 
-        result.SetValue(new { success = true, count = empty.Count, folders = empty });
+        result.SetResult(new { success = true, count = empty.Count, folders = empty });
     }
 
     private bool FindEmptyFoldersRecursive(string path, List<string> results)

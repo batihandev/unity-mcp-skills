@@ -39,11 +39,16 @@ Find duplicate files by grouping on file size first, then computing MD5 hashes t
 - The `limit` caps the number of duplicate groups, not individual files.
 - After identifying duplicates, use `cleaner_get_asset_usage` to decide which copy to keep before calling `cleaner_delete_assets`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 
 internal class CommandScript : IRunCommand
@@ -71,6 +76,7 @@ internal class CommandScript : IRunCommand
             sizeGroups[size].Add(path);
         }
 
+        long totalWasted = 0;
         var duplicateGroups = new List<object>();
         using (var md5 = MD5.Create())
         {
@@ -97,20 +103,20 @@ internal class CommandScript : IRunCommand
                 foreach (var hashGroup in hashGroups.Values.Where(g => g.Count > 1))
                 {
                     var fileInfo = new FileInfo(hashGroup[0]);
+                    var wasted = fileInfo.Length * (hashGroup.Count - 1);
+                    totalWasted += wasted;
                     duplicateGroups.Add(new
                     {
                         count = hashGroup.Count,
                         sizeBytes = fileInfo.Length,
-                        wastedBytes = fileInfo.Length * (hashGroup.Count - 1),
+                        wastedBytes = wasted,
                         files = hashGroup
                     });
                 }
             }
         }
 
-        var totalWasted = duplicateGroups.Sum(d => (long)((dynamic)d).wastedBytes);
-
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             assetType,

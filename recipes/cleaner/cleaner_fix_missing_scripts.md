@@ -28,11 +28,16 @@ Remove missing script components from all loaded GameObjects using `GameObjectUt
 - To preview which objects have missing scripts before fixing, use `cleaner_find_missing_references` first.
 - This operation is tracked by the workflow manager (`TracksWorkflow = true`).
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -58,7 +63,7 @@ internal class CommandScript : IRunCommand
             }
         }
 
-        result.SetValue(new { success = true, removedComponents = totalRemoved });
+        result.SetResult(new { success = true, removedComponents = totalRemoved });
     }
 }
 ```

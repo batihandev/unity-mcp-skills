@@ -32,11 +32,16 @@ Find the largest assets in the project by file size, sorted descending.
 - Paths are normalized to use forward slashes and are relative from the `Assets/` segment.
 - Results are sorted largest first and capped at `limit`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -61,7 +66,7 @@ internal class CommandScript : IRunCommand
             })
             .ToArray();
 
-        result.SetValue(new { success = true, count = files.Length, assets = files });
+        result.SetResult(new { success = true, count = files.Length, assets = files });
     }
 }
 ```

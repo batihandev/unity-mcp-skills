@@ -41,11 +41,16 @@ When the asset path does not exist on disk, the skill returns (note: no `success
 - The error case returns `{ "error": "..." }` without a `success` key — this matches the upstream implementation.
 - Directories are also valid inputs: the asset path can point to a folder.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -56,7 +61,7 @@ internal class CommandScript : IRunCommand
 
         if (!File.Exists(assetPath) && !Directory.Exists(assetPath))
         {
-            result.SetValue(new { error = $"Asset not found: {assetPath}" });
+            result.SetResult(new { error = $"Asset not found: {assetPath}" });
             return;
         }
 
@@ -69,7 +74,7 @@ internal class CommandScript : IRunCommand
             })
             .ToArray();
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             assetPath,

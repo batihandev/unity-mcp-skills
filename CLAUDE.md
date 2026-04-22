@@ -130,3 +130,15 @@ everywhere. Listed here so a fresh session knows the shape.
   when `com.unity.nuget.newtonsoft-json` is installed. Use the MiniJson
   serializer in `_shared/execution_result.md`.
 - `JsonUtility.ToJson` silently returns `"{}"` for anonymous types.
+- `(long)((dynamic)obj).fieldName` member access on `dynamic`-cast values
+  (typical when summing a field off an `object` produced by `new { ... }`)
+  fails the Unity_RunCommand analyzer with `UNEXPECTED_ERROR: Execution
+  failed: No logs available` — no compile log, no stack trace. Maintain a
+  running total via a typed local (`long totalWasted = 0; totalWasted += …;`)
+  instead of computing it with `.Sum(d => (long)((dynamic)d).foo)` at the end.
+- `result.SetValue(...)` is NOT a member of `ExecutionResult`. Upstream
+  recipes used it; the correct call is `result.SetResult(...)` via the
+  `_shared/execution_result.md` extension. Missing the swap ends in
+  `CS7036: ... SerializedPropertyExtensions.SetValue<DataSourceType>(...)`
+  because the compiler picks up an unrelated `SetValue` extension from
+  `UnityEditor` internals.

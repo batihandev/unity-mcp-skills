@@ -34,13 +34,16 @@ Find potentially unused assets of a specific type by scanning dependencies acros
 - Use `cleaner_get_asset_usage` to confirm an individual asset before deletion.
 - To delete found assets, use `cleaner_delete_assets` (two-step confirmation required).
 
-**Prerequisites:** [`validate`](../_shared/validate.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -50,7 +53,7 @@ internal class CommandScript : IRunCommand
         string searchPath = "Assets";
         int limit = 100;
 
-        if (Validate.SafePath(searchPath, "searchPath") is object pathErr) return;
+        if (Validate.SafePath(searchPath, "searchPath") is object pathErr) { result.SetResult(pathErr); return; }
 
         var filter = $"t:{assetType}";
         var guids = AssetDatabase.FindAssets(filter, new[] { searchPath });
@@ -94,7 +97,7 @@ internal class CommandScript : IRunCommand
             });
         }
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             assetType,
