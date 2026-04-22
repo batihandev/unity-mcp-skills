@@ -43,7 +43,7 @@ internal class CommandScript : IRunCommand
             {
                 if (Directory.Exists(folder))
                 {
-                    AssetDatabase.DeleteAsset(folder);
+                    AssetDatabase.MoveAssetToTrash(folder);
                 }
             }
             AssetDatabase.Refresh();
@@ -55,7 +55,7 @@ internal class CommandScript : IRunCommand
             dryRun,
             emptyFolderCount = emptyFolders.Count,
             folders = emptyFolders,
-            message = dryRun ? "Dry run - no folders deleted" : $"Deleted {emptyFolders.Count} empty folders"
+            message = dryRun ? "Dry run - no folders deleted" : $"Moved {emptyFolders.Count} empty folders to trash"
         });
     }
 

@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **448** / 485
+- comp: **457** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -636,16 +636,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| validate_cleanup_empty_folders | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| validate_find_missing_scripts | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| validate_find_unused_assets | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| validate_fix_missing_scripts | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| validate_mesh_collider_convex | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| validate_missing_references | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| validate_project_structure | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| validate_scene | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| validate_shader_errors | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 6 errors across 298 shaders (Task 21) |
-| validate_texture_sizes | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| validate_cleanup_empty_folders | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke ok |
+| validate_find_missing_scripts | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke ok |
+| validate_find_unused_assets | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke ok |
+| validate_fix_missing_scripts | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke ok |
+| validate_mesh_collider_convex | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke ok |
+| validate_missing_references | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke ok |
+| validate_project_structure | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke ok |
+| validate_scene | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke ok |
+| validate_shader_errors | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 6 errors across 298 shaders (Task 21); 2026-04-23: smoke ok |
+| validate_texture_sizes | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke ok |
 
 ## xr (22 recipes)
 
