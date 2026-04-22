@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **380** / 485
+- comp: **389** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -526,16 +526,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| terrain_add_hill | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| terrain_create | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
-| terrain_flatten | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| terrain_generate_perlin | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| terrain_get_height | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| terrain_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| terrain_paint_texture | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| terrain_set_height | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| terrain_set_heights_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| terrain_smooth | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| terrain_add_hill | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| terrain_create | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-23: clean |
+| terrain_flatten | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| terrain_generate_perlin | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| terrain_get_height | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| terrain_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| terrain_paint_texture | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| terrain_set_height | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| terrain_set_heights_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| terrain_smooth | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
 
 ## test (12 recipes)
 
