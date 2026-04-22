@@ -14,9 +14,9 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 ## Summary
 
 - Total recipes: **485**
-- ext: **460** / 485
-- pre: **460** / 485
-- comp: **157** / 485
+- ext: **459** / 485
+- pre: **459** / 485
+- comp: **163** / 485
 - run: **12** / 485
 - retired: **22** / 485
 
@@ -354,16 +354,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
 | hierarchy_describe | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_stack_detect | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: depends on 6+ upstream private helpers (CollectSceneMetrics, ReadInstalledPackageIds, FindTypeInAssemblies, DetermineUiRoute, DetectInputHandling, DetermineProjectProfile) plus ProjectSkills surface. Full inline would 3-4x the recipe. Also calls result.SetValue (wrong API). Follow-up task: either fully inline (~200 lines) or split into narrower recipes (project_get_render_pipeline, project_get_input_system, project_get_ui_route). |
-| scene_analyze | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_component_stats | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| project_stack_detect | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: depends on 6+ upstream private helpers (CollectSceneMetrics, ReadInstalledPackageIds, FindTypeInAssemblies, DetermineUiRoute, DetectInputHandling, DetermineProjectProfile) plus ProjectSkills surface. Full inline would 3-4x the recipe. Also calls result.SetValue (wrong API). Follow-up task: either fully inline (~200 lines) or split into narrower recipes (project_get_render_pipeline, project_get_input_system, project_get_ui_route).; 2026-04-22: Created _shared/project_skills.md + _shared/perception_helpers.md for shared upstream surface; recipe now uses ProjectSkills.* + PerceptionHelpers.* prefixes. Helpers live-smoked (URP + 59 packages detected). |
+| scene_analyze | R | R | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Retired: meta-aggregator delegating to scene_component_stats + scene_health_check + scene_contract_validate + project_stack_detect. Agents call the 4 recipes sequentially. |
+| scene_component_stats | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult |
 | scene_context | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_contract_validate | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scene_contract_validate | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult |
 | scene_dependency_analyze | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_diff | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: snapshots scene + diffs; ~135-line recipe with upstream private helpers. Inline scope deferred; similar treatment to project_stack_detect. |
+| scene_diff | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: snapshots scene + diffs; ~135-line recipe with upstream private helpers. Inline scope deferred; similar treatment to project_stack_detect.; 2026-04-22: Rewrite: typed _SceneDiffEntry + CaptureSceneSnapshot inline; replaced Newtonsoft.Json with hand-parsed snapshot JSON; SetValue→SetResult |
 | scene_export_report | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_find_hotspots | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_health_check | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scene_find_hotspots | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult |
+| scene_health_check | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult |
 | scene_materials | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_performance_hints | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_spatial_query | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |

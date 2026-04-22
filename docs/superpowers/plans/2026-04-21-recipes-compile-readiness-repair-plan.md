@@ -627,18 +627,16 @@ Tasks completed in session 2 so far:
 ### Revised execution order (replaces Tasks 0–10 wave for remaining work)
 
 1. ~~**Task 19**~~ ✓ tracker `R` state + tool updates.
-2. ~~**Task 11**~~ ✓ extractor lambda bug fixed; 3 recipes re-extracted.
+2. ~~**Task 11**~~ ✓ extractor lambda bug fixed.
 3. ~~**Task 12**~~ ✓ pre-flight complete; retirement mappings + deprecation URLs in notes.
-4. ~~**Task 13**~~ ✓ retire-to-MCP: 23 recipes + `skills/sample/` deleted, owning skills updated.
-5. **Task 14** ← **NEXT** — install `com.unity.cinemachine`, `com.unity.xr.interaction.toolkit`, `com.unity.probuilder`, `com.unity.ai.navigation`. Drop compat shims in cinemachine / xr / probuilder recipes. Rewrite `navmesh_bake` + `navmesh_clear` to use `NavMeshSurface`.
-6. **Task 15** — `*_batch` → `foreach` rewrite.
-7. **Task 16** — inline private upstream helpers.
-8. **Task 17** — Unity 6+ commit + apply web-confirmed deprecations.
-9. **Task 5** (from original plan, unchanged) — test async split.
-10. **Task 18** — reflection-based obsolete sweep; handle any new findings.
-11. **Task 20** — full comp re-smoke. Per-domain `writing-skills` audit as each domain goes fully green.
-12. **Task 21** — selective run gate.
-13. **Task 22** — recipe-level cleanliness sweep (prose dedup + compact Prerequisites; MiniJson + other `_shared` helpers untouched).
-14. **Task 10** (from original plan) — final audit + plan-exit notes.
-13. **Task 10** (from original plan, unchanged) — final audit + plan-exit notes.
+4. ~~**Task 13**~~ ✓ retire-to-MCP.
+5. ~~**Task 14**~~ ✓ packages installed, compat shims dropped, navmesh rewritten.
+6. ~~**Task 15**~~ ✓ `*_batch` → `foreach` rewrite.
+7. ~~**Task 16**~~ ✓ inline private upstream helpers (+ `_shared/project_skills.md` / `_shared/perception_helpers.md` / `_shared/component_type_finder.md` / `_shared/value_converter.md` / `_shared/skills_common.md` created to cover the 6 domains that shared helper surfaces).
+8. ~~**Task 17**~~ ✓ Unity 6+ commit + deprecations applied.
+9. ~~**Task 5**~~ ✓ test / package / editor async split (including `test_list` / `test_list_categories` follow-up).
+10. ~~**Task 18**~~ ✓ reflection-based obsolete sweep (enumeration captured; any findings folded into Task 17).
+11. **Task 21** ← **NEXT** — extended selective run gate. Run-verify eligible read-only recipes (`*_get_*`, `*_list`, `*_find*`, `*_check_*`) that are already `comp:x`. Recipes that mutate stay `run:-` with "fixture required" note. Runs before the final comp re-smoke so `run:x` states are factored into any last-round comp findings.
+12. **Task 20 + 22 combined** — full comp re-smoke across every non-retired recipe. Rewrite prose (`## Prerequisites` → single line; drop duplicated `## Parameters` / `## Returns` / `## Notes`) in the same pass to avoid a second smoke round. Per-domain `writing-skills` audit as each domain hits fully comp-green. Code blocks and `_shared/*.md` csharp bodies stay byte-identical.
+13. **Task 10** — final audit + plan-exit notes.
 

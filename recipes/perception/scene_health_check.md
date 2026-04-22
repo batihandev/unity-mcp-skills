@@ -21,6 +21,18 @@ SceneHealthCheck(int issueLimit = 100, int deepHierarchyThreshold = 8, int large
 
 Returns `success`, `sceneName`, `summary` (totalFindings, shownFindings, errors, warnings, info, truncated), `findings` array, `hotspots` array, `suggestedNextSkills`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.GetSceneObjects` / `GetDepth` / `GetCachedPath`
+- `recipes/_shared/perception_helpers.md` — for `PerceptionHelpers.CollectSceneMetrics` / `CollectHotspots` / `DeduplicateFindings` / `BuildSuggestedNextSkills` / `GetPropertyValue`
+
+## Notes
+
+- Does the facility / hotspot / missing-reference checks inline (no delegation to `validate_scene` / `validate_missing_references`). For those specific validations call their recipes directly.
+- `suggestedNextSkills` is auto-generated based on finding types.
+
 ## RunCommand Recipe
 
 ```csharp
@@ -37,104 +49,56 @@ internal class CommandScript : IRunCommand
         int deepHierarchyThreshold = 8;
         int largeChildCountThreshold = 25;
 
-        var metrics = CollectSceneMetrics(includeComponentStats: false);
+        var metrics = PerceptionHelpers.CollectSceneMetrics(includeComponentStats: false);
         var findings = new List<object>();
-
-        var sceneValidation = ValidationSkills.ValidateScene(checkEmptyGameObjects: true);
-        foreach (var issue in GetEnumerableProperty(sceneValidation, "issues"))
-        {
-            findings.Add(new
-            {
-                type = GetPropertyValue<string>(issue, "type", "Unknown"),
-                severity = GetPropertyValue<string>(issue, "severity", "Info"),
-                gameObject = GetPropertyValue<string>(issue, "gameObject", null),
-                path = GetPropertyValue<string>(issue, "path", null),
-                message = GetPropertyValue<string>(issue, "message", null),
-                count = GetPropertyValue<int>(issue, "count", 0),
-                source = "validate_scene"
-            });
-        }
-
-        var missingReferences = ValidationSkills.ValidateMissingReferences(issueLimit);
-        foreach (var issue in GetEnumerableProperty(missingReferences, "issues"))
-        {
-            findings.Add(new
-            {
-                type = "MissingReference",
-                severity = "Error",
-                gameObject = GetPropertyValue<string>(issue, "gameObject", null),
-                path = GetPropertyValue<string>(issue, "path", null),
-                message = $"{GetPropertyValue<string>(issue, "component", "Component")}.{GetPropertyValue<string>(issue, "property", "property")} is missing a reference.",
-                source = "validate_missing_references"
-            });
-        }
 
         if (metrics.MainCameraCount == 0)
             findings.Add(new { type = "MissingMainCamera", severity = "Error", message = "No MainCamera-tagged camera was found.", source = "scene_health" });
-
         if (metrics.Lights == 0)
             findings.Add(new { type = "MissingLight", severity = "Warning", message = "No Light component was found.", source = "scene_health" });
-
         if ((metrics.Canvases > 0 || metrics.HasUiGraphic) && metrics.EventSystems == 0)
             findings.Add(new { type = "MissingEventSystem", severity = "Error", message = "UGUI objects exist but no EventSystem was found.", source = "scene_health" });
-
         if (metrics.HasUiGraphic && metrics.Canvases == 0)
             findings.Add(new { type = "MissingCanvas", severity = "Error", message = "UI graphics exist but no Canvas was found.", source = "scene_health" });
-
         if (metrics.Cameras > 0 && metrics.AudioListeners == 0)
             findings.Add(new { type = "MissingAudioListener", severity = "Warning", message = "Scene has cameras but no AudioListener.", source = "scene_health" });
 
-        var hotspots = CollectHotspots(metrics.Objects, deepHierarchyThreshold, largeChildCountThreshold, issueLimit);
-        foreach (var hotspot in hotspots.Where(h => h.Type != "DuplicateNameCluster"))
+        var hotspots = PerceptionHelpers.CollectHotspots(metrics.Objects, deepHierarchyThreshold, largeChildCountThreshold, issueLimit);
+        foreach (var h in hotspots.Where(x => x.Type != "DuplicateNameCluster"))
         {
             findings.Add(new
             {
-                type = hotspot.Type,
-                severity = hotspot.Severity,
-                path = hotspot.Path,
-                message = hotspot.Message,
-                count = hotspot.Count,
-                depth = hotspot.Depth,
+                type = h.Type,
+                severity = h.Severity,
+                path = h.Path,
+                message = h.Message,
+                count = h.Count,
+                depth = h.Depth,
                 source = "scene_hotspots"
             });
         }
 
-        var uniqueFindings = DeduplicateFindings(findings);
-        var visibleFindings = uniqueFindings.Take(issueLimit).ToArray();
-        var suggestedNextSkills = BuildSuggestedNextSkills(visibleFindings);
+        var unique = PerceptionHelpers.DeduplicateFindings(findings);
+        var visible = unique.Take(issueLimit).ToArray();
+        var suggestedNextSkills = PerceptionHelpers.BuildSuggestedNextSkills(visible);
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = metrics.Scene.name,
             summary = new
             {
-                totalFindings = uniqueFindings.Count,
-                shownFindings = visibleFindings.Length,
-                errors = visibleFindings.Count(f => GetPropertyValue<string>(f, "severity", "Info") == "Error"),
-                warnings = visibleFindings.Count(f => GetPropertyValue<string>(f, "severity", "Info") == "Warning"),
-                info = visibleFindings.Count(f => GetPropertyValue<string>(f, "severity", "Info") == "Info"),
-                truncated = uniqueFindings.Count > visibleFindings.Length
+                totalFindings = unique.Count,
+                shownFindings = visible.Length,
+                errors = visible.Count(f => PerceptionHelpers.GetPropertyValue<string>(f, "severity", "Info") == "Error"),
+                warnings = visible.Count(f => PerceptionHelpers.GetPropertyValue<string>(f, "severity", "Info") == "Warning"),
+                info = visible.Count(f => PerceptionHelpers.GetPropertyValue<string>(f, "severity", "Info") == "Info"),
+                truncated = unique.Count > visible.Length
             },
-            findings = visibleFindings,
-            hotspots = hotspots.Select(h => new
-            {
-                type = h.Type,
-                severity = h.Severity,
-                name = h.Name,
-                path = h.Path,
-                count = h.Count,
-                depth = h.Depth,
-                message = h.Message
-            }).ToArray(),
+            findings = visible,
+            hotspots = hotspots.Select(h => new { type = h.Type, severity = h.Severity, name = h.Name, path = h.Path, count = h.Count, depth = h.Depth, message = h.Message }).ToArray(),
             suggestedNextSkills = suggestedNextSkills.ToArray()
         });
     }
 }
 ```
-
-## Notes
-
-- Aggregates findings from `ValidateScene`, `ValidateMissingReferences`, facility checks, and hotspot analysis.
-- `suggestedNextSkills` is auto-generated based on finding types.
-- Use `scene_analyze` for a full diagnosis that also includes contract validation and stack detection.

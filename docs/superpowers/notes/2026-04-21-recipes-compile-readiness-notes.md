@@ -101,7 +101,33 @@ MCP tools NOT used as retirement targets because their use case is narrower than
 
 ## Session 2 close state (live)
 
-**Gate counts after 2026-04-22 B-set closeout:** ext 460/485, pre 460/485, **comp 138/485**, run 12/485, retired 25/485, **blockers 0/485**.
+**Gate counts after 2026-04-22 perception sweep (infra phase done):** ext 457/485, pre 457/485, **comp 163/485**, run 12/485, retired 28/485, **blockers 0/485**.
+
+### Perception sweep (2026-04-22): no deferrals, two new `_shared/` files
+
+User instruction: "stop deferring recipes now already at the end of full comp re smoke." All perception recipes with upstream-helper dependencies fixed.
+
+**New shared helper files:**
+- `recipes/_shared/project_skills.md` — `ProjectSkills.DetectRenderPipeline` / `GetDefaultShaderName` / `GetUnlitShaderName` / `GetColorPropertyName` / `GetMainTexturePropertyName`. Used by material recipes + `perception/project_stack_detect`.
+- `recipes/_shared/perception_helpers.md` — `_SceneMetricsSnapshot` / `_SceneHotspot` classes; `PerceptionHelpers.CollectSceneMetrics` / `CollectHotspots` / `FindTypeInAssemblies` / `ReadInstalledPackageIds` (List<string>, no HashSet+Comparer to dodge ISet<> gotcha) / `ContainsIgnoreCase` / `DetectInputHandling` / `DetermineUiRoute` / `DetermineProjectProfile` / `BuildTopComponents` / `GetSeverityRank` / `GetEnumerableProperty` / `DeduplicateFindings` / `BuildSuggestedNextSkills` / `ParseOptionalStringArray` / `GetPropertyValue<T>`. Transitive dep on `_shared/gameobject_finder.md`. Used by 6 perception recipes.
+
+**Recipes fixed (6):**
+- `project_stack_detect` — B → x. Uses both new shared files.
+- `scene_diff` — B → x. Hand-parses snapshot JSON (dropped `Newtonsoft.Json.Linq`); typed `_SceneDiffEntry` class; inline `CaptureSceneSnapshot`.
+- `scene_component_stats` — - → x. Uses `PerceptionHelpers.CollectSceneMetrics` / `BuildTopComponents`; `SetValue` → `SetResult`.
+- `scene_find_hotspots` — - → x. Uses `PerceptionHelpers.CollectHotspots`.
+- `scene_contract_validate` — - → x. Uses `ParseOptionalStringArray` / `DeduplicateFindings` / `ContainsIgnoreCase`. Dropped `HashSet<string>(StringComparer)` (ISet<> gotcha) for `List<string>` + `ContainsIgnoreCase`.
+- `scene_health_check` — - → x. Inline facility + hotspot checks; dropped delegation to `ValidationSkills.ValidateScene` / `ValidateMissingReferences` (those remain as standalone recipes).
+
+**Retired (1):**
+- `scene_analyze` — meta-aggregator that internally called `scene_component_stats` + `scene_health_check` + `scene_contract_validate` + `project_stack_detect` as skill IDs (not C# methods). Inlining all four would 3-4× the recipe size for no unique value. Agents chain the 4 recipes sequentially.
+
+### Task ordering locked (2026-04-22)
+
+Per user direction, plan's revised execution order updated:
+- **Task 21 first** — extended selective run gate. Run-verify eligible read-only recipes (`*_get_*` / `*_list` / `*_find*` / `*_check_*`) that are already `comp:x`. Doing it before the full comp re-smoke means `run:x` states are factored into any last-round findings.
+- **Task 20 + 22 combined** — full comp re-smoke + prose cleanliness sweep (compact `## Prerequisites` + drop duplicated `## Parameters` / `## Returns` / `## Notes`) in one pass. Avoids a second smoke round. Code blocks / `_shared/*.md` csharp bodies stay byte-identical.
+- **Task 10 last** — final audit + plan-exit notes.
 
 ### comp:B closeout (2026-04-22)
 
