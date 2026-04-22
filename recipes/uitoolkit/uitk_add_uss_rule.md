@@ -17,7 +17,6 @@ Add a new USS selector rule to a stylesheet, or replace the rule if the selector
 using UnityEngine;
 using UnityEditor;
 using System.IO;
-using System.Text.RegularExpressions;
 
 internal class CommandScript : IRunCommand
 {
@@ -38,9 +37,6 @@ internal class CommandScript : IRunCommand
         var content = File.ReadAllText(filePath, System.Text.Encoding.UTF8);
         var normalizedSelector = selector.Trim();
 
-        var pattern = Regex.Escape(normalizedSelector) + @"\s*\{[^}]*\}";
-        var regex = new Regex(pattern, RegexOptions.None, System.TimeSpan.FromSeconds(1));
-
         // Format properties with indentation
         var formattedProps = string.Join("\n", System.Array.ConvertAll(
             properties.Split(new[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries),
@@ -49,10 +45,34 @@ internal class CommandScript : IRunCommand
 
         var newRule = $"{normalizedSelector} {{\n{formattedProps}\n}}";
 
+        // Find selector followed by optional whitespace then {
+        bool existed = false;
+        int ruleStart = -1, ruleEnd = -1;
+        int searchFrom = 0;
+        while (searchFrom < content.Length)
+        {
+            int found = content.IndexOf(normalizedSelector, searchFrom, System.StringComparison.Ordinal);
+            if (found < 0) break;
+            int check = found + normalizedSelector.Length;
+            while (check < content.Length && (content[check] == ' ' || content[check] == '\t' || content[check] == '\n' || content[check] == '\r')) check++;
+            if (check < content.Length && content[check] == '{')
+            {
+                ruleStart = found;
+                int depth = 0, p = check;
+                while (p < content.Length) {
+                    if (content[p] == '{') depth++;
+                    else if (content[p] == '}') { depth--; if (depth == 0) { ruleEnd = p + 1; break; } }
+                    p++;
+                }
+                existed = ruleEnd > ruleStart;
+                break;
+            }
+            searchFrom = found + 1;
+        }
+
         string newContent;
-        bool existed = regex.IsMatch(content);
         if (existed)
-            newContent = regex.Replace(content, newRule, 1);
+            newContent = content.Substring(0, ruleStart) + newRule + content.Substring(ruleEnd);
         else
             newContent = content.TrimEnd() + "\n\n" + newRule + "\n";
 

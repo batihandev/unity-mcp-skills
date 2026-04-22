@@ -29,7 +29,7 @@ internal class CommandScript : IRunCommand
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(filePath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
 
-        AssetDatabase.DeleteAsset(filePath);
+        AssetDatabase.MoveAssetToTrash(filePath);
         result.SetResult(new { success = true, deleted = filePath });
     }
 }

@@ -16,7 +16,6 @@ Duplicate a named element (including its entire subtree) and insert the clone af
 using UnityEngine;
 using UnityEditor;
 using System.IO;
-using System.Xml.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -34,32 +33,40 @@ internal class CommandScript : IRunCommand
         if (existing != null) WorkflowManager.SnapshotObject(existing);
 
         var content = File.ReadAllText(filePath, System.Text.Encoding.UTF8);
-        var xdoc = XDocument.Parse(content);
 
-        var target = FindXmlElementByName(xdoc.Root, elementName);
-        if (target == null) { result.SetResult(new { error = $"Element with name '{elementName}' not found" }); return; }
+        var (s, e, t) = FindEl(content, elementName);
+        if (s < 0) { result.SetResult(new { error = $"Element with name '{elementName}' not found" }); return; }
 
-        var clone = new XElement(target);
-        if (!string.IsNullOrEmpty(newName))
-            clone.SetAttributeValue("name", newName);
+        var elText = content.Substring(s, e - s);
+        var clone = !string.IsNullOrEmpty(newName)
+            ? elText.Replace("name=\"" + elementName + "\"", "name=\"" + newName + "\"")
+              .Replace("name='" + elementName + "'", "name='" + newName + "'")
+            : elText;
 
-        target.AddAfterSelf(clone);
-        File.WriteAllText(filePath, xdoc.ToString(), System.Text.Encoding.UTF8);
+        var newContent = content.Substring(0, e) + "\n" + clone + content.Substring(e);
+        File.WriteAllText(filePath, newContent, System.Text.Encoding.UTF8);
         AssetDatabase.ImportAsset(filePath);
 
         result.SetResult(new { success = true, path = filePath, clonedFrom = elementName, newName = newName ?? "(copy)" });
     }
 
-    private XElement FindXmlElementByName(XElement root, string name)
+    private static (int s, int e, string tag) FindEl(string x, string v)
     {
-        if (root == null) return null;
-        if (root.Attribute("name")?.Value == name) return root;
-        foreach (var child in root.Elements())
-        {
-            var found = FindXmlElementByName(child, name);
-            if (found != null) return found;
+        int ap = x.IndexOf("name=\"" + v + "\""); if (ap < 0) ap = x.IndexOf("name='" + v + "'");
+        if (ap < 0) return (-1, -1, null);
+        int ts = ap; while (ts > 0 && x[ts] != '<') ts--;
+        int ne = ts + 1; while (ne < x.Length && x[ne] != ' ' && x[ne] != '\t' && x[ne] != '\n' && x[ne] != '>' && x[ne] != '/') ne++;
+        string ft = x.Substring(ts + 1, ne - ts - 1), tl = ft.Contains(":") ? ft.Substring(ft.LastIndexOf(':') + 1) : ft;
+        int oe = x.IndexOf('>', ts); if (oe < 0) return (-1, -1, null);
+        if (x[oe - 1] == '/') return (ts, oe + 1, tl);
+        int d = 1, p = oe + 1;
+        while (p < x.Length && d > 0) {
+            int n = x.IndexOf('<', p); if (n < 0) break;
+            if (x[n + 1] == '/') { int ce = x.IndexOf('>', n); if (ce < 0) break; string ct = x.Substring(n + 2, ce - n - 2).Trim(), cl = ct.Contains(":") ? ct.Substring(ct.LastIndexOf(':') + 1) : ct; if (cl == tl) d--; p = ce + 1; }
+            else if (x[n + 1] == '!' || x[n + 1] == '?') { int ce = x.IndexOf('>', n); p = ce < 0 ? x.Length : ce + 1; }
+            else { int ce = x.IndexOf('>', n); if (ce < 0) break; if (x[ce - 1] != '/') d++; p = ce + 1; }
         }
-        return null;
+        return (ts, p, tl);
     }
 }
 ```

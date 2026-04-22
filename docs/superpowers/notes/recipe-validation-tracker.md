@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **424** / 485
+- comp: **448** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -606,31 +606,31 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| uitk_add_element | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_add_uss_rule | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_clone_element | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| uitk_add_element | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: XDocument→FindEl+string; smoke ok |
+| uitk_add_uss_rule | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: regex→string scan; smoke ok |
+| uitk_clone_element | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: XDocument→FindEl; smoke ok |
 | uitk_create_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses BatchExecutor / UIToolkitSkills helpers not in _shared; 2026-04-22: Task 15: BatchExecutor → typed _UitkFileItem foreach; File.WriteAllText + AssetDatabase.ImportAsset direct (UitkCreateUss/Uxml logic inlined minimally) |
-| uitk_create_document | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_create_editor_window | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_create_from_template | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_create_panel_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_create_runtime_ui | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_create_uss | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_create_uxml | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_delete_file | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_find_files | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_get_panel_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_inspect_document | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_inspect_uxml | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_list_documents | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_list_uss_variables | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_modify_element | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_read_file | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_remove_element | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_remove_uss_rule | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_set_document | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_set_panel_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_write_file | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| uitk_create_document | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_create_editor_window | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_create_from_template | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_create_panel_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_create_runtime_ui | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_create_uss | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_create_uxml | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_delete_file | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: MoveAssetToTrash fix; smoke ok |
+| uitk_find_files | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_get_panel_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_inspect_document | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_inspect_uxml | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: XDocument→ParseNode/ReadAttrs; smoke ok |
+| uitk_list_documents | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_list_uss_variables | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: HashSet→List; smoke ok |
+| uitk_modify_element | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: XDocument→FindEl+SetAttr; smoke ok |
+| uitk_read_file | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_remove_element | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: XDocument→FindEl; smoke ok |
+| uitk_remove_uss_rule | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: regex→string scan; smoke ok |
+| uitk_set_document | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_set_panel_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
+| uitk_write_file | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; smoke ok |
 
 ## validation (10 recipes)
 
