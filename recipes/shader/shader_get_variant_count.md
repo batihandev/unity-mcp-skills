@@ -40,7 +40,18 @@ internal class CommandScript : IRunCommand
             var sub = data.GetSubshader(s);
             totalVariants += sub.PassCount;
         }
-        { result.SetResult(new { shaderName = shader.name, subshaderCount, totalPasses = totalVariants }); return; }
+        result.SetResult(new { shaderName = shader.name, subshaderCount, totalPasses = totalVariants });
+    }
+
+    private static Shader FindShaderByNameOrPath(string shaderNameOrPath)
+    {
+        if (string.IsNullOrEmpty(shaderNameOrPath)) return null;
+        Shader shader = null;
+        if (shaderNameOrPath.EndsWith(".shader"))
+            shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderNameOrPath);
+        if (shader == null)
+            shader = Shader.Find(shaderNameOrPath);
+        return shader;
     }
 }
 ```

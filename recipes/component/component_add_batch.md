@@ -52,41 +52,75 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType`
 
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _AddComponentItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public string componentType;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        { result.SetResult(BatchExecutor.Execute<BatchAddComponentItem>(items, item =>
+        var items = new[]
         {
-            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Object not found");
+            new _AddComponentItem { name = "Enemy1", componentType = "Rigidbody" },
+            new _AddComponentItem { path = "Level/Obstacles/Rock", componentType = "MeshCollider" },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+
+            var (go, findErr) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (findErr != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
             if (string.IsNullOrEmpty(item.componentType))
-                throw new System.Exception("componentType required");
+            { results.Add(new { target, success = false, error = "componentType required" }); failCount++; continue; }
 
-            var type = FindComponentType(item.componentType);
+            var type = ComponentSkills.FindComponentType(item.componentType);
             if (type == null)
-                throw new System.Exception($"Component type not found: {item.componentType}");
+            { results.Add(new { target, success = false, error = "Component type not found: " + item.componentType }); failCount++; continue; }
 
-            // Check if component already exists (for single-instance components)
             if (go.GetComponent(type) != null && !AllowMultiple(type))
-                return new { target = go.name, success = true, warning = "Component already exists", component = type.Name };
+            { results.Add(new { target = go.name, success = true, warning = "Component already exists", component = type.Name }); successCount++; continue; }
 
             var comp = Undo.AddComponent(go, type);
-
-            if (WorkflowManager.IsRecording)
-                WorkflowManager.SnapshotCreatedComponent(comp);
-
+            if (WorkflowManager.IsRecording) WorkflowManager.SnapshotCreatedComponent(comp);
             EditorUtility.SetDirty(go);
-            return new { target = go.name, success = true, component = type.Name };
-        }, item => item.name ?? item.path)); return; }
+
+            results.Add(new { target = go.name, success = true, component = type.Name });
+            successCount++;
+        }
+
+        result.SetResult(new
+        {
+            success = failCount == 0,
+            totalItems = items.Length,
+            successCount,
+            failCount,
+            results
+        });
+    }
+
+    private static bool AllowMultiple(System.Type type)
+    {
+        try { return type.GetCustomAttributes(typeof(DisallowMultipleComponent), true).Length == 0; }
+        catch { return true; }
     }
 }
 ```

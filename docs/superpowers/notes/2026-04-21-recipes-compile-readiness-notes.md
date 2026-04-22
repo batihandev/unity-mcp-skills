@@ -120,6 +120,19 @@ Three session-2 parallel subagents for Task 16 (probuilder / xr / cinemachine) h
 - Passing `BindingFlags` to `Type.GetMethod(name, flags, binder, types, modifiers)` triggers the same NRE as `BindingFlags.Public | BindingFlags.Instance`. Use parameterless `type.GetMethods()` + a `foreach` filter instead, or the `(name, Type[])` 2-arg overload.
 - `catch (ReflectionTypeLoadException ex)` with `using System.Reflection;` in scope trips the NRE. Fully-qualify the catch type.
 
+### Task 16 closeout (2026-04-22)
+
+Named scope in plan (`FindShaderByNameOrPath`, `GetSimilarTypes`, `AllowMultiple`) complete. Residue sweep against `recipes/` found 6 more recipes still calling those two helpers — all fixed inline in this pass:
+
+- `shader_check_errors`, `shader_get_keywords`, `shader_get_variant_count`, `shader_get_properties` — inlined `FindShaderByNameOrPath` as `private static Shader` in each CommandScript.
+- `component_add`, `component_add_batch` — routed `FindComponentType` via `_shared/component_type_finder.md` prerequisite (was undefined); inlined `GetSimilarTypes` + `AllowMultiple` as private statics; `component_add_batch` also rewritten per Task 15 foreach pattern (was still using `BatchExecutor.Execute<T>`). `component_add` restored parameter locals at top of Execute — extractor had dropped them.
+
+**Deferred out of Task 16 to a later async split:** `test_list`, `test_list_categories` use upstream `DiscoverTests` which is ~200 lines of source-scan + JsonConvert/JObject (unavailable in `Unity_RunCommand`). The Unity-native replacement `TestRunnerApi.RetrieveTestList` is callback-based via `EditorApplication.delayCall`, structurally incompatible with stateless `Execute`. Marked `comp:B` with reason; follow-up would be a `test_list_start` + `test_list_read` split matching the Task 5 pattern.
+
+### Task 15 actual state (not "completed" — partial)
+
+The task list marked Task 15 complete after 4 batch pilots; tracker scan still finds `BatchExecutor.Execute<T>` in **22 recipe files** (+3 using `SkillResultHelper`). Pattern is proven (typed `_BatchFooItem` + `foreach`), but the mechanical sweep across the remaining files is open work. Pickup point for the next slice.
+
 Tasks done session 2: 19, 11, 12, 13, **14, 15 (partial: 3 of 5 verification pilots + bonus gameobject_set_active_batch), 17, 18 (enumeration only), 21 (eligible pool only)**.
 
 ### Task 17 — Unity 6000+ commit + deprecation replacements

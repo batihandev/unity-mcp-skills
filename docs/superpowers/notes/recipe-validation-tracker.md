@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **484**
 - ext: **462** / 484
 - pre: **462** / 484
-- comp: **109** / 484
+- comp: **111** / 484
 - run: **11** / 484
 - retired: **22** / 484
 
@@ -134,7 +134,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| component_add | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| component_add | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: restored param locals; routed FindComponentType via _shared/component_type_finder; inlined GetSimilarTypes/AllowMultiple |
 | component_add_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | component_copy | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | component_get_properties | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
@@ -495,7 +495,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| shader_check_errors | x | x | B | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses FindShaderByNameOrPath — private upstream helper not in _shared |
+| shader_check_errors | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses FindShaderByNameOrPath — private upstream helper not in _shared; 2026-04-22: Task 16: inlined FindShaderByNameOrPath as private static |
 | shader_create | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | shader_create_urp | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | shader_delete | x | x | B | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Unity MCP returns 'User interactions not supported' on repeat attempts; compile-only appears blocked at this recipe; deferred |
@@ -547,8 +547,8 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | test_get_last_result | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_get_result | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_get_summary | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined private helpers EnumerateRealTestRuns/GetResultInt/GetResultStringList from upstream TestSkills; 2026-04-21: Task 5 async redesign |
-| test_list | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| test_list_categories | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined DiscoverTests helper from upstream TestSkills |
+| test_list | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Needs async redesign per Task 5 pattern: DiscoverTests (upstream) is 200+ lines with JsonConvert/JObject deps (unavailable in Unity_RunCommand). Unity-native TestRunnerApi.RetrieveTestList is callback-based via EditorApplication.delayCall — incompatible with stateless Execute. Defer to follow-up async split. |
+| test_list_categories | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined DiscoverTests helper from upstream TestSkills; 2026-04-22: Same as test_list: DiscoverTests source-scan needs async redesign per Task 5 pattern (test_list_start + test_list_read). |
 | test_run | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_run_by_name | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_smoke_skills | x | x | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired: depended on upstream REST SkillRegistry |

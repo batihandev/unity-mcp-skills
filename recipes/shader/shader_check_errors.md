@@ -33,7 +33,18 @@ internal class CommandScript : IRunCommand
         var shader = FindShaderByNameOrPath(shaderNameOrPath);
         if (shader == null) { result.SetResult(new { error = $"Shader not found: {shaderNameOrPath}" }); return; }
         int msgCount = ShaderUtil.GetShaderMessageCount(shader);
-        { result.SetResult(new { shaderName = shader.name, hasErrors = msgCount > 0, messageCount = msgCount }); return; }
+        result.SetResult(new { shaderName = shader.name, hasErrors = msgCount > 0, messageCount = msgCount });
+    }
+
+    private static Shader FindShaderByNameOrPath(string shaderNameOrPath)
+    {
+        if (string.IsNullOrEmpty(shaderNameOrPath)) return null;
+        Shader shader = null;
+        if (shaderNameOrPath.EndsWith(".shader"))
+            shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderNameOrPath);
+        if (shader == null)
+            shader = Shader.Find(shaderNameOrPath);
+        return shader;
     }
 }
 ```

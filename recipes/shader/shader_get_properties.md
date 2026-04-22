@@ -23,6 +23,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -31,8 +32,7 @@ internal class CommandScript : IRunCommand
         string shaderNameOrPath = "Standard"; // or "Assets/Shaders/MyShader.shader"
 
         var shader = FindShaderByNameOrPath(shaderNameOrPath);
-        if (shader == null)
-            { result.SetResult(new { error = $"Shader not found: {shaderNameOrPath}" }); return; }
+        if (shader == null) { result.SetResult(new { error = $"Shader not found: {shaderNameOrPath}" }); return; }
 
         var propCount = ShaderUtil.GetPropertyCount(shader);
         var properties = Enumerable.Range(0, propCount)
@@ -44,12 +44,18 @@ internal class CommandScript : IRunCommand
             })
             .ToArray();
 
-        { result.SetResult(new
-        {
-            shaderName = shader.name,
-            propertyCount = propCount,
-            properties
-        }); return; }
+        result.SetResult(new { shaderName = shader.name, propertyCount = propCount, properties });
+    }
+
+    private static Shader FindShaderByNameOrPath(string shaderNameOrPath)
+    {
+        if (string.IsNullOrEmpty(shaderNameOrPath)) return null;
+        Shader shader = null;
+        if (shaderNameOrPath.EndsWith(".shader"))
+            shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderNameOrPath);
+        if (shader == null)
+            shader = Shader.Find(shaderNameOrPath);
+        return shader;
     }
 }
 ```

@@ -51,55 +51,80 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType`
+- `recipes/_shared/skills_common.md` — for `SkillsCommon.GetAllLoadedTypes` (transitive)
 
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        string componentType = "Rigidbody";
+
         if (Validate.Required(componentType, "componentType") is object err) { result.SetResult(err); return; }
 
         var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
         if (error != null) { result.SetResult(error); return; }
 
-        var type = FindComponentType(componentType);
+        var type = ComponentSkills.FindComponentType(componentType);
         if (type == null)
-            { result.SetResult(new { 
+        {
+            result.SetResult(new {
                 error = $"Component type not found: {componentType}",
                 hint = "Try using full type name like 'CinemachineVirtualCamera' or 'Unity.Cinemachine.CinemachineCamera'",
                 availableTypes = GetSimilarTypes(componentType)
-            }); return; }
+            });
+            return;
+        }
 
-        // Check if component already exists (for single-instance components)
         if (go.GetComponent(type) != null && !AllowMultiple(type))
-            { result.SetResult(new { 
+        {
+            result.SetResult(new {
                 warning = $"Component {type.Name} already exists on {go.name}",
                 gameObject = go.name,
                 instanceId = go.GetInstanceID()
-            }); return; }
-
-        var comp = Undo.AddComponent(go, type);
-
-        // Record created component for workflow undo if recording
-        if (WorkflowManager.IsRecording)
-        {
-            WorkflowManager.SnapshotCreatedComponent(comp);
+            });
+            return;
         }
 
+        var comp = Undo.AddComponent(go, type);
+        if (WorkflowManager.IsRecording)
+            WorkflowManager.SnapshotCreatedComponent(comp);
         EditorUtility.SetDirty(go);
 
-        { result.SetResult(new {
+        result.SetResult(new {
             success = true,
             gameObject = go.name,
             instanceId = go.GetInstanceID(),
             component = type.Name,
             fullTypeName = type.FullName
-        }); return; }
+        });
+    }
+
+    private static string[] GetSimilarTypes(string searchTerm)
+    {
+        var simpleName = searchTerm.Contains(".") ? searchTerm.Substring(searchTerm.LastIndexOf('.') + 1) : searchTerm;
+        return SkillsCommon.GetAllLoadedTypes()
+            .Where(t => typeof(Component).IsAssignableFrom(t) &&
+                        t.Name.IndexOf(simpleName, System.StringComparison.OrdinalIgnoreCase) >= 0)
+            .Take(10)
+            .Select(t => t.FullName)
+            .ToArray();
+    }
+
+    private static bool AllowMultiple(System.Type type)
+    {
+        try { return type.GetCustomAttributes(typeof(DisallowMultipleComponent), true).Length == 0; }
+        catch { return true; }
     }
 }
 ```
