@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **337** / 485
+- comp: **346** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -376,18 +376,18 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| physics_boxcast | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_check_overlap | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_create_material | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Uses PhysicsMaterial (Unity 6+) correctly; prose false-positive on scan |
-| physics_get_gravity | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: (0,-9.81,0) returned (Task 21) |
-| physics_get_layer_collision | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_overlap_box | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_raycast | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_raycast_all | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_set_gravity | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_set_layer_collision | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_set_material | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Uses PhysicsMaterial (Unity 6+) correctly; prose false-positive on scan |
-| physics_spherecast | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| physics_boxcast | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| physics_check_overlap | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| physics_create_material | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Uses PhysicsMaterial (Unity 6+) correctly; prose false-positive on scan; 2026-04-23: clean; uses PhysicsMaterial (Unity 6+) |
+| physics_get_gravity | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: (0,-9.81,0) returned (Task 21); 2026-04-23: clean |
+| physics_get_layer_collision | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| physics_overlap_box | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| physics_raycast | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| physics_raycast_all | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| physics_set_gravity | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| physics_set_layer_collision | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| physics_set_material | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Uses PhysicsMaterial (Unity 6+) correctly; prose false-positive on scan; 2026-04-23: clean; uses PhysicsMaterial (Unity 6+) |
+| physics_spherecast | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
 
 ## prefab (11 recipes)
 
