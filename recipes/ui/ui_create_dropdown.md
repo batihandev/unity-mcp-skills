@@ -42,7 +42,7 @@ internal class CommandScript : IRunCommand
         var rectTransform = go.AddComponent<RectTransform>();
         rectTransform.sizeDelta = new Vector2(width, height);
 
-        var image = go.AddComponent<Image>();
+        var image = go.AddComponent<UnityEngine.UI.Image>();
         image.color = Color.white;
 
         Component dropdownComp;
@@ -71,7 +71,7 @@ internal class CommandScript : IRunCommand
         arrowRect.anchorMax = new Vector2(1, 1);
         arrowRect.pivot = new Vector2(1, 0.5f);
         arrowRect.sizeDelta = new Vector2(20, 0);
-        var arrowImage = arrowGo.AddComponent<Image>();
+        var arrowImage = arrowGo.AddComponent<UnityEngine.UI.Image>();
         arrowImage.color = new Color(0.2f, 0.2f, 0.2f);
 
         // Template (dropdown list)
@@ -82,7 +82,7 @@ internal class CommandScript : IRunCommand
         templateRect.anchorMax = new Vector2(1, 0);
         templateRect.pivot = new Vector2(0.5f, 1);
         templateRect.sizeDelta = new Vector2(0, 150);
-        var templateImage = templateGo.AddComponent<Image>();
+        var templateImage = templateGo.AddComponent<UnityEngine.UI.Image>();
         templateImage.color = Color.white;
         var scrollRect = templateGo.AddComponent<ScrollRect>();
 
@@ -94,7 +94,7 @@ internal class CommandScript : IRunCommand
         viewportRect.anchorMax = Vector2.one;
         viewportRect.sizeDelta = Vector2.zero;
         viewportGo.AddComponent<RectMask2D>();
-        var viewportImage = viewportGo.AddComponent<Image>();
+        var viewportImage = viewportGo.AddComponent<UnityEngine.UI.Image>();
         viewportImage.color = new Color(1, 1, 1, 0);
 
         // Content
@@ -127,7 +127,7 @@ internal class CommandScript : IRunCommand
         itemBgRect.anchorMin = Vector2.zero;
         itemBgRect.anchorMax = Vector2.one;
         itemBgRect.sizeDelta = Vector2.zero;
-        var itemBgImage = itemBgGo.AddComponent<Image>();
+        var itemBgImage = itemBgGo.AddComponent<UnityEngine.UI.Image>();
         itemBgImage.color = new Color(0.96f, 0.96f, 0.96f);
 
         // Item checkmark
@@ -138,7 +138,7 @@ internal class CommandScript : IRunCommand
         checkRect.anchorMax = new Vector2(0, 0.5f);
         checkRect.sizeDelta = new Vector2(20, 20);
         checkRect.anchoredPosition = new Vector2(10, 0);
-        var checkImage = checkGo.AddComponent<Image>();
+        var checkImage = checkGo.AddComponent<UnityEngine.UI.Image>();
         checkImage.color = new Color(0.3f, 0.6f, 1f);
 
         itemToggle.targetGraphic = itemBgImage;
@@ -200,6 +200,86 @@ internal class CommandScript : IRunCommand
         WorkflowManager.SnapshotObject(go, SnapshotType.Created);
 
         result.SetResult(new { success = true, name = go.name, instanceId = go.GetInstanceID(), parent = parentGo.name, optionCount = optionList.Count });
+    }
+
+    private static bool _tmpChecked;
+    private static bool _tmpAvailable;
+    private static System.Type _tmpTextType;
+    private static System.Type _tmpInputFieldType;
+    private static System.Type _tmpDropdownType;
+
+    private static bool IsTMPAvailable()
+    {
+        if (!_tmpChecked)
+        {
+            _tmpChecked = true;
+            _tmpTextType = System.Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro");
+            _tmpInputFieldType = System.Type.GetType("TMPro.TMP_InputField, Unity.TextMeshPro");
+            _tmpDropdownType = System.Type.GetType("TMPro.TMP_Dropdown, Unity.TextMeshPro");
+            _tmpAvailable = _tmpTextType != null;
+        }
+        return _tmpAvailable;
+    }
+
+    private static Component AddTextComponent(GameObject go, string text, int fontSize, Color color, TextAnchor alignment = TextAnchor.MiddleLeft)
+    {
+        if (IsTMPAvailable())
+        {
+            var tmp = go.AddComponent(_tmpTextType);
+            _tmpTextType.GetProperty("text")?.SetValue(tmp, text);
+            _tmpTextType.GetProperty("fontSize")?.SetValue(tmp, (float)fontSize);
+            _tmpTextType.GetProperty("color")?.SetValue(tmp, color);
+            var alignOptionsType = System.Type.GetType("TMPro.TextAlignmentOptions, Unity.TextMeshPro");
+            if (alignOptionsType != null)
+            {
+                object tmpAlignment = alignment switch
+                {
+                    TextAnchor.UpperLeft => System.Enum.Parse(alignOptionsType, "TopLeft"),
+                    TextAnchor.UpperCenter => System.Enum.Parse(alignOptionsType, "Top"),
+                    TextAnchor.UpperRight => System.Enum.Parse(alignOptionsType, "TopRight"),
+                    TextAnchor.MiddleLeft => System.Enum.Parse(alignOptionsType, "Left"),
+                    TextAnchor.MiddleCenter => System.Enum.Parse(alignOptionsType, "Center"),
+                    TextAnchor.MiddleRight => System.Enum.Parse(alignOptionsType, "Right"),
+                    TextAnchor.LowerLeft => System.Enum.Parse(alignOptionsType, "BottomLeft"),
+                    TextAnchor.LowerCenter => System.Enum.Parse(alignOptionsType, "Bottom"),
+                    TextAnchor.LowerRight => System.Enum.Parse(alignOptionsType, "BottomRight"),
+                    _ => System.Enum.Parse(alignOptionsType, "Center")
+                };
+                _tmpTextType.GetProperty("alignment")?.SetValue(tmp, tmpAlignment);
+            }
+            return tmp;
+        }
+        else
+        {
+            var textComp = go.AddComponent<Text>();
+            textComp.text = text;
+            textComp.fontSize = fontSize;
+            textComp.color = color;
+            textComp.alignment = alignment;
+            textComp.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (textComp.font == null)
+                textComp.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            return textComp;
+        }
+    }
+
+    private static GameObject FindOrCreateCanvas(string parentName)
+    {
+        if (!string.IsNullOrEmpty(parentName))
+        {
+            var p = GameObject.Find(parentName);
+            if (p != null) return p;
+        }
+        var canvas = Object.FindFirstObjectByType<Canvas>();
+        if (canvas != null) return canvas.gameObject;
+        var go = new GameObject("Canvas");
+        var canvasComp = go.AddComponent<Canvas>();
+        canvasComp.renderMode = RenderMode.ScreenSpaceOverlay;
+        go.AddComponent<CanvasScaler>();
+        go.AddComponent<GraphicRaycaster>();
+        Undo.RegisterCreatedObjectUndo(go, "Create Canvas");
+        WorkflowManager.SnapshotObject(go, SnapshotType.Created);
+        return go;
     }
 }
 ```

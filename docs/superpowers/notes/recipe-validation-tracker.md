@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **400** / 485
+- comp: **424** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -575,32 +575,32 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| ui_add_canvas_group | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_add_layout_element | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_add_mask | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_add_outline | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_align_selected | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_configure_selectable | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| ui_add_canvas_group | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean compile |
+| ui_add_layout_element | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean compile |
+| ui_add_mask | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: Image→UnityEngine.UI.Image namespace fix |
+| ui_add_outline | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean compile |
+| ui_align_selected | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean compile |
+| ui_configure_selectable | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: Navigation.Mode→UnityEngine.UI.Navigation.Mode fix |
 | ui_create_batch | R | R | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Dispatcher pattern: delegates to 12 upstream UICreate* methods (canvas/panel/button/text/image/inputfield/slider/toggle/dropdown/scrollview/rawimage/scrollbar). Each primitive has ~50-100 lines of setup logic — full inlining would 10x the recipe size. Guidance: agents should call individual ui_create_canvas / ui_create_button / etc. recipes sequentially rather than this batch. No single-pattern rewrite fits.; 2026-04-22: Retired 2026-04-22: dispatcher to 12 UICreate* primitives, no unique logic. Agents call individual ui_create_<primitive> recipes sequentially. |
-| ui_create_button | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_canvas | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_dropdown | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_image | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_inputfield | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_panel | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_rawimage | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_scrollbar | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_scrollview | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_slider | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_text | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_toggle | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_distribute_selected | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
-| ui_find_all | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_layout_children | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_set_anchor | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_set_image | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_set_rect | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_set_text | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| ui_create_button | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added TMP helpers + FindOrCreateCanvas + Image namespace fix |
+| ui_create_canvas | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added using UnityEngine.UI for CanvasScaler/GraphicRaycaster |
+| ui_create_dropdown | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added TMP helpers + FindOrCreateCanvas + Image namespace fix |
+| ui_create_image | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added FindOrCreateCanvas + Image namespace fix |
+| ui_create_inputfield | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added TMP helpers + FindOrCreateCanvas + Image namespace fix |
+| ui_create_panel | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added FindOrCreateCanvas + Image namespace fix |
+| ui_create_rawimage | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added FindOrCreateCanvas |
+| ui_create_scrollbar | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added FindOrCreateCanvas + Image namespace fix |
+| ui_create_scrollview | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added FindOrCreateCanvas + Image namespace fix |
+| ui_create_slider | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added FindOrCreateCanvas + Image namespace fix |
+| ui_create_text | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added TMP helpers + FindOrCreateCanvas |
+| ui_create_toggle | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added TMP helpers + FindOrCreateCanvas |
+| ui_distribute_selected | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-23: clean compile |
+| ui_find_all | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added TMP static fields + IsTMPAvailable + GetUIType helpers |
+| ui_layout_children | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean compile |
+| ui_set_anchor | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean compile |
+| ui_set_image | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: Image namespace + Image.Type/FillMethod fully qualified |
+| ui_set_rect | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean compile |
+| ui_set_text | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added TMP static fields + IsTMPAvailable + SetTextOnComponent helpers |
 
 ## uitoolkit (25 recipes)
 

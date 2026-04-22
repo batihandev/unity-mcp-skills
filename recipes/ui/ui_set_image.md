@@ -39,15 +39,15 @@ internal class CommandScript : IRunCommand
         var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
         if (error != null) { result.SetResult(error); return; }
 
-        var image = go.GetComponent<Image>();
+        var image = go.GetComponent<UnityEngine.UI.Image>();
         if (image == null) { result.SetResult(new { error = "No Image component found" }); return; }
 
         WorkflowManager.SnapshotObject(image);
         Undo.RecordObject(image, "Set Image");
 
-        if (!string.IsNullOrEmpty(type) && Enum.TryParse<Image.Type>(type, true, out var imgType))
+        if (!string.IsNullOrEmpty(type) && Enum.TryParse<UnityEngine.UI.Image.Type>(type, true, out var imgType))
             image.type = imgType;
-        if (!string.IsNullOrEmpty(fillMethod) && Enum.TryParse<Image.FillMethod>(fillMethod, true, out var fm))
+        if (!string.IsNullOrEmpty(fillMethod) && Enum.TryParse<UnityEngine.UI.Image.FillMethod>(fillMethod, true, out var fm))
             image.fillMethod = fm;
         if (fillAmount.HasValue)
             image.fillAmount = fillAmount.Value;

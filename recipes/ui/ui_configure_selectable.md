@@ -53,7 +53,7 @@ internal class CommandScript : IRunCommand
 
         if (!string.IsNullOrEmpty(navigationMode))
         {
-            if (Enum.TryParse<Navigation.Mode>(navigationMode, true, out var navMode))
+            if (Enum.TryParse<UnityEngine.UI.Navigation.Mode>(navigationMode, true, out var navMode))
             {
                 var nav = selectable.navigation;
                 nav.mode = navMode;

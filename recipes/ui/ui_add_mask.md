@@ -40,8 +40,8 @@ internal class CommandScript : IRunCommand
         if (maskType.Equals("Mask", StringComparison.OrdinalIgnoreCase))
         {
             // Mask requires an Image component
-            if (go.GetComponent<Image>() == null)
-                Undo.AddComponent<Image>(go);
+            if (go.GetComponent<UnityEngine.UI.Image>() == null)
+                Undo.AddComponent<UnityEngine.UI.Image>(go);
             var mask = go.GetComponent<Mask>() ?? Undo.AddComponent<Mask>(go);
             mask.showMaskGraphic = showMaskGraphic;
             applied = "Mask";

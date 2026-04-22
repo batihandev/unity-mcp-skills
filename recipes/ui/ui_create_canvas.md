@@ -14,6 +14,7 @@ Create a new Canvas with the specified render mode.
 
 ```csharp
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEditor;
 
 internal class CommandScript : IRunCommand

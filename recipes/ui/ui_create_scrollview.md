@@ -48,7 +48,7 @@ internal class CommandScript : IRunCommand
         if (Enum.TryParse<ScrollRect.MovementType>(movementType, true, out var mt))
             scrollRect.movementType = mt;
 
-        var bgImage = go.AddComponent<Image>();
+        var bgImage = go.AddComponent<UnityEngine.UI.Image>();
         bgImage.color = new Color(0.1f, 0.1f, 0.1f, 0.5f);
 
         // Viewport
@@ -59,7 +59,7 @@ internal class CommandScript : IRunCommand
         viewportRect.anchorMax = Vector2.one;
         viewportRect.sizeDelta = Vector2.zero;
         viewportGo.AddComponent<RectMask2D>();
-        var viewportImage = viewportGo.AddComponent<Image>();
+        var viewportImage = viewportGo.AddComponent<UnityEngine.UI.Image>();
         viewportImage.color = new Color(1, 1, 1, 0);
 
         // Content
@@ -78,6 +78,25 @@ internal class CommandScript : IRunCommand
         WorkflowManager.SnapshotObject(go, SnapshotType.Created);
 
         result.SetResult(new { success = true, name = go.name, instanceId = go.GetInstanceID(), parent = parentGo.name, horizontal, vertical });
+    }
+
+    private static GameObject FindOrCreateCanvas(string parentName)
+    {
+        if (!string.IsNullOrEmpty(parentName))
+        {
+            var p = GameObject.Find(parentName);
+            if (p != null) return p;
+        }
+        var canvas = Object.FindFirstObjectByType<Canvas>();
+        if (canvas != null) return canvas.gameObject;
+        var go = new GameObject("Canvas");
+        var canvasComp = go.AddComponent<Canvas>();
+        canvasComp.renderMode = RenderMode.ScreenSpaceOverlay;
+        go.AddComponent<CanvasScaler>();
+        go.AddComponent<GraphicRaycaster>();
+        Undo.RegisterCreatedObjectUndo(go, "Create Canvas");
+        WorkflowManager.SnapshotObject(go, SnapshotType.Created);
+        return go;
     }
 }
 ```

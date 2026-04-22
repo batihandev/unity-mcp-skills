@@ -57,5 +57,28 @@ internal class CommandScript : IRunCommand
 
         result.SetResult(new { error = "No Text component found (checked both TMP and Legacy UI)" });
     }
+
+    private static bool _tmpChecked;
+    private static bool _tmpAvailable;
+    private static System.Type _tmpTextType;
+
+    private static bool IsTMPAvailable()
+    {
+        if (!_tmpChecked)
+        {
+            _tmpChecked = true;
+            _tmpTextType = System.Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro");
+            _tmpAvailable = _tmpTextType != null;
+        }
+        return _tmpAvailable;
+    }
+
+    private static bool SetTextOnComponent(Component comp, string text)
+    {
+        if (comp == null) return false;
+        var textProp = comp.GetType().GetProperty("text");
+        if (textProp != null) { textProp.SetValue(comp, text); return true; }
+        return false;
+    }
 }
 ```

@@ -51,7 +51,7 @@ internal class CommandScript : IRunCommand
         bgRect.anchorMin = new Vector2(0, 0.25f);
         bgRect.anchorMax = new Vector2(1, 0.75f);
         bgRect.sizeDelta = Vector2.zero;
-        var bgImage = bgGo.AddComponent<Image>();
+        var bgImage = bgGo.AddComponent<UnityEngine.UI.Image>();
         bgImage.color = new Color(0.8f, 0.8f, 0.8f);
 
         // Fill Area
@@ -67,7 +67,7 @@ internal class CommandScript : IRunCommand
         fillGo.transform.SetParent(fillAreaGo.transform, false);
         var fillRect = fillGo.AddComponent<RectTransform>();
         fillRect.sizeDelta = new Vector2(10, 0);
-        var fillImage = fillGo.AddComponent<Image>();
+        var fillImage = fillGo.AddComponent<UnityEngine.UI.Image>();
         fillImage.color = new Color(0.3f, 0.6f, 1f);
 
         slider.fillRect = fillRect;
@@ -84,7 +84,7 @@ internal class CommandScript : IRunCommand
         handleGo.transform.SetParent(handleAreaGo.transform, false);
         var handleRect = handleGo.AddComponent<RectTransform>();
         handleRect.sizeDelta = new Vector2(20, 0);
-        var handleImage = handleGo.AddComponent<Image>();
+        var handleImage = handleGo.AddComponent<UnityEngine.UI.Image>();
         handleImage.color = Color.white;
 
         slider.handleRect = handleRect;
@@ -93,6 +93,25 @@ internal class CommandScript : IRunCommand
         WorkflowManager.SnapshotObject(go, SnapshotType.Created);
 
         result.SetResult(new { success = true, name = go.name, instanceId = go.GetInstanceID(), parent = parentGo.name, minValue, maxValue, value });
+    }
+
+    private static GameObject FindOrCreateCanvas(string parentName)
+    {
+        if (!string.IsNullOrEmpty(parentName))
+        {
+            var p = GameObject.Find(parentName);
+            if (p != null) return p;
+        }
+        var canvas = Object.FindFirstObjectByType<Canvas>();
+        if (canvas != null) return canvas.gameObject;
+        var go = new GameObject("Canvas");
+        var canvasComp = go.AddComponent<Canvas>();
+        canvasComp.renderMode = RenderMode.ScreenSpaceOverlay;
+        go.AddComponent<CanvasScaler>();
+        go.AddComponent<GraphicRaycaster>();
+        Undo.RegisterCreatedObjectUndo(go, "Create Canvas");
+        WorkflowManager.SnapshotObject(go, SnapshotType.Created);
+        return go;
     }
 }
 ```
