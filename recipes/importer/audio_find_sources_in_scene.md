@@ -18,7 +18,7 @@ audio_find_sources_in_scene(limit?: int = 50)
 |-----------|------|----------|---------|-------------|
 | `limit` | int | no | `50` | Max results returned |
 
-**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## Unity_RunCommand Template
 
@@ -44,7 +44,7 @@ internal class CommandScript : IRunCommand
             enabled = s.enabled
         }).ToArray();
 
-        return new { success = true, totalFound = sources.Length, showing = results.Length, sources = results };
+        { result.SetResult(new { success = true, totalFound = sources.Length, showing = results.Length, sources = results }); return; }
     }
 }
 ```

@@ -31,7 +31,7 @@ model_set_import_settings(
 | `readable` | bool | no | CPU-readable mesh data |
 | `meshCompression` | string | no | `Off`, `Low`, `Medium`, `High` |
 
-**Prerequisites:** [`workflow_manager`](../_shared/workflow_manager.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 
@@ -53,7 +53,7 @@ internal class CommandScript : IRunCommand
 
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
         if (importer == null)
-            return new { success = false, error = $"Not a model or not found: {assetPath}" };
+            { result.SetResult(new { success = false, error = $"Not a model or not found: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -87,14 +87,14 @@ internal class CommandScript : IRunCommand
 
         if (changed) importer.SaveAndReimport();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
             globalScale = importer.globalScale,
             importAnimation = importer.importAnimation,
             meshCompression = importer.meshCompression.ToString()
-        };
+        }); return; }
     }
 }
 ```

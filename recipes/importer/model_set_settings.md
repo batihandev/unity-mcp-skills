@@ -55,7 +55,7 @@ model_set_settings(
 | `importAnimation` | bool | no | Import animation clips |
 | `materialImportMode` | string | no | `None`, `ImportViaMaterialDescription`, `ImportStandard` |
 
-**Prerequisites:** [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 
@@ -88,11 +88,11 @@ internal class CommandScript : IRunCommand
         bool? importAnimation = null;
         string materialImportMode = null;
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
         if (importer == null)
-            return new { error = $"Not a model file or asset not found: {assetPath}" };
+            { result.SetResult(new { error = $"Not a model file or asset not found: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -117,7 +117,7 @@ internal class CommandScript : IRunCommand
         {
             if (System.Enum.TryParse<ModelImporterMeshCompression>(meshCompression, true, out var mc))
             { importer.meshCompression = mc; changes.Add($"meshCompression={mc}"); }
-            else return new { error = $"Invalid meshCompression: {meshCompression}. Valid: Off, Low, Medium, High" };
+            else { result.SetResult(new { error = $"Invalid meshCompression: {meshCompression}. Valid: Off, Low, Medium, High" }); return; }
         }
 
         if (!string.IsNullOrEmpty(importNormals) &&
@@ -132,7 +132,7 @@ internal class CommandScript : IRunCommand
         {
             if (System.Enum.TryParse<ModelImporterAnimationType>(animationType, true, out var at))
             { importer.animationType = at; changes.Add($"animationType={at}"); }
-            else return new { error = $"Invalid animationType: {animationType}. Valid: None, Legacy, Generic, Humanoid" };
+            else { result.SetResult(new { error = $"Invalid animationType: {animationType}. Valid: None, Legacy, Generic, Humanoid" }); return; }
         }
 
         if (!string.IsNullOrEmpty(materialImportMode) &&
@@ -141,7 +141,7 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, changesApplied = changes.Count, changes };
+        { result.SetResult(new { success = true, path = assetPath, changesApplied = changes.Count, changes }); return; }
     }
 }
 ```

@@ -29,7 +29,7 @@ audio_set_import_settings(
 | `compressionFormat` | string | no | `PCM`, `Vorbis`, `ADPCM` |
 | `quality` | int | no | 0–100 (mapped to `0.0`–`1.0` internally) |
 
-**Prerequisites:** [`workflow_manager`](../_shared/workflow_manager.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 
@@ -49,7 +49,7 @@ internal class CommandScript : IRunCommand
         int? quality = 70;                    // 0 – 100 integer
 
         var importer = AssetImporter.GetAtPath(assetPath) as AudioImporter;
-        if (importer == null) return new { error = $"Not an audio asset: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not an audio asset: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -72,14 +72,14 @@ internal class CommandScript : IRunCommand
         importer.defaultSampleSettings = settings;
         importer.SaveAndReimport();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
             forceToMono = importer.forceToMono,
             loadType = settings.loadType.ToString(),
             compressionFormat = settings.compressionFormat.ToString()
-        };
+        }); return; }
     }
 }
 ```

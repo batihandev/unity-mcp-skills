@@ -19,6 +19,8 @@ audio_find_clips(filter?: string = "", limit?: int = 50)
 | `filter` | string | no | `""` | Additional AssetDatabase search terms appended to `t:AudioClip` |
 | `limit` | int | no | `50` | Max results returned |
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## Unity_RunCommand Template
 
 ```csharp
@@ -46,7 +48,7 @@ internal class CommandScript : IRunCommand
             };
         }).ToArray();
 
-        return new { success = true, totalFound = guids.Length, showing = clips.Length, clips };
+        { result.SetResult(new { success = true, totalFound = guids.Length, showing = clips.Length, clips }); return; }
     }
 }
 ```

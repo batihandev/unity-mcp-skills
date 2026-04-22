@@ -19,6 +19,8 @@ model_find_assets(filter?: string = "", limit?: int = 50)
 | `filter` | string | no | `""` | Additional AssetDatabase search terms appended to `t:Model` |
 | `limit` | int | no | `50` | Max results returned |
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## Unity_RunCommand Template
 
 ```csharp
@@ -40,7 +42,7 @@ internal class CommandScript : IRunCommand
             return new { path, name = System.IO.Path.GetFileNameWithoutExtension(path) };
         }).ToArray();
 
-        return new { success = true, totalFound = guids.Length, showing = models.Length, models };
+        { result.SetResult(new { success = true, totalFound = guids.Length, showing = models.Length, models }); return; }
     }
 }
 ```

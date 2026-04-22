@@ -19,7 +19,7 @@ audio_get_clip_info(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the audio asset |
 
-**Prerequisites:** [`validate`](../_shared/validate.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ## Unity_RunCommand Template
 
@@ -33,11 +33,11 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Audio/bgm.wav"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
         var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(assetPath);
-        if (clip == null) return new { error = $"AudioClip not found: {assetPath}" };
+        if (clip == null) { result.SetResult(new { error = $"AudioClip not found: {assetPath}" }); return; }
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             name = clip.name,
@@ -49,7 +49,7 @@ internal class CommandScript : IRunCommand
             loadType = clip.loadType.ToString(),
             loadState = clip.loadState.ToString(),
             ambisonic = clip.ambisonic
-        };
+        }); return; }
     }
 }
 ```

@@ -23,7 +23,7 @@ Target resolution — provide at least one of `name`, `instanceId`, or `path`:
 | `instanceId` | int | no | GameObject instance ID |
 | `path` | string | no | Hierarchy path (e.g. `Player/Body`) |
 
-**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## Unity_RunCommand Template
 
@@ -40,9 +40,9 @@ internal class CommandScript : IRunCommand
         string path = null;
 
         var (source, error) = GameObjectFinder.FindComponentOrError<AudioSource>(name, instanceId, path);
-        if (error != null) return error;
+        if (error != null) { result.SetResult(error); return; }
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             gameObject = source.gameObject.name,
@@ -56,7 +56,7 @@ internal class CommandScript : IRunCommand
             minDistance = source.minDistance,
             maxDistance = source.maxDistance,
             priority = source.priority
-        };
+        }); return; }
     }
 }
 ```

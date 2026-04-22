@@ -24,7 +24,7 @@ Provide either `assetPath` (project asset) or a scene target (`name`/`instanceId
 | `instanceId` | int | no | Scene GameObject instance ID |
 | `path` | string | no | Scene hierarchy path |
 
-**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ## Unity_RunCommand Template
 
@@ -59,15 +59,15 @@ internal class CommandScript : IRunCommand
         else
         {
             var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+            if (error != null) { result.SetResult(error); return; }
             var mf = go.GetComponent<MeshFilter>();
             var smr = go.GetComponent<SkinnedMeshRenderer>();
             mesh = mf != null ? mf.sharedMesh : smr != null ? smr.sharedMesh : null;
         }
 
-        if (mesh == null) return new { error = "No mesh found" };
+        if (mesh == null) { result.SetResult(new { error = "No mesh found" }); return; }
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             name = mesh.name,
@@ -82,7 +82,7 @@ internal class CommandScript : IRunCommand
             hasColors = mesh.colors.Length > 0,
             blendShapeCount = mesh.blendShapeCount,
             isReadable = mesh.isReadable
-        };
+        }); return; }
     }
 }
 ```

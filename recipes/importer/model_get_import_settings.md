@@ -19,6 +19,8 @@ model_get_import_settings(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the model |
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## Unity_RunCommand Template
 
 ```csharp
@@ -32,9 +34,9 @@ internal class CommandScript : IRunCommand
         string assetPath = "Assets/Models/hero.fbx"; // Replace with target path
 
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
-        if (importer == null) return new { error = $"Not a model: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a model: {assetPath}" }); return; }
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
@@ -44,7 +46,7 @@ internal class CommandScript : IRunCommand
             meshCompression = importer.meshCompression.ToString(),
             readable = importer.isReadable,
             generateColliders = importer.addCollider
-        };
+        }); return; }
     }
 }
 ```

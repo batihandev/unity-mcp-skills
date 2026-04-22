@@ -41,7 +41,7 @@ Target resolution — provide at least one of `name`, `instanceId`, or `path`:
 | `spatialBlend` | float | no | 0 = 2D, 1 = 3D |
 | `priority` | int | no | 0–256 (0 = highest) |
 
-**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ## Unity_RunCommand Template
 
@@ -66,7 +66,7 @@ internal class CommandScript : IRunCommand
         int? priority = null;
 
         var (source, error) = GameObjectFinder.FindComponentOrError<AudioSource>(name, instanceId, path);
-        if (error != null) return error;
+        if (error != null) { result.SetResult(error); return; }
 
         Undo.RecordObject(source, "Set AudioSource Properties");
 
@@ -84,7 +84,7 @@ internal class CommandScript : IRunCommand
         if (spatialBlend.HasValue)source.spatialBlend = spatialBlend.Value;
         if (priority.HasValue)    source.priority    = priority.Value;
 
-        return new { success = true, gameObject = source.gameObject.name };
+        { result.SetResult(new { success = true, gameObject = source.gameObject.name }); return; }
     }
 }
 ```

@@ -18,6 +18,8 @@ audio_get_import_settings(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the audio file |
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## Unity_RunCommand Template
 
 ```csharp
@@ -31,10 +33,10 @@ internal class CommandScript : IRunCommand
         string assetPath = "Assets/Audio/bgm.wav"; // Replace with target path
 
         var importer = AssetImporter.GetAtPath(assetPath) as AudioImporter;
-        if (importer == null) return new { error = $"Not an audio asset: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not an audio asset: {assetPath}" }); return; }
 
         var settings = importer.defaultSampleSettings;
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
@@ -43,7 +45,7 @@ internal class CommandScript : IRunCommand
             loadType = settings.loadType.ToString(),
             compressionFormat = settings.compressionFormat.ToString(),
             quality = settings.quality
-        };
+        }); return; }
     }
 }
 ```

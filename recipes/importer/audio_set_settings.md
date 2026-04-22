@@ -33,7 +33,7 @@ audio_set_settings(
 | `quality` | float | no | 0.0–1.0 quality for Vorbis compression |
 | `sampleRateSetting` | string | no | `PreserveSampleRate`, `OptimizeSampleRate`, `OverrideSampleRate` |
 
-**Prerequisites:** [`validate`](../_shared/validate.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ## Unity_RunCommand Template
 
@@ -55,11 +55,11 @@ internal class CommandScript : IRunCommand
         float? quality = 0.7f;                  // 0.0 – 1.0
         string sampleRateSetting = null;
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as AudioImporter;
         if (importer == null)
-            return new { error = $"Not an audio file or asset not found: {assetPath}" };
+            { result.SetResult(new { error = $"Not an audio file or asset not found: {assetPath}" }); return; }
 
         var changes = new List<string>();
 
@@ -75,7 +75,7 @@ internal class CommandScript : IRunCommand
             if (System.Enum.TryParse<AudioClipLoadType>(loadType, true, out var lt))
             { sampleSettings.loadType = lt; changes.Add($"loadType={lt}"); sampleSettingsChanged = true; }
             else
-                return new { error = $"Invalid loadType: {loadType}. Valid: DecompressOnLoad, CompressedInMemory, Streaming" };
+                { result.SetResult(new { error = $"Invalid loadType: {loadType}. Valid: DecompressOnLoad, CompressedInMemory, Streaming" }); return; }
         }
 
         if (!string.IsNullOrEmpty(compressionFormat))
@@ -83,7 +83,7 @@ internal class CommandScript : IRunCommand
             if (System.Enum.TryParse<AudioCompressionFormat>(compressionFormat, true, out var cf))
             { sampleSettings.compressionFormat = cf; changes.Add($"compressionFormat={cf}"); sampleSettingsChanged = true; }
             else
-                return new { error = $"Invalid compressionFormat: {compressionFormat}. Valid: PCM, Vorbis, ADPCM" };
+                { result.SetResult(new { error = $"Invalid compressionFormat: {compressionFormat}. Valid: PCM, Vorbis, ADPCM" }); return; }
         }
 
         if (quality.HasValue)
@@ -96,7 +96,7 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, changesApplied = changes.Count, changes };
+        { result.SetResult(new { success = true, path = assetPath, changesApplied = changes.Count, changes }); return; }
     }
 }
 ```

@@ -20,7 +20,7 @@ model_get_animations_info(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the model file |
 
-**Prerequisites:** [`validate`](../_shared/validate.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ## Unity_RunCommand Template
 
@@ -35,9 +35,9 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Models/hero.fbx"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
-        if (importer == null) return new { error = $"Not a model: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a model: {assetPath}" }); return; }
 
         var allAssets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
         var clips = allAssets.OfType<AnimationClip>()
@@ -62,7 +62,7 @@ internal class CommandScript : IRunCommand
               }).ToArray()
             : null;
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             path = assetPath,
@@ -70,7 +70,7 @@ internal class CommandScript : IRunCommand
             clipCount = clips.Length,
             clips,
             clipDefinitions = clipDefs
-        };
+        }); return; }
     }
 }
 ```

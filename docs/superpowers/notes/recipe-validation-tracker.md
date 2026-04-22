@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **274** / 485
+- comp: **295** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -224,30 +224,30 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 |---|---|---|---|---|---|
 | asset_reimport | R | R | R | - | 2026-04-22: retired — duplicate of recipes/asset/asset_reimport.md; file deleted |
 | asset_reimport_batch | R | R | R | - | 2026-04-22: retired — duplicate of recipes/asset/asset_reimport_batch.md; file deleted |
-| audio_add_source | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_create_mixer | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_find_clips | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_find_sources_in_scene | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_get_clip_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_get_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_get_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_get_source_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_set_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
-| audio_set_source_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_find_assets | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_get_animations_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_get_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_get_materials_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_get_mesh_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_get_rig_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_get_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_set_animation_clips | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items |
-| model_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_set_rig | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_set_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
+| audio_add_source | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| audio_create_mixer | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult + BindingFlags→GetMethods() foreach; 2026-04-23: fixed return→SetResult + BindingFlags→GetMethods foreach; smoke passed |
+| audio_find_clips | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| audio_find_sources_in_scene | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| audio_get_clip_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| audio_get_import_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| audio_get_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| audio_get_source_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| audio_set_import_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| audio_set_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| audio_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; 2026-04-23: smoke pass; already used SetResult; 2026-04-23: already correct; smoke passed |
+| audio_set_source_properties | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; added execution_result prereq; 2026-04-23: fixed return→SetResult; smoke passed |
+| model_find_assets | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
+| model_get_animations_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
+| model_get_import_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
+| model_get_materials_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed OfType<Mesh>→OfType<UnityEngine.Mesh>; smoke passed |
+| model_get_mesh_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed; UnityEngine.Mesh qualified in recipe |
+| model_get_rig_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
+| model_get_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
+| model_set_animation_clips | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items; 2026-04-23: smoke passed |
+| model_set_import_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
+| model_set_rig | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
+| model_set_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
+| model_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; 2026-04-23: smoke passed |
 | sprite_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | texture_find_assets | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | texture_find_by_size | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
