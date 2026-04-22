@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **319** / 485
+- comp: **328** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -322,16 +322,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| optimize_analyze_overdraw | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| optimize_analyze_scene | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| optimize_audio_compression | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| optimize_find_duplicate_materials | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| optimize_analyze_overdraw | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke pass |
+| optimize_analyze_scene | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke pass |
+| optimize_audio_compression | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke pass |
+| optimize_find_duplicate_materials | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke pass |
 | optimize_find_large_assets | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 5 large assets (Task 21) |
-| optimize_get_static_flags | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| optimize_mesh_compression | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| optimize_set_lod_group | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| optimize_set_static_flags | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| optimize_textures | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| optimize_get_static_flags | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke pass |
+| optimize_mesh_compression | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke pass |
+| optimize_set_lod_group | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke pass |
+| optimize_set_static_flags | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke pass |
+| optimize_textures | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke pass |
 
 ## package (11 recipes)
 
