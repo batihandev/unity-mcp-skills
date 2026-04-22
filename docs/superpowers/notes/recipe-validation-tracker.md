@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **355** / 485
+- comp: **364** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -436,17 +436,17 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| project_add_tag | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_get_build_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_get_layers | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 8 layers returned (Task 21) |
-| project_get_packages | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items; 2026-04-22: Task 21: live run — 59 deps parsed from Packages/manifest.json, firstPkg=com.unity.2d.animation |
-| project_get_player_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_get_quality_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_get_render_pipeline | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_get_tags | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_list_shaders | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_set_quality_level | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| project_add_tag | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| project_get_build_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| project_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| project_get_layers | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 8 layers returned (Task 21); 2026-04-23: clean |
+| project_get_packages | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items; 2026-04-22: Task 21: live run — 59 deps parsed from Packages/manifest.json, firstPkg=com.unity.2d.animation; 2026-04-23: clean |
+| project_get_player_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| project_get_quality_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| project_get_render_pipeline | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| project_get_tags | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| project_list_shaders | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| project_set_quality_level | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
 
 ## sample (8 recipes)
 
