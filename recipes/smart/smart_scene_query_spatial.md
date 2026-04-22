@@ -18,6 +18,8 @@ Find scene objects within a sphere region centered at a world position, optional
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -51,5 +53,10 @@ internal class CommandScript : IRunCommand
         }
         { result.SetResult(new { success = true, count = results.Count, center = new { x, y, z }, radius, results }); return; }
     }
+
+    private static System.Type GetTypeByName(string name) =>
+        System.AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
+            .FirstOrDefault(t => t.Name == name);
 }
 ```

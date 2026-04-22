@@ -89,5 +89,17 @@ internal class CommandScript : IRunCommand
 
         { result.SetResult(new { success = true, layout = layoutType, count = selected.Count, spacing }); return; }
     }
+
+    private static Vector3 ParseAxis(string axis) =>
+        axis?.ToUpper() switch
+        {
+            "X" => Vector3.right,
+            "-X" => Vector3.left,
+            "Y" => Vector3.up,
+            "-Y" => Vector3.down,
+            "Z" => Vector3.forward,
+            "-Z" => Vector3.back,
+            _ => Vector3.right
+        };
 }
 ```

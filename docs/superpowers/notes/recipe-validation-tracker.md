@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **371** / 485
+- comp: **380** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -511,16 +511,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| smart_align_to_ground | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| smart_distribute | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| smart_randomize_transform | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| smart_reference_bind | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| smart_replace_objects | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| smart_scene_layout | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| smart_scene_query | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| smart_scene_query_spatial | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| smart_select_by_component | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: Task 21 |
-| smart_snap_to_grid | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| smart_align_to_ground | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| smart_distribute | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| smart_randomize_transform | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| smart_reference_bind | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: replaced BindingFlags with no-arg GetFields/GetProperties + FirstOrDefault |
+| smart_replace_objects | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| smart_scene_layout | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added ParseAxis helper |
+| smart_scene_query | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added GetMemberValue/Compare/FormatValue/GetTypeByName helpers, query var, fixed fCmp init |
+| smart_scene_query_spatial | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added GetTypeByName helper |
+| smart_select_by_component | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: Task 21; 2026-04-23: clean |
+| smart_snap_to_grid | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
 
 ## terrain (10 recipes)
 

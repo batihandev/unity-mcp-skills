@@ -19,6 +19,9 @@ Auto-fill a List or Array serialized field on a component with matching scene ob
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -43,18 +46,18 @@ internal class CommandScript : IRunCommand
             { result.SetResult(new { success = false, error = $"Component '{componentName}' not found on target" }); return; }
 
         // 2. Find Member (field, then Unity naming conventions, then property)
+        // BindingFlags with | triggers reformatter NRE; use no-arg GetFields()/GetProperties() + manual filter
         var type = comp.GetType();
-        var field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        var field = type.GetFields().FirstOrDefault(f => f.Name == fieldName);
         if (field == null)
-            field = type.GetField("m_" + char.ToUpper(fieldName[0]) + fieldName.Substring(1), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            field = type.GetFields().FirstOrDefault(f => f.Name == "m_" + char.ToUpper(fieldName[0]) + fieldName.Substring(1));
         if (field == null)
-            field = type.GetField("_" + fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            field = type.GetFields().FirstOrDefault(f => f.Name == "_" + fieldName);
 
-        PropertyInfo propFallback = null;
+        System.Reflection.PropertyInfo propFallback = null;
         if (field == null)
         {
-            propFallback = type.GetProperty(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (propFallback != null && !propFallback.CanWrite) propFallback = null;
+            propFallback = type.GetProperties().FirstOrDefault(p => p.Name == fieldName && p.CanWrite);
         }
 
         if (field == null && propFallback == null)

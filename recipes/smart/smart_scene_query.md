@@ -18,6 +18,8 @@ Query scene objects by component property values (SQL-like filter).
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -28,6 +30,7 @@ internal class CommandScript : IRunCommand
         string op = ">";                      // ==, !=, >, <, >=, <=, contains
         string value = "2";
         int limit = 50;
+        string query = null;                  // shorthand not supported; present for parity
 
         if (string.IsNullOrWhiteSpace(componentName) && !string.IsNullOrWhiteSpace(query))
         {
@@ -79,5 +82,43 @@ internal class CommandScript : IRunCommand
             results
         }); return; }
     }
+
+    private static object GetMemberValue(object obj, string name)
+    {
+        if (obj == null) return null;
+        var type = obj.GetType();
+        foreach (var f in type.GetFields())
+            if (f.Name == name) return f.GetValue(obj);
+        foreach (var p in type.GetProperties())
+            if (p.Name == name && p.CanRead) { try { return p.GetValue(obj); } catch { return null; } }
+        return null;
+    }
+
+    private static bool Compare(object val, string op, string value)
+    {
+        if (val == null) return false;
+        var str = val.ToString();
+        if (op == "contains") return str.IndexOf(value, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        float fVal = 0f, fCmp = 0f;
+        bool isNum = float.TryParse(str, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out fVal) &&
+                     float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out fCmp);
+        switch (op)
+        {
+            case "==": return isNum ? System.Math.Abs(fVal - fCmp) < 0.0001f : str == value;
+            case "!=": return isNum ? System.Math.Abs(fVal - fCmp) >= 0.0001f : str != value;
+            case ">":  return isNum && fVal > fCmp;
+            case "<":  return isNum && fVal < fCmp;
+            case ">=": return isNum && fVal >= fCmp;
+            case "<=": return isNum && fVal <= fCmp;
+            default:   return str == value;
+        }
+    }
+
+    private static string FormatValue(object val) => val == null ? "null" : val.ToString();
+
+    private static System.Type GetTypeByName(string name) =>
+        System.AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
+            .FirstOrDefault(t => t.Name == name);
 }
 ```
