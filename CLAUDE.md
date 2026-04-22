@@ -113,6 +113,12 @@ everywhere. Listed here so a fresh session knows the shape.
   Use `AssetDatabase.MoveAssetToTrash(path)` instead. It's restorable
   from the OS trash, functionally equivalent for recipe use, and
   analyzer-safe. `shader_delete` and `asset_delete_batch` both use this.
+- `CompilationPipeline.RequestScriptCompilation()` fails CS0234 on
+  short-name resolution because the Unity_RunCommand reformatter wraps
+  code in `namespace Unity.AI.Assistant.Agent.Dynamic.Extension.Editor`,
+  and C#'s namespace lookup finds `Unity.CompilationPipeline` first
+  (doesn't exist). Fully-qualify:
+  `UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation()`.
 - `System.Xml.XmlDocument` / `XmlNode` / `XmlElement` are not in the
   `Unity_RunCommand` compile context (CS1069, forwarded to `System.Xml.dll`).
   Parse XML with `string.IndexOf` scans instead.

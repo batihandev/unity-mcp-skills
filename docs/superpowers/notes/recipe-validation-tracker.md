@@ -13,12 +13,12 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 ## Summary
 
-- Total recipes: **484**
-- ext: **461** / 484
-- pre: **461** / 484
-- comp: **137** / 484
-- run: **12** / 484
-- retired: **22** / 484
+- Total recipes: **485**
+- ext: **460** / 485
+- pre: **460** / 485
+- comp: **157** / 485
+- run: **12** / 485
+- retired: **22** / 485
 
 ## Domains
 
@@ -44,19 +44,19 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
 | asset_create_folder | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_delete | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| asset_delete | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
 | asset_delete_batch | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15 rewrite applied (BatchExecutor → foreach) but cannot smoke-verify: Unity_RunCommand MCP analyzer rejects any module containing AssetDatabase.DeleteAsset even inside if(false) — 'User interactions are not supported'. Same guard that blocked shader_delete. Recipe code is structurally correct.; 2026-04-22: Task 15 complete: switched DeleteAsset → MoveAssetToTrash (analyzer-safe, restorable). Run-verified: deleted throwaway Assets/_ThrowawayTest/ToDelete_B.mat; 2026-04-22: Run-verified 2026-04-22 via throwaway materials |
-| asset_duplicate | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| asset_duplicate | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
 | asset_find | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_get_labels | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_import | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| asset_import | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
 | asset_import_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; ServerAvailabilityHelper dropped (REST-era) |
-| asset_move | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| asset_move | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
 | asset_move_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; ServerAvailabilityHelper dropped (REST-era) |
-| asset_refresh | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_reimport | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: normalize summary |
-| asset_reimport_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: scripted via inject_prerequisites.py |
+| asset_refresh | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
+| asset_reimport | x | x | x | - | 2026-04-22: dropped ServerAvailabilityHelper (REST-era) |
+| asset_reimport_batch | x | x | x | - | 2026-04-22: dropped ServerAvailabilityHelper (REST-era) |
 | asset_set_labels | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | batch_query_assets | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: recipe body is top-level REPL script, not CommandScript; uses Newtonsoft.Json which is unavailable in Unity_RunCommand; 2026-04-21: retired → native MCP |
 
@@ -159,9 +159,9 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | console_set_pause_on_error | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | console_start_capture | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | console_stop_capture | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| debug_force_recompile | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| debug_force_recompile | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper; fully-qualified UnityEditor.Compilation.CompilationPipeline (namespace collision in Unity_RunCommand wrapper) |
 | debug_get_defines | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: defines returned (Task 21) |
-| debug_set_defines | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| debug_set_defines | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper |
 
 ## editor (12 recipes)
 
@@ -222,8 +222,8 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| asset_reimport | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_reimport_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| asset_reimport | R | R | R | - | 2026-04-22: retired — duplicate of recipes/asset/asset_reimport.md; file deleted |
+| asset_reimport_batch | R | R | R | - | 2026-04-22: retired — duplicate of recipes/asset/asset_reimport_batch.md; file deleted |
 | audio_add_source | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | audio_create_mixer | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | audio_find_clips | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -243,7 +243,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | model_get_mesh_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | model_get_rig_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | model_get_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_set_animation_clips | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| model_set_animation_clips | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items |
 | model_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | model_set_rig | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | model_set_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -283,12 +283,12 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 |---|---|---|---|---|---|
 | material_assign | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_assign_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses BatchExecutor + SkillResultHelper not in _shared; 2026-04-21: BatchExecutor removed, typed item + foreach (Task 15 pilot) |
-| material_create | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| material_create | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: inlined pipeline probe + FindMaterial (dropped ProjectSkills upstream helper) |
 | material_create_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | material_duplicate | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_get_keywords | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_get_properties | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| material_set_color | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| material_set_color | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: inlined pipeline probe + FindMaterial (dropped ProjectSkills upstream helper) |
 | material_set_colors_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | material_set_emission | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_set_emission_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
@@ -298,9 +298,9 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | material_set_keyword | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_set_render_queue | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_set_shader | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| material_set_texture | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| material_set_texture_offset | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| material_set_texture_scale | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| material_set_texture | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: inlined pipeline probe + FindMaterial (dropped ProjectSkills upstream helper) |
+| material_set_texture_offset | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: inlined pipeline probe + FindMaterial (dropped ProjectSkills upstream helper) |
+| material_set_texture_scale | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: inlined pipeline probe + FindMaterial (dropped ProjectSkills upstream helper) |
 | material_set_vector | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 
 ## navmesh (10 recipes)
@@ -354,13 +354,13 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
 | hierarchy_describe | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_stack_detect | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| project_stack_detect | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: depends on 6+ upstream private helpers (CollectSceneMetrics, ReadInstalledPackageIds, FindTypeInAssemblies, DetermineUiRoute, DetectInputHandling, DetermineProjectProfile) plus ProjectSkills surface. Full inline would 3-4x the recipe. Also calls result.SetValue (wrong API). Follow-up task: either fully inline (~200 lines) or split into narrower recipes (project_get_render_pipeline, project_get_input_system, project_get_ui_route). |
 | scene_analyze | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_component_stats | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_context | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_contract_validate | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_dependency_analyze | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_diff | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scene_diff | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: snapshots scene + diffs; ~135-line recipe with upstream private helpers. Inline scope deferred; similar treatment to project_stack_detect. |
 | scene_export_report | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_find_hotspots | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_health_check | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -378,7 +378,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 |---|---|---|---|---|---|
 | physics_boxcast | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | physics_check_overlap | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_create_material | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| physics_create_material | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Uses PhysicsMaterial (Unity 6+) correctly; prose false-positive on scan |
 | physics_get_gravity | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: (0,-9.81,0) returned (Task 21) |
 | physics_get_layer_collision | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | physics_overlap_box | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -386,7 +386,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | physics_raycast_all | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | physics_set_gravity | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | physics_set_layer_collision | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_set_material | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| physics_set_material | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Uses PhysicsMaterial (Unity 6+) correctly; prose false-positive on scan |
 | physics_spherecast | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 
 ## prefab (11 recipes)
@@ -440,7 +440,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | project_get_build_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_layers | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 8 layers returned (Task 21) |
-| project_get_packages | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| project_get_packages | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items |
 | project_get_player_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_quality_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_render_pipeline | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -489,7 +489,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | scriptableobject_import_json | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scriptableobject_list_types | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scriptableobject_set | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scriptableobject_set_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scriptableobject_set_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items |
 
 ## shader (11 recipes)
 
