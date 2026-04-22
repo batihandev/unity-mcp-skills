@@ -40,11 +40,17 @@ Create a prefab asset from a scene GameObject. The source object remains in the 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        string savePath = null;
+
         if (Validate.Required(savePath, "savePath") is object reqErr) { result.SetResult(reqErr); return; }
         if (Validate.SafePath(savePath, "savePath") is object pathErr) { result.SetResult(pathErr); return; }
 

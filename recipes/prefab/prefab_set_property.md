@@ -57,7 +57,7 @@ On property not found:
 | Vector2/3/4 | `"1,0,0"` |
 | Color | `"1,0,0,1"` (RGBA) |
 
-**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`value_converter`](../_shared/value_converter.md), [`skills_common`](../_shared/skills_common.md)
 
 ## C# Template
 
@@ -69,6 +69,13 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
+        string prefabPath = null;
+        string componentType = null;
+        string propertyName = null;
+        string value = null;
+        string assetReferencePath = null;
+        string gameObjectName = null;
+
         if (Validate.Required(prefabPath, "prefabPath") is object reqErr1) { result.SetResult(reqErr1); return; }
         if (Validate.SafePath(prefabPath, "prefabPath") is object pathErr) { result.SetResult(pathErr); return; }
         if (Validate.Required(componentType, "componentType") is object reqErr2) { result.SetResult(reqErr2); return; }
@@ -147,6 +154,89 @@ internal class CommandScript : IRunCommand
             property = propertyName,
             valueSet = !string.IsNullOrEmpty(assetReferencePath) ? assetReferencePath : value
         }); return; }
+    }
+
+    private static SerializedProperty FindSerializedProperty(SerializedObject so, string propertyName)
+    {
+        var prop = so.FindProperty(propertyName);
+        if (prop != null) return prop;
+        var mName = "m_" + char.ToUpper(propertyName[0]) + propertyName.Substring(1);
+        prop = so.FindProperty(mName);
+        if (prop != null) return prop;
+        prop = so.FindProperty("_" + propertyName);
+        if (prop != null) return prop;
+        return so.FindProperty("m_" + propertyName);
+    }
+
+    private static bool SetSerializedPropertyValue(SerializedProperty prop, string value)
+    {
+        switch (prop.propertyType)
+        {
+            case SerializedPropertyType.Integer:
+                if (int.TryParse(value, out var intVal)) { prop.intValue = intVal; return true; }
+                if (long.TryParse(value, out var longVal)) { prop.longValue = longVal; return true; }
+                return false;
+            case SerializedPropertyType.Float:
+                if (float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var floatVal)) { prop.floatValue = floatVal; return true; }
+                if (double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var doubleVal)) { prop.doubleValue = doubleVal; return true; }
+                return false;
+            case SerializedPropertyType.Boolean:
+                var lower = value.ToLower().Trim();
+                prop.boolValue = lower == "true" || lower == "1" || lower == "yes" || lower == "on";
+                return true;
+            case SerializedPropertyType.String:
+                prop.stringValue = value; return true;
+            case SerializedPropertyType.Enum:
+                if (prop.enumDisplayNames != null)
+                    for (int i = 0; i < prop.enumDisplayNames.Length; i++)
+                        if (string.Equals(prop.enumDisplayNames[i], value, System.StringComparison.OrdinalIgnoreCase)) { prop.enumValueIndex = i; return true; }
+                if (int.TryParse(value, out var enumIdx)) { prop.enumValueIndex = enumIdx; return true; }
+                return false;
+            case SerializedPropertyType.Color:
+                var color = ComponentSkills.ConvertValue(value, typeof(Color));
+                if (color is Color c) { prop.colorValue = c; return true; } return false;
+            case SerializedPropertyType.Vector2:
+                var v2 = ComponentSkills.ConvertValue(value, typeof(Vector2));
+                if (v2 is Vector2 vec2) { prop.vector2Value = vec2; return true; } return false;
+            case SerializedPropertyType.Vector3:
+                var v3 = ComponentSkills.ConvertValue(value, typeof(Vector3));
+                if (v3 is Vector3 vec3) { prop.vector3Value = vec3; return true; } return false;
+            case SerializedPropertyType.Vector4:
+                var v4 = ComponentSkills.ConvertValue(value, typeof(Vector4));
+                if (v4 is Vector4 vec4) { prop.vector4Value = vec4; return true; } return false;
+            case SerializedPropertyType.Rect:
+                var rect = ComponentSkills.ConvertValue(value, typeof(Rect));
+                if (rect is Rect r) { prop.rectValue = r; return true; } return false;
+            case SerializedPropertyType.Bounds:
+                var bounds = ComponentSkills.ConvertValue(value, typeof(Bounds));
+                if (bounds is Bounds b) { prop.boundsValue = b; return true; } return false;
+            case SerializedPropertyType.Vector2Int:
+                var v2i = ComponentSkills.ConvertValue(value, typeof(Vector2Int));
+                if (v2i is Vector2Int vec2i) { prop.vector2IntValue = vec2i; return true; } return false;
+            case SerializedPropertyType.Vector3Int:
+                var v3i = ComponentSkills.ConvertValue(value, typeof(Vector3Int));
+                if (v3i is Vector3Int vec3i) { prop.vector3IntValue = vec3i; return true; } return false;
+            case SerializedPropertyType.LayerMask:
+                if (int.TryParse(value, out var mask)) { prop.intValue = mask; return true; }
+                var layer = LayerMask.NameToLayer(value);
+                if (layer >= 0) { prop.intValue = 1 << layer; return true; }
+                return false;
+            default: return false;
+        }
+    }
+
+    private static string[] ListSerializedProperties(SerializedObject so)
+    {
+        var names = new System.Collections.Generic.List<string>();
+        var prop = so.GetIterator();
+        bool enter = true;
+        while (prop.NextVisible(enter) && names.Count < 30)
+        {
+            enter = false;
+            if (prop.name == "m_Script") continue;
+            names.Add(prop.name);
+        }
+        return names.ToArray();
     }
 }
 ```

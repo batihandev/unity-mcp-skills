@@ -39,11 +39,15 @@ Find all instances of a prefab asset currently present in the active scene.
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
+        string prefabPath = null;
+        int limit = 50;
+
         if (Validate.Required(prefabPath, "prefabPath") is object err) { result.SetResult(err); return; }
         var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
         if (prefab == null) { result.SetResult(new { error = $"Prefab not found: {prefabPath}" }); return; }

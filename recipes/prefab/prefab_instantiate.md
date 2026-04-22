@@ -45,6 +45,15 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
+        string prefabPath = null;
+        float x = 0f;
+        float y = 0f;
+        float z = 0f;
+        string name = null;
+        string parentName = null;
+        int parentInstanceId = 0;
+        string parentPath = null;
+
         // Resolve parent first
         GameObject parentGo = null;
         if (!string.IsNullOrEmpty(parentName) || parentInstanceId != 0 || !string.IsNullOrEmpty(parentPath))

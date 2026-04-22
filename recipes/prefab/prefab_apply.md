@@ -42,6 +42,10 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+
         var (go, goErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
         if (goErr != null) { result.SetResult(goErr); return; }
 
