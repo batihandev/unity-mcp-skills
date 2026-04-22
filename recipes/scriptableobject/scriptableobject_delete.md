@@ -33,7 +33,8 @@ internal class CommandScript : IRunCommand
         }
 
         WorkflowManager.SnapshotObject(asset);
-        AssetDatabase.DeleteAsset(assetPath);
+        bool moved = AssetDatabase.MoveAssetToTrash(assetPath);
+        if (!moved) { result.SetResult(new { error = $"Failed to delete: {assetPath}" }); return; }
         result.SetResult(new { success = true, deleted = assetPath });
     }
 }

@@ -69,8 +69,15 @@ Do this to pick up mid-job without carrying prior session context:
 4. For each returned recipe, do the extract → declare prereqs → compile-gate
    → (if safe) run-gate loop. After each success:
    `python3 tools/tracker_update.py <recipe_stem> <gate> x --note "<short>"`.
-5. Failures: `... <gate> B --note "<what broke>"` and continue. Blockers are
-   triaged in a follow-up pass.
+5. Failures: fix them. There is no line-count limit on a fix — 1 line or 50
+   lines, do whatever it takes. Only mark `... <gate> B --note "<what broke>"`
+   when you genuinely cannot determine the correct fix yourself (unknown
+   dependency, missing upstream type, design ambiguity requiring user input).
+   Everything else: fix it inline and re-smoke before moving on.
+
+**Never stop mid-sweep to ask.** Mark B, move to the next recipe, and keep
+going until every recipe has been attempted. The sweep ends only when the
+tracker has no remaining `comp:-` rows.
 
 Gate priority order: finish all `ext` first, then `pre`, then `comp`, then `run`.
 A recipe must earn earlier gates before later ones.
