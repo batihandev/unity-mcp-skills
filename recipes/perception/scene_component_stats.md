@@ -19,22 +19,30 @@ SceneComponentStats(int topComponentsLimit = 15)
 
 Returns `success`, `sceneName`, `stats` (object counts, hierarchy depth, cameras, lights, canvases, EventSystems, AudioListeners, prefab instances, disabled ratio, empty leaf count), `keyFacilities` (bool flags for main camera, light, canvas, EventSystem, AudioListener, UGUI, UI Toolkit), and `topComponents` array.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.GetSceneObjects`
+- `recipes/_shared/perception_helpers.md` — for `PerceptionHelpers.CollectSceneMetrics` / `BuildTopComponents`
+
 ## RunCommand Recipe
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        int topComponentsLimit = 15; // adjust as needed
+        int topComponentsLimit = 15;
 
-        var metrics = CollectSceneMetrics(includeComponentStats: true);
+        var metrics = PerceptionHelpers.CollectSceneMetrics(includeComponentStats: true);
         var totalObjects = Math.Max(metrics.TotalObjects, 1);
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = metrics.Scene.name,
@@ -66,7 +74,7 @@ internal class CommandScript : IRunCommand
                 hasUgui = metrics.Canvases > 0 || metrics.HasUiGraphic,
                 hasUiToolkit = metrics.HasUiToolkitDocument
             },
-            topComponents = BuildTopComponents(metrics, topComponentsLimit)
+            topComponents = PerceptionHelpers.BuildTopComponents(metrics, topComponentsLimit)
         });
     }
 }

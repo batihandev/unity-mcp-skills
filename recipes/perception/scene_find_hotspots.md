@@ -21,11 +21,19 @@ SceneFindHotspots(int deepHierarchyThreshold = 8, int largeChildCountThreshold =
 
 Returns `success`, `sceneName`, `thresholds`, `hotspotCount`, and `hotspots` array with `type`, `severity`, `name`, `path`, `count`, `depth`, `message`.
 
+## Prerequisites
+
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.GetSceneObjects` / `GetDepth` / `GetCachedPath`
+- `recipes/_shared/perception_helpers.md` — for `PerceptionHelpers.CollectSceneMetrics` / `CollectHotspots`
+
 ## RunCommand Recipe
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -35,18 +43,14 @@ internal class CommandScript : IRunCommand
         int largeChildCountThreshold = 25;
         int maxResults = 20;
 
-        var metrics = CollectSceneMetrics(includeComponentStats: false);
-        var hotspots = CollectHotspots(metrics.Objects, deepHierarchyThreshold, largeChildCountThreshold, maxResults);
+        var metrics = PerceptionHelpers.CollectSceneMetrics(includeComponentStats: false);
+        var hotspots = PerceptionHelpers.CollectHotspots(metrics.Objects, deepHierarchyThreshold, largeChildCountThreshold, maxResults);
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = metrics.Scene.name,
-            thresholds = new
-            {
-                deepHierarchyThreshold,
-                largeChildCountThreshold
-            },
+            thresholds = new { deepHierarchyThreshold, largeChildCountThreshold },
             hotspotCount = hotspots.Count,
             hotspots = hotspots.Select(h => new
             {

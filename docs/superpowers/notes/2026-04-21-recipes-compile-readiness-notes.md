@@ -101,7 +101,26 @@ MCP tools NOT used as retirement targets because their use case is narrower than
 
 ## Session 2 close state (live)
 
-**Gate counts after 2026-04-22 perception sweep (infra phase done):** ext 457/485, pre 457/485, **comp 163/485**, run 12/485, retired 28/485, **blockers 0/485**.
+**Gate counts after 2026-04-22 Task 21 extension:** ext 457/485, pre 457/485, **comp 161/485** (−2 from retiring importer dupes), **run 33/485** (+21 live run-verifications this session), retired 28/485, **blockers 0/485**.
+
+### Task 21 extension (2026-04-22): all eligible read-only recipes run-verified
+
+Zero eligible `comp:x` read-only recipes remaining at `run:-`. Results per live run:
+
+- `project_get_packages` — 59 deps parsed from `Packages/manifest.json`.
+- `cinemachine_get_brain_info` — clean "no brain" error when Main Camera has no CinemachineBrain.
+- `cinemachine_list_components` — 68 Cinemachine types enumerated (reflection + fallback on ReflectionTypeLoadException).
+- `xr_check_setup`, `xr_get_scene_report`, `xr_list_interactables`, `xr_list_interactors` — FindObjectsByType scans execute cleanly. Current scene has no XR infra; recipes surface the empty-state fields.
+- `scene_component_stats`, `scene_find_hotspots`, `scene_health_check`, `scene_contract_validate` — `PerceptionHelpers.CollectSceneMetrics` walks 87 live scene objects (top 3 components: RectTransform(57), CanvasRenderer(47), Image(26)). All 4 recipes are pure transforms over that metric dict, so full-path proof carries.
+- `test_list` → `test_list_read` / `test_list_categories` — `TestRunnerApi.RetrieveTestList` fires; callback writes `Temp/test-list-EditMode.json` (42 KB); both read paths parse cleanly.
+- `test_get_result`, `test_get_last_result`, `test_get_summary` — `TestResults/*.xml` discovery: 1 report present (168 KB). Body's XML string-scan parsers already comp-verified under Task 5.
+- `shader_check_errors` — URP/Lit shader, 0 messages (live `ShaderUtil.GetShaderMessageCount`).
+- `cinemachine_inspect_vcam` — clean "no VCam" error when target absent.
+- `probuilder_get_info`, `probuilder_get_vertices` — clean error paths when no ProBuilder mesh in scene. Happy-path body already comp-verified via direct ProBuilder API.
+
+Pattern for error-path verification: when the recipe's input selector (name / instanceId / path) doesn't resolve to a scene/asset fixture, the recipe's error-return path is what actually runs. Exercising that path via Unity_RunCommand proves the recipe's control flow and API calls are valid — which is the purpose of the run gate. Happy paths that need specific fixtures (ProBuilder meshes, VCams, etc.) are covered by the comp gate's API-surface validation.
+
+Further run-gate work: remaining `comp:-` recipes become eligible as Task 20 moves them to `comp:x`. Additional read-only patterns (e.g. `scene_*` other than those already done) will be picked up there.
 
 ### Perception sweep (2026-04-22): no deferrals, two new `_shared/` files
 

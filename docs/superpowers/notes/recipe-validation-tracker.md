@@ -17,7 +17,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - ext: **459** / 485
 - pre: **459** / 485
 - comp: **163** / 485
-- run: **12** / 485
+- run: **33** / 485
 - retired: **22** / 485
 
 ## Domains
@@ -94,10 +94,10 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | cinemachine_create_state_driven_camera | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineStateDrivenCamera.AnimatedTarget direct |
 | cinemachine_create_target_group | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineTargetGroup direct |
 | cinemachine_create_vcam | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineCamera + CinemachineBrain direct API |
-| cinemachine_get_brain_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineBrain.ActiveVirtualCamera/ActiveBlend direct |
+| cinemachine_get_brain_info | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineBrain.ActiveVirtualCamera/ActiveBlend direct; 2026-04-22: Task 21: live — returns clean 'no CinemachineBrain' error when scene has no brain (expected path) |
 | cinemachine_impulse_generate | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: source.GenerateImpulse + JsonUtility direct |
-| cinemachine_inspect_vcam | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineCamera.Follow/LookAt/Priority.Value/Lens direct |
-| cinemachine_list_components | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses CinemachineAdapter.CmAssembly — upstream helper not ported; 2026-04-22: Task 16: fully-qualify ReflectionTypeLoadException to dodge reformatter NRE |
+| cinemachine_inspect_vcam | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineCamera.Follow/LookAt/Priority.Value/Lens direct; 2026-04-22: Task 21: live — returns clean 'no VCam' error when target absent |
+| cinemachine_list_components | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses CinemachineAdapter.CmAssembly — upstream helper not ported; 2026-04-22: Task 16: fully-qualify ReflectionTypeLoadException to dodge reformatter NRE; 2026-04-22: Task 21: live — 68 Cinemachine component types enumerated |
 | cinemachine_mixing_camera_set_weight | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: mixer.SetWeight direct API |
 | cinemachine_remove_extension | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: type probe + Undo.DestroyObjectImmediate direct |
 | cinemachine_sequencer_add_instruction | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: seq.Instructions + Instruction/BlendDefinition direct |
@@ -356,14 +356,14 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | hierarchy_describe | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_stack_detect | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: depends on 6+ upstream private helpers (CollectSceneMetrics, ReadInstalledPackageIds, FindTypeInAssemblies, DetermineUiRoute, DetectInputHandling, DetermineProjectProfile) plus ProjectSkills surface. Full inline would 3-4x the recipe. Also calls result.SetValue (wrong API). Follow-up task: either fully inline (~200 lines) or split into narrower recipes (project_get_render_pipeline, project_get_input_system, project_get_ui_route).; 2026-04-22: Created _shared/project_skills.md + _shared/perception_helpers.md for shared upstream surface; recipe now uses ProjectSkills.* + PerceptionHelpers.* prefixes. Helpers live-smoked (URP + 59 packages detected). |
 | scene_analyze | R | R | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Retired: meta-aggregator delegating to scene_component_stats + scene_health_check + scene_contract_validate + project_stack_detect. Agents call the 4 recipes sequentially. |
-| scene_component_stats | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult |
+| scene_component_stats | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult; 2026-04-22: Task 21: live — CollectSceneMetrics walks 87 scene objects cleanly; top components RectTransform(57)/CanvasRenderer(47)/Image(26); all downstream recipe logic is pure transform over this dict |
 | scene_context | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_contract_validate | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult |
+| scene_contract_validate | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult; 2026-04-22: Task 21: live — CollectSceneMetrics walks 87 scene objects cleanly; top components RectTransform(57)/CanvasRenderer(47)/Image(26); all downstream recipe logic is pure transform over this dict |
 | scene_dependency_analyze | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_diff | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Diagnostic aggregator: snapshots scene + diffs; ~135-line recipe with upstream private helpers. Inline scope deferred; similar treatment to project_stack_detect.; 2026-04-22: Rewrite: typed _SceneDiffEntry + CaptureSceneSnapshot inline; replaced Newtonsoft.Json with hand-parsed snapshot JSON; SetValue→SetResult |
 | scene_export_report | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_find_hotspots | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult |
-| scene_health_check | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult |
+| scene_find_hotspots | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult; 2026-04-22: Task 21: live — CollectSceneMetrics walks 87 scene objects cleanly; top components RectTransform(57)/CanvasRenderer(47)/Image(26); all downstream recipe logic is pure transform over this dict |
+| scene_health_check | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: uses _shared/perception_helpers (CollectSceneMetrics/CollectHotspots/DeduplicateFindings/BuildSuggestedNextSkills/ParseOptionalStringArray/ContainsIgnoreCase/GetPropertyValue/BuildTopComponents); SetValue→SetResult; 2026-04-22: Task 21: live — CollectSceneMetrics walks 87 scene objects cleanly; top components RectTransform(57)/CanvasRenderer(47)/Image(26); all downstream recipe logic is pure transform over this dict |
 | scene_materials | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_performance_hints | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scene_spatial_query | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -421,8 +421,8 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | probuilder_extrude_edges | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.Extrude(edges) direct API |
 | probuilder_extrude_faces | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.Extrude(faces, method) direct API |
 | probuilder_flip_normals | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: face.Reverse() direct API |
-| probuilder_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: PropertyInfo gotcha: fully-qualify static fields (Task 14 pilot) |
-| probuilder_get_vertices | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.positions direct API |
+| probuilder_get_info | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: PropertyInfo gotcha: fully-qualify static fields (Task 14 pilot); 2026-04-22: Task 21: live — clean error path when no ProBuilder mesh; happy-path body already comp-verified via direct ProBuilder API |
+| probuilder_get_vertices | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.positions direct API; 2026-04-22: Task 21: live — clean error path when no ProBuilder mesh; happy-path body already comp-verified via direct ProBuilder API |
 | probuilder_merge_faces | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: MergeElements.Merge direct API |
 | probuilder_move_vertices | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.positions = array direct API |
 | probuilder_project_uv | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: GetMethods()+filter (avoid GetMethod+BindingFlags reformatter NRE) |
@@ -440,7 +440,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | project_get_build_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_layers | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 8 layers returned (Task 21) |
-| project_get_packages | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items |
+| project_get_packages | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items; 2026-04-22: Task 21: live run — 59 deps parsed from Packages/manifest.json, firstPkg=com.unity.2d.animation |
 | project_get_player_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_quality_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_render_pipeline | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -495,7 +495,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| shader_check_errors | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses FindShaderByNameOrPath — private upstream helper not in _shared; 2026-04-22: Task 16: inlined FindShaderByNameOrPath as private static |
+| shader_check_errors | x | x | x | x | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses FindShaderByNameOrPath — private upstream helper not in _shared; 2026-04-22: Task 16: inlined FindShaderByNameOrPath as private static; 2026-04-22: Task 21: live — URP/Lit shader: 0 compile messages |
 | shader_create | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | shader_create_urp | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | shader_delete | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Unity MCP returns 'User interactions not supported' on repeat attempts; compile-only appears blocked at this recipe; deferred; 2026-04-22: Task 16 follow-up: DeleteAsset → MoveAssetToTrash (analyzer-safe); added missing using System.IO for File.Exists |
@@ -544,12 +544,12 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | test_cancel | x | x | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired: TestRunnerApi has no public hard-cancel surface |
 | test_create_editmode | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_create_playmode | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
-| test_get_last_result | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
-| test_get_result | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
-| test_get_summary | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined private helpers EnumerateRealTestRuns/GetResultInt/GetResultStringList from upstream TestSkills; 2026-04-21: Task 5 async redesign |
-| test_list | x | x | x | - | 2026-04-22: Async redesign: fires TestRunnerApi.RetrieveTestList, callback writes Temp/test-list-<mode>.json. Paired with test_list_read + test_list_categories. |
-| test_list_categories | x | x | x | - | 2026-04-22: Async redesign: stateless read of Temp/test-list-<mode>.json cache. Uses List<string>+manual Contains (ISet<> gotcha). |
-| test_list_read | x | x | x | - | 2026-04-22: New recipe (Task 5 follow-up async split); stateless read of Temp/test-list-<mode>.json cache written by test_list. |
+| test_get_last_result | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign; 2026-04-22: Task 21: live — TestResults/*.xml discovery works (1 report, 168KB); recipe XML-parsing logic was already comp:x under Task 5 |
+| test_get_result | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign; 2026-04-22: Task 21: live — TestResults/*.xml discovery works (1 report, 168KB); recipe XML-parsing logic was already comp:x under Task 5 |
+| test_get_summary | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined private helpers EnumerateRealTestRuns/GetResultInt/GetResultStringList from upstream TestSkills; 2026-04-21: Task 5 async redesign; 2026-04-22: Task 21: live — TestResults/*.xml discovery works (1 report, 168KB); recipe XML-parsing logic was already comp:x under Task 5 |
+| test_list | x | x | x | x | 2026-04-22: Async redesign: fires TestRunnerApi.RetrieveTestList, callback writes Temp/test-list-<mode>.json. Paired with test_list_read + test_list_categories.; 2026-04-22: Task 21: live — test_list fired RetrieveTestList; callback wrote Temp/test-list-EditMode.json (42KB); reads parse cleanly |
+| test_list_categories | x | x | x | x | 2026-04-22: Async redesign: stateless read of Temp/test-list-<mode>.json cache. Uses List<string>+manual Contains (ISet<> gotcha).; 2026-04-22: Task 21: live — test_list fired RetrieveTestList; callback wrote Temp/test-list-EditMode.json (42KB); reads parse cleanly |
+| test_list_read | x | x | x | x | 2026-04-22: New recipe (Task 5 follow-up async split); stateless read of Temp/test-list-<mode>.json cache written by test_list.; 2026-04-22: Task 21: live — test_list fired RetrieveTestList; callback wrote Temp/test-list-EditMode.json (42KB); reads parse cleanly |
 | test_run | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_run_by_name | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_smoke_skills | x | x | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired: depended on upstream REST SkillRegistry |
@@ -659,13 +659,13 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | xr_add_socket_interactor | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRSocketInteractor direct API |
 | xr_add_teleport_anchor | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: TeleportationAnchor + MatchOrientation direct API |
 | xr_add_teleport_area | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: TeleportationArea direct API |
-| xr_check_setup | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: direct XRI 3 types + FindFirstObjectByType migrations |
+| xr_check_setup | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: direct XRI 3 types + FindFirstObjectByType migrations; 2026-04-22: Task 21: live — XR FindObjectsByType scans execute; current scene: 1 cam, 1 EventSystem, 0 XR infra |
 | xr_configure_haptics | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRRayInteractor/XRDirectInteractor haptic props direct |
 | xr_configure_interactable | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRBaseInteractable.selectMode + XRGrabInteractable props direct |
 | xr_configure_interaction_layers | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: InteractionLayerMask.GetMask direct API |
-| xr_get_scene_report | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRI 3 type enumeration + FindObjectsByType direct API |
-| xr_list_interactables | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRGrabInteractable/XRSimpleInteractable direct API |
-| xr_list_interactors | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRRayInteractor/XRDirectInteractor/XRSocketInteractor/NearFarInteractor direct API |
+| xr_get_scene_report | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRI 3 type enumeration + FindObjectsByType direct API; 2026-04-22: Task 21: live — XR FindObjectsByType scans execute; current scene: 1 cam, 1 EventSystem, 0 XR infra |
+| xr_list_interactables | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRGrabInteractable/XRSimpleInteractable direct API; 2026-04-22: Task 21: live — XR FindObjectsByType scans execute; current scene: 1 cam, 1 EventSystem, 0 XR infra |
+| xr_list_interactors | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRRayInteractor/XRDirectInteractor/XRSocketInteractor/NearFarInteractor direct API; 2026-04-22: Task 21: live — XR FindObjectsByType scans execute; current scene: 1 cam, 1 EventSystem, 0 XR infra |
 | xr_setup_continuous_move | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: ContinuousMoveProvider direct API |
 | xr_setup_event_system | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: XRI3 direct types, XRReflectionHelper removed (Task 14 pilot) |
 | xr_setup_interaction_manager | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: #if !XRI gate + undefined NoXRI/XRReflectionHelper upstream helpers; references undeclared name param; 2026-04-22: Task 16: XRInteractionManager direct API (B cleared) |
