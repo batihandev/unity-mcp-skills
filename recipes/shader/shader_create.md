@@ -21,6 +21,7 @@ Create a new shader file at the given path. If `template` is omitted, a default 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {

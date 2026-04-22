@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **364** / 485
+- comp: **371** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -496,15 +496,15 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
 | shader_check_errors | x | x | x | x | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses FindShaderByNameOrPath — private upstream helper not in _shared; 2026-04-22: Task 16: inlined FindShaderByNameOrPath as private static; 2026-04-22: Task 21: live — URP/Lit shader: 0 compile messages |
-| shader_create | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| shader_create_urp | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| shader_create | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added using System.IO |
+| shader_create_urp | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: replaced SmartSkillRunner.Run with real URP template implementation from upstream; added prerequisites |
 | shader_delete | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Unity MCP returns 'User interactions not supported' on repeat attempts; compile-only appears blocked at this recipe; deferred; 2026-04-22: Task 16 follow-up: DeleteAsset → MoveAssetToTrash (analyzer-safe); added missing using System.IO for File.Exists |
-| shader_find | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| shader_get_keywords | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| shader_get_properties | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| shader_get_variant_count | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| shader_find | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| shader_get_keywords | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; FindShaderByNameOrPath inlined |
+| shader_get_properties | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; FindShaderByNameOrPath inlined |
+| shader_get_variant_count | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean; FindShaderByNameOrPath inlined |
 | shader_list | x | x | x | x | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; lambda-transform fix; 2026-04-21: Task 21 |
-| shader_read | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| shader_read | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: added using System.IO |
 | shader_set_global_keyword | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
 
 ## smart (10 recipes)

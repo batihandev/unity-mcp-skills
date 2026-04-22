@@ -19,6 +19,7 @@ Read the full source code of a shader file from disk.
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {
