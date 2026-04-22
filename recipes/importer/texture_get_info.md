@@ -19,7 +19,7 @@ texture_get_info(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the texture |
 
-**Prerequisites:** [`validate`](../_shared/validate.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ## Unity_RunCommand Template
 
@@ -33,12 +33,12 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Textures/hero.png"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
         var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
-        if (tex == null) return new { error = $"Texture not found: {assetPath}" };
+        if (tex == null) { result.SetResult(new { error = $"Texture not found: {assetPath}" }); return; }
 
         long memSize = UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(tex);
-        return new
+        { result.SetResult(new
         {
             success = true,
             name = tex.name,
@@ -51,7 +51,7 @@ internal class CommandScript : IRunCommand
             filterMode = tex.filterMode.ToString(),
             wrapMode = tex.wrapMode.ToString(),
             memorySizeKB = memSize / 1024f
-        };
+        }); return; }
     }
 }
 ```

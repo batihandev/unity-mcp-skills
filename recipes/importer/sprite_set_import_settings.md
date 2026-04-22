@@ -29,7 +29,7 @@ sprite_set_import_settings(
 | `pivotX` | string | no | Pivot X as float string (e.g. `"0.5"`) |
 | `pivotY` | string | no | Pivot Y as float string (e.g. `"0.5"`) |
 
-**Prerequisites:** [`workflow_manager`](../_shared/workflow_manager.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 
@@ -49,7 +49,7 @@ internal class CommandScript : IRunCommand
         string pivotY = "0.5";          // Pivot Y (0.0 – 1.0)
 
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-        if (importer == null) return new { error = $"Not a texture: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a texture: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -77,13 +77,13 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
             spriteMode = importer.spriteImportMode.ToString(),
             pixelsPerUnit = importer.spritePixelsPerUnit
-        };
+        }); return; }
     }
 }
 ```

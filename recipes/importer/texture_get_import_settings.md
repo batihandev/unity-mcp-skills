@@ -18,6 +18,8 @@ texture_get_import_settings(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the texture |
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ## Unity_RunCommand Template
 
 ```csharp
@@ -31,9 +33,9 @@ internal class CommandScript : IRunCommand
         string assetPath = "Assets/Textures/hero.png"; // Replace with target path
 
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-        if (importer == null) return new { error = $"Not a texture: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a texture: {assetPath}" }); return; }
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
@@ -44,7 +46,7 @@ internal class CommandScript : IRunCommand
             mipmaps = importer.mipmapEnabled,
             spriteMode = importer.spriteImportMode.ToString(),
             pixelsPerUnit = importer.spritePixelsPerUnit
-        };
+        }); return; }
     }
 }
 ```

@@ -20,7 +20,7 @@ texture_get_settings(assetPath: string)
 |-----------|------|----------|-------------|
 | `assetPath` | string | yes | Project-relative path to the texture asset |
 
-**Prerequisites:** [`validate`](../_shared/validate.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ## Unity_RunCommand Template
 
@@ -34,15 +34,15 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Textures/hero.png"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
         if (importer == null)
-            return new { error = $"Not a texture or asset not found: {assetPath}" };
+            { result.SetResult(new { error = $"Not a texture or asset not found: {assetPath}" }); return; }
 
         var platformSettings = importer.GetDefaultPlatformTextureSettings();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             path = assetPath,
@@ -60,7 +60,7 @@ internal class CommandScript : IRunCommand
             spriteMode = importer.spriteImportMode.ToString(),
             spritePixelsPerUnit = importer.spritePixelsPerUnit,
             npotScale = importer.npotScale.ToString()
-        };
+        }); return; }
     }
 }
 ```

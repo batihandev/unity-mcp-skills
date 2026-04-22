@@ -41,7 +41,7 @@ texture_set_settings(
 | `wrapMode` | string | no | `Repeat`, `Clamp`, `Mirror`, `MirrorOnce` |
 | `npotScale` | string | no | NPOT scaling mode (`None`, `ToNearest`, `ToLarger`, `ToSmaller`) |
 
-**Prerequisites:** [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 
@@ -67,11 +67,11 @@ internal class CommandScript : IRunCommand
         string wrapMode = null;
         string npotScale = null;
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
         if (importer == null)
-            return new { error = $"Not a texture or asset not found: {assetPath}" };
+            { result.SetResult(new { error = $"Not a texture or asset not found: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -86,7 +86,7 @@ internal class CommandScript : IRunCommand
                 changes.Add($"textureType={tt}");
             }
             else
-                return new { error = $"Invalid textureType: {textureType}. Valid: Default, NormalMap, Sprite, EditorGUI, Cursor, Cookie, Lightmap, SingleChannel" };
+                { result.SetResult(new { error = $"Invalid textureType: {textureType}. Valid: Default, NormalMap, Sprite, EditorGUI, Cursor, Cookie, Lightmap, SingleChannel" }); return; }
         }
 
         if (!string.IsNullOrEmpty(filterMode) && System.Enum.TryParse<FilterMode>(filterMode, true, out var fm))
@@ -127,7 +127,7 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, changesApplied = changes.Count, changes };
+        { result.SetResult(new { success = true, path = assetPath, changesApplied = changes.Count, changes }); return; }
     }
 }
 ```

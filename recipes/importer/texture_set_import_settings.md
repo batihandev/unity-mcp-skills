@@ -29,7 +29,7 @@ texture_set_import_settings(
 | `generateMipMaps` | bool | no | Generate mipmaps |
 | `textureType` | string | no | `Default`, `NormalMap`, `Sprite`, `Cursor`, `Cookie`, `Lightmap` |
 
-**Prerequisites:** [`workflow_manager`](../_shared/workflow_manager.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 
@@ -50,7 +50,7 @@ internal class CommandScript : IRunCommand
 
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
         if (importer == null)
-            return new { success = false, error = $"Not a texture or not found: {assetPath}" };
+            { result.SetResult(new { success = false, error = $"Not a texture or not found: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -90,7 +90,7 @@ internal class CommandScript : IRunCommand
 
         if (changed) importer.SaveAndReimport();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
@@ -98,7 +98,7 @@ internal class CommandScript : IRunCommand
             compression = importer.textureCompression.ToString(),
             readable = importer.isReadable,
             mipmaps = importer.mipmapEnabled
-        };
+        }); return; }
     }
 }
 ```

@@ -29,7 +29,7 @@ texture_set_platform_settings(
 | `compressionQuality` | int | no | 0–100 quality for compressed formats |
 | `overridden` | bool | no | Whether platform override is active (default `true` when any value supplied) |
 
-**Prerequisites:** [`validate`](../_shared/validate.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ## Unity_RunCommand Template
 
@@ -48,10 +48,10 @@ internal class CommandScript : IRunCommand
         int? compressionQuality = null;
         bool? overridden = null;
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
-        if (Validate.Required(platform, "platform") is object err2) return err2;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
+        if (Validate.Required(platform, "platform") is object err2) { result.SetResult(err2); return; }
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-        if (importer == null) return new { error = $"Not a texture: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a texture: {assetPath}" }); return; }
 
         var ps = importer.GetPlatformTextureSettings(platform);
         ps.overridden = overridden.HasValue ? overridden.Value : true;
@@ -63,7 +63,7 @@ internal class CommandScript : IRunCommand
         importer.SetPlatformTextureSettings(ps);
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, platform, maxSize = ps.maxTextureSize, format = ps.format.ToString() };
+        { result.SetResult(new { success = true, path = assetPath, platform, maxSize = ps.maxTextureSize, format = ps.format.ToString() }); return; }
     }
 }
 ```

@@ -19,7 +19,7 @@ texture_set_type(assetPath: string, textureType: string)
 | `assetPath` | string | yes | Project-relative path to the texture |
 | `textureType` | string | yes | `Default`, `NormalMap`, `Sprite`, `EditorGUI`, `Cursor`, `Cookie`, `Lightmap`, `SingleChannel` |
 
-**Prerequisites:** [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Unity_RunCommand Template
 
@@ -34,11 +34,11 @@ internal class CommandScript : IRunCommand
         string assetPath = "Assets/Textures/hero.png"; // Replace
         string textureType = "Sprite"; // Replace with desired type
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-        if (importer == null) return new { error = $"Not a texture: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a texture: {assetPath}" }); return; }
         if (!System.Enum.TryParse<TextureImporterType>(textureType.Replace(" ", ""), true, out var tt))
-            return new { error = $"Invalid textureType: {textureType}" };
+            { result.SetResult(new { error = $"Invalid textureType: {textureType}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -46,7 +46,7 @@ internal class CommandScript : IRunCommand
         importer.textureType = tt;
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, textureType = tt.ToString() };
+        { result.SetResult(new { success = true, path = assetPath, textureType = tt.ToString() }); return; }
     }
 }
 ```

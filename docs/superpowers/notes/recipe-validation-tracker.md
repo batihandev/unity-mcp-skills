@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **295** / 485
+- comp: **307** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -248,19 +248,19 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | model_set_rig | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
 | model_set_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke passed |
 | model_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; 2026-04-23: smoke passed |
-| sprite_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_find_assets | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_find_by_size | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_get_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_get_platform_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_get_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_set_platform_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_set_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
-| texture_set_sprite_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_set_type | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| sprite_set_import_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_find_assets | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_find_by_size | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_get_import_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_get_platform_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_get_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_set_import_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_set_platform_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_set_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; 2026-04-23: already correct; smoke passed |
+| texture_set_sprite_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
+| texture_set_type | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: fixed return→SetResult; smoke passed |
 
 ## light (10 recipes)
 
