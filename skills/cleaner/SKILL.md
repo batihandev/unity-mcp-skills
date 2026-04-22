@@ -9,19 +9,18 @@ Recipe path rule: `../../recipes/cleaner/<command>.md`
 
 ## Overview
 
-> **Safety**: `cleaner_delete_assets` requires a two-step confirmation flow. Step 1 (no `confirmToken`) returns a preview and a `confirmToken`. Step 2 (with `confirmToken`) executes the deletion. Tokens expire after 5 minutes.
+Cleaner skills are read-only analysis except for `cleaner_delete_empty_folders` and `cleaner_fix_missing_scripts`. To delete assets, route to the `asset` module (`asset_delete` / `asset_delete_batch`); `cleaner_delete_assets` returns a preview only.
 
 ## Common Mistakes
 
-
 **DO NOT** (common hallucinations):
-- `cleaner_delete` / `cleaner_remove` do not exist → cleaner skills only find/report; use `asset_delete` to actually remove
-- `cleaner_fix` does not exist → use `cleaner_fix_missing_scripts` specifically for missing script references
-- `cleaner_scan` / `cleaner_find_unused` do not exist → use specific skills: `cleaner_find_unused_assets`, `cleaner_find_duplicates`, `cleaner_find_missing_references`, `cleaner_find_empty_folders`, `cleaner_find_large_assets`
+- `cleaner_delete` / `cleaner_remove` do not exist → use `asset_delete` / `asset_delete_batch` to actually remove.
+- `cleaner_fix` does not exist → use `cleaner_fix_missing_scripts` specifically for missing script references.
+- `cleaner_scan` / `cleaner_find_unused` do not exist → use specific skills: `cleaner_find_unused_assets`, `cleaner_find_duplicates`, `cleaner_find_missing_references`, `cleaner_find_empty_folders`, `cleaner_find_large_assets`.
 
 **Routing**:
-- To delete found assets → use `asset` module's `asset_delete` / `asset_delete_batch`
-- For project validation → use `validation` module
+- To delete found assets → `asset` module's `asset_delete` / `asset_delete_batch`.
+- For project validation → `validation` module.
 
 ## Skills Overview
 
@@ -64,7 +63,7 @@ Find duplicate files by MD5 hash.
 | `searchPath` | string | No | "Assets" | Search path |
 | `limit` | int | No | 50 | Max groups |
 
-**Returns**: `{success, assetType, duplicateGroupCount, totalWastedBytes, totalWastedMB, groups: [{count, sizeBytes, wastedBytes, files}]}`
+**Returns**: `{success, assetType, count, wastedBytes, groups: [{count, sizeBytes, wastedBytes, files}]}`
 
 *Recipe: [../../recipes/cleaner/cleaner_find_duplicates.md](../../recipes/cleaner/cleaner_find_duplicates.md)*
 
@@ -80,25 +79,13 @@ Find components with missing scripts or null references.
 *Recipe: [../../recipes/cleaner/cleaner_find_missing_references.md](../../recipes/cleaner/cleaner_find_missing_references.md)*
 
 ### cleaner_delete_assets
-Delete specified assets with **two-step confirmation**.
-
-> ⚠️ **Safety First**: Deletion requires TWO calls - first preview, then confirm.
-
-**Step 1 - Preview** (no confirmToken):
+Preview a deletion against a list of asset paths. Returns size totals without mutating anything; route to `asset_delete` / `asset_delete_batch` to actually remove.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `paths` | string[] | Yes | Asset paths to delete |
+| `paths` | string[] | Yes | Asset paths to preview |
 
-**Returns**: `{action: "preview", confirmToken, assetsToDelete, message}`
-
-**Step 2 - Confirm** (with confirmToken):
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `confirmToken` | string | Yes | Token from preview step |
-
-**Returns**: `{action: "deleted", deletedCount, totalMB, results}`
+**Returns**: `{success, mode: "preview", previewCount, totalBytes, totalMB, assets: [{path, exists, sizeBytes, sizeMB}]}`
 
 *Recipe: [../../recipes/cleaner/cleaner_delete_assets.md](../../recipes/cleaner/cleaner_delete_assets.md)*
 
@@ -176,10 +163,10 @@ Get dependency tree for an asset.
 
 ## Example Workflow: Clean Project
 
-1. `cleaner_find_unused_assets` — identify candidates
-2. `cleaner_get_asset_usage` — verify each candidate has no active references
-3. `cleaner_delete_assets` (Step 1) — preview with paths array
-4. `cleaner_delete_assets` (Step 2) — confirm with returned `confirmToken`
-5. `cleaner_find_empty_folders` → `cleaner_delete_empty_folders` — clean up leftover folders
+1. `cleaner_find_unused_assets` — identify candidates.
+2. `cleaner_get_asset_usage` — verify each candidate has no active references.
+3. `cleaner_delete_assets` — preview total size + per-asset report.
+4. `asset_delete_batch` — actually delete the vetted set.
+5. `cleaner_find_empty_folders` → `cleaner_delete_empty_folders` — clean up leftover folders.
 
 ---

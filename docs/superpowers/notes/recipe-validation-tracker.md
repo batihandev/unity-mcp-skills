@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **167** / 485
+- comp: **173** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -119,16 +119,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| cleaner_delete_assets | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| cleaner_delete_assets | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
 | cleaner_delete_empty_folders | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
 | cleaner_find_duplicates | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after usings + SetResult + removing dynamic cast (analyzer trap) |
 | cleaner_find_empty_folders | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after SetValue→SetResult + usings |
-| cleaner_find_large_assets | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cleaner_find_missing_references | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| cleaner_find_large_assets | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| cleaner_find_missing_references | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
 | cleaner_find_unused_assets | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after adding System.Collections.Generic/IO/Linq usings + SetValue→SetResult fix |
-| cleaner_fix_missing_scripts | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cleaner_get_asset_usage | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cleaner_get_dependency_tree | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| cleaner_fix_missing_scripts | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| cleaner_get_asset_usage | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| cleaner_get_dependency_tree | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
 
 ## component (10 recipes)
 

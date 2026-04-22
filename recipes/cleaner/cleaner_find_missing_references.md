@@ -68,6 +68,8 @@ internal class CommandScript : IRunCommand
         bool includeInactive = true;
 
         var issues = new List<object>();
+        int missingScripts = 0;
+        int missingReferences = 0;
         var allObjects = includeInactive
             ? Resources.FindObjectsOfTypeAll<GameObject>()
                 .Where(go => !EditorUtility.IsPersistent(go) && go.hideFlags == HideFlags.None)
@@ -81,6 +83,7 @@ internal class CommandScript : IRunCommand
             {
                 if (components[i] == null)
                 {
+                    missingScripts++;
                     issues.Add(new
                     {
                         type = "MissingScript",
@@ -101,6 +104,7 @@ internal class CommandScript : IRunCommand
                     {
                         if (prop.objectReferenceValue == null && prop.objectReferenceInstanceIDValue != 0)
                         {
+                            missingReferences++;
                             issues.Add(new
                             {
                                 type = "MissingReference",
@@ -119,8 +123,8 @@ internal class CommandScript : IRunCommand
         {
             success = true,
             issueCount = issues.Count,
-            missingScripts = issues.Count(i => ((dynamic)i).type == "MissingScript"),
-            missingReferences = issues.Count(i => ((dynamic)i).type == "MissingReference"),
+            missingScripts,
+            missingReferences,
             issues
         });
     }
