@@ -34,6 +34,7 @@ Get detailed information about a GameObject.
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
 internal class CommandScript : IRunCommand
 {

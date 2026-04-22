@@ -63,16 +63,19 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        // 3D example: move and rotate
         string name = "MyObject";
         int instanceId = 0;
         string path = null;
         float? posX = 5f, posY = 0f, posZ = 3f;
-        float? rotY = 45f;
-
-        // UI example: reposition a RectTransform element
-        // float? anchoredPosX = 100f, anchoredPosY = -50f;
-        // float? width = 200f, height = 60f;
+        float? localPosX = null, localPosY = null, localPosZ = null;
+        float? rotX = null, rotY = 45f, rotZ = null;
+        float? scaleX = null, scaleY = null, scaleZ = null;
+        float? anchoredPosX = null, anchoredPosY = null;
+        float? anchorMinX = null, anchorMinY = null;
+        float? anchorMaxX = null, anchorMaxY = null;
+        float? pivotX = null, pivotY = null;
+        float? sizeDeltaX = null, sizeDeltaY = null;
+        float? width = null, height = null;
 
         var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
         if (error != null) { result.SetResult(error); return; }
@@ -142,6 +145,20 @@ internal class CommandScript : IRunCommand
             rotation = new { x = go.transform.eulerAngles.x, y = go.transform.eulerAngles.y, z = go.transform.eulerAngles.z },
             scale = new { x = go.transform.localScale.x, y = go.transform.localScale.y, z = go.transform.localScale.z }
         }); return; }
+    }
+
+    private static bool TryMergeVector3(float? x, float? y, float? z, Vector3 current, out Vector3 result)
+    {
+        if (!x.HasValue && !y.HasValue && !z.HasValue) { result = current; return false; }
+        result = new Vector3(x ?? current.x, y ?? current.y, z ?? current.z);
+        return true;
+    }
+
+    private static bool TryMergeVector2(float? x, float? y, Vector2 current, out Vector2 result)
+    {
+        if (!x.HasValue && !y.HasValue) { result = current; return false; }
+        result = new Vector2(x ?? current.x, y ?? current.y);
+        return true;
     }
 }
 ```
