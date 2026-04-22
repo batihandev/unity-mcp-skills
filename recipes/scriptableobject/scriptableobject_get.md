@@ -26,11 +26,13 @@ internal class CommandScript : IRunCommand
         }
 
         var type = asset.GetType();
-        var fields = type.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+        // No-arg GetFields/GetProperties return public-instance members only — matches the
+        // (BindingFlags.Public | Instance) intent. BindingFlags overloads trip the reformatter NRE.
+        var fields = type.GetFields()
             .Select(f => new { name = f.Name, type = f.FieldType.Name, value = f.GetValue(asset)?.ToString() })
             .ToArray();
 
-        var props = type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+        var props = type.GetProperties()
             .Where(p => p.CanRead && !p.GetIndexParameters().Any())
             .Select(p =>
             {

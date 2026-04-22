@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **215** / 485
+- comp: **217** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -485,10 +485,10 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | scriptableobject_duplicate | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scriptableobject_export_json | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scriptableobject_find | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 1149 SOs (Task 21) |
-| scriptableobject_get | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scriptableobject_get | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live, BindingFlags→no-arg |
 | scriptableobject_import_json | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scriptableobject_list_types | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scriptableobject_set | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scriptableobject_set | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live, BindingFlags→no-arg |
 | scriptableobject_set_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped Newtonsoft.Json; hand-parsed manifest/typed-array items |
 
 ## shader (11 recipes)
