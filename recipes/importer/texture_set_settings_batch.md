@@ -36,61 +36,88 @@ Each object in the JSON array may contain:
 ## Prerequisites
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
 
 ## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchTextureItem
+{
+    public string assetPath;
+    public string textureType;
+    public string filterMode;
+    public string compression;
+    public int? maxSize;
+    public bool? mipmapEnabled;
+    public bool? sRGB;
+    public bool? readable;
+    public float? spritePixelsPerUnit;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        // JSON array of BatchTextureItem objects
-        string items = @"[
-            { ""assetPath"": ""Assets/Textures/hero.png"", ""textureType"": ""Sprite"", ""maxSize"": 1024 },
-            { ""assetPath"": ""Assets/Textures/bg.png"",   ""filterMode"": ""Point"", ""mipmapEnabled"": false }
-        ]";
-
-        return BatchExecutor.Execute<BatchTextureItem>(items, item =>
+        var items = new[]
         {
-            var importer = AssetImporter.GetAtPath(item.assetPath) as TextureImporter;
-            if (importer == null)
-                throw new System.Exception("Not a texture");
+            new _BatchTextureItem { assetPath = "Assets/Textures/hero.png", textureType = "Sprite", maxSize = 1024 },
+            new _BatchTextureItem { assetPath = "Assets/Textures/bg.png", filterMode = "Point", mipmapEnabled = false },
+        };
 
-            var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(item.assetPath);
-            if (asset != null) WorkflowManager.SnapshotObject(asset);
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
 
-            if (!string.IsNullOrEmpty(item.textureType) &&
-                System.Enum.TryParse<TextureImporterType>(item.textureType.Replace(" ", ""), true, out var tt))
-                importer.textureType = tt;
-
-            if (!string.IsNullOrEmpty(item.filterMode) &&
-                System.Enum.TryParse<FilterMode>(item.filterMode, true, out var fm))
-                importer.filterMode = fm;
-
-            if (item.mipmapEnabled.HasValue) importer.mipmapEnabled = item.mipmapEnabled.Value;
-            if (item.sRGB.HasValue) importer.sRGBTexture = item.sRGB.Value;
-            if (item.readable.HasValue) importer.isReadable = item.readable.Value;
-            if (item.spritePixelsPerUnit.HasValue) importer.spritePixelsPerUnit = item.spritePixelsPerUnit.Value;
-
-            if (item.maxSize.HasValue || !string.IsNullOrEmpty(item.compression))
+        AssetDatabase.StartAssetEditing();
+        try
+        {
+            foreach (var item in items)
             {
-                var ps = importer.GetDefaultPlatformTextureSettings();
-                if (item.maxSize.HasValue) ps.maxTextureSize = item.maxSize.Value;
-                if (!string.IsNullOrEmpty(item.compression) &&
-                    System.Enum.TryParse<TextureImporterCompression>(item.compression, true, out var tc))
-                    ps.textureCompression = tc;
-                importer.SetPlatformTextureSettings(ps);
-            }
+                var importer = AssetImporter.GetAtPath(item.assetPath) as TextureImporter;
+                if (importer == null) { results.Add(new { path = item.assetPath, success = false, error = "Not a texture" }); failCount++; continue; }
 
-            importer.SaveAndReimport();
-            return new { path = item.assetPath, success = true };
-        }, item => item.assetPath,
-        setup: () => AssetDatabase.StartAssetEditing(),
-        teardown: () => { AssetDatabase.StopAssetEditing(); AssetDatabase.Refresh(); });
+                var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(item.assetPath);
+                if (asset != null) WorkflowManager.SnapshotObject(asset);
+
+                if (!string.IsNullOrEmpty(item.textureType) &&
+                    System.Enum.TryParse<TextureImporterType>(item.textureType.Replace(" ", ""), true, out var tt))
+                    importer.textureType = tt;
+
+                if (!string.IsNullOrEmpty(item.filterMode) &&
+                    System.Enum.TryParse<FilterMode>(item.filterMode, true, out var fm))
+                    importer.filterMode = fm;
+
+                if (item.mipmapEnabled.HasValue) importer.mipmapEnabled = item.mipmapEnabled.Value;
+                if (item.sRGB.HasValue) importer.sRGBTexture = item.sRGB.Value;
+                if (item.readable.HasValue) importer.isReadable = item.readable.Value;
+                if (item.spritePixelsPerUnit.HasValue) importer.spritePixelsPerUnit = item.spritePixelsPerUnit.Value;
+
+                if (item.maxSize.HasValue || !string.IsNullOrEmpty(item.compression))
+                {
+                    var ps = importer.GetDefaultPlatformTextureSettings();
+                    if (item.maxSize.HasValue) ps.maxTextureSize = item.maxSize.Value;
+                    if (!string.IsNullOrEmpty(item.compression) &&
+                        System.Enum.TryParse<TextureImporterCompression>(item.compression, true, out var tc))
+                        ps.textureCompression = tc;
+                    importer.SetPlatformTextureSettings(ps);
+                }
+
+                importer.SaveAndReimport();
+                results.Add(new { path = item.assetPath, success = true });
+                successCount++;
+            }
+        }
+        finally
+        {
+            AssetDatabase.StopAssetEditing();
+            AssetDatabase.Refresh();
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

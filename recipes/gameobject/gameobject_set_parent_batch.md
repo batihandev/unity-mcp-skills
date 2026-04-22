@@ -26,40 +26,53 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchSetParentItem
+{
+    public string childName;
+    public int childInstanceId;
+    public string childPath;
+    public string parentName;
+    public int parentInstanceId;
+    public string parentPath;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""childName"": ""Wheel_FL"", ""parentName"": ""Car"" },
-            { ""childName"": ""Wheel_FR"", ""parentName"": ""Car"" },
-            { ""childInstanceId"": 12345, ""parentPath"": ""Level/Root"" }
-        ]";
-
-        { result.SetResult(BatchExecutor.Execute<BatchSetParentItem>(items, item =>
+        var items = new[]
         {
-            var (child, childError) = GameObjectFinder.FindOrError(item.childName, item.childInstanceId, item.childPath);
-            if (childError != null) throw new System.Exception("Child object not found");
+            new _BatchSetParentItem { childName = "Wheel_FL", parentName = "Car" },
+            new _BatchSetParentItem { childName = "Wheel_FR", parentName = "Car" },
+            new _BatchSetParentItem { childInstanceId = 12345, parentPath = "Level/Root" },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.childName ?? item.childPath ?? ("#" + item.childInstanceId);
+            var (child, childErr) = GameObjectFinder.FindOrError(item.childName, item.childInstanceId, item.childPath);
+            if (childErr != null) { results.Add(new { target, success = false, error = "Child object not found" }); failCount++; continue; }
 
             Transform parent = null;
             if (!string.IsNullOrEmpty(item.parentName) || item.parentInstanceId != 0 || !string.IsNullOrEmpty(item.parentPath))
             {
-                var (parentGo, parentError) = GameObjectFinder.FindOrError(item.parentName, item.parentInstanceId, item.parentPath);
-                if (parentError != null)
-                    throw new System.Exception($"Parent not found: {item.parentName ?? item.parentPath}");
+                var (parentGo, parentErr) = GameObjectFinder.FindOrError(item.parentName, item.parentInstanceId, item.parentPath);
+                if (parentErr != null) { results.Add(new { target, success = false, error = "Parent not found" }); failCount++; continue; }
                 parent = parentGo.transform;
             }
 
             WorkflowManager.SnapshotObject(child.transform);
             Undo.SetTransformParent(child.transform, parent, "Batch Set Parent");
-            return new
-            {
-                target = child.name,
-                success = true,
-                parent = parent?.name ?? "(root)"
-            };
-        }, item => item.childName ?? item.childPath)); return; }
+            results.Add(new { target = child.name, success = true, parent = parent?.name ?? "(root)" });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

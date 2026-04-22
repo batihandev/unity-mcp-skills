@@ -22,25 +22,41 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchLightPropsItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public float? r, g, b;
+    public float? intensity;
+    public float? range;
+    public string shadows;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        // items: JSON array of light property updates
-        string items = @"[
-            { ""name"": ""Point Light 1"", ""intensity"": 2.0, ""r"": 1.0, ""g"": 0.5, ""b"": 0.0, ""shadows"": ""soft"" },
-            { ""name"": ""Point Light 2"", ""intensity"": 1.5, ""range"": 20.0 },
-            { ""instanceId"": 12345,        ""r"": 0.8, ""g"": 0.8, ""b"": 1.0 }
-        ]";
-
-        result.SetResult(BatchExecutor.Execute<BatchLightPropsItem>(items, item =>
+        var items = new[]
         {
-            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Object not found");
+            new _BatchLightPropsItem { name = "Point Light 1", intensity = 2.0f, r = 1.0f, g = 0.5f, b = 0.0f, shadows = "soft" },
+            new _BatchLightPropsItem { name = "Point Light 2", intensity = 1.5f, range = 20.0f },
+            new _BatchLightPropsItem { instanceId = 12345, r = 0.8f, g = 0.8f, b = 1.0f },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
             var light = go.GetComponent<Light>();
-            if (light == null) throw new System.Exception("No Light component");
+            if (light == null) { results.Add(new { target, success = false, error = "No Light component" }); failCount++; continue; }
 
             WorkflowManager.SnapshotObject(light);
             Undo.RecordObject(light, "Batch Set Light Properties");
@@ -53,6 +69,8 @@ internal class CommandScript : IRunCommand
             if (item.intensity.HasValue) light.intensity = item.intensity.Value;
             if (item.range.HasValue && (light.type == LightType.Point || light.type == LightType.Spot))
                 light.range = item.range.Value;
+
+            bool ok = true;
             if (!string.IsNullOrEmpty(item.shadows))
             {
                 switch (item.shadows.ToLower())
@@ -60,25 +78,20 @@ internal class CommandScript : IRunCommand
                     case "hard": light.shadows = LightShadows.Hard; break;
                     case "soft": light.shadows = LightShadows.Soft; break;
                     case "none": light.shadows = LightShadows.None; break;
-                    default: throw new System.Exception($"Unknown shadow type: '{item.shadows}'. Valid values: hard, soft, none");
+                    default:
+                        results.Add(new { target, success = false, error = "Unknown shadow type: " + item.shadows });
+                        failCount++;
+                        ok = false;
+                        break;
                 }
             }
+            if (!ok) continue;
 
-            return new { target = go.name, success = true };
-        }, item => item.name ?? item.path ?? item.instanceId.ToString()));
+            results.Add(new { target = go.name, success = true });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
-}
-
-internal class BatchLightPropsItem
-{
-    public string name { get; set; }
-    public int instanceId { get; set; }
-    public string path { get; set; }
-    public float? r { get; set; }
-    public float? g { get; set; }
-    public float? b { get; set; }
-    public float? intensity { get; set; }
-    public float? range { get; set; }
-    public string shadows { get; set; }
 }
 ```

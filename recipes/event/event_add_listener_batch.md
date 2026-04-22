@@ -12,56 +12,98 @@ Add multiple persistent listeners to a UnityEvent in a single call. Each item in
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
+
+## Notes
+
+Handles the `argType = "void"` / `mode = "RuntimeOnly"` case only. For typed-arg events (`int`, `float`, `string`, `bool`), use the single-item `event_add_listener` recipe per call.
+
+## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
+using UnityEditor.Events;
+using System;
+using System.Linq;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+
+internal sealed class _BatchListenerItem
+{
+    public string targetObjectName;
+    public string targetComponentName;
+    public string methodName;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name = "MyButton";       // GameObject name (or use instanceId / path)
+        string name = "MyButton";
         int instanceId = 0;
         string path = null;
         string componentName = "Button";
         string eventName = "onClick";
-        // Each item: targetObjectName, targetComponentName, methodName
-        string items = "[{\"targetObjectName\":\"GameManager\",\"targetComponentName\":\"GameManager\",\"methodName\":\"OnButtonClicked\"},{\"targetObjectName\":\"AudioController\",\"targetComponentName\":\"AudioController\",\"methodName\":\"PlayClickSound\"}]";
 
-        var list = JsonConvert.DeserializeObject<List<BatchListenerItem>>(items);
-        if (list == null || list.Count == 0) { result.SetResult(new { error = "No items provided" }); return; }
-
-        int added = 0;
-        foreach (var item in list)
+        var items = new[]
         {
-            var addResult = EventAddListener(name, instanceId, path, componentName, eventName,
-                item.targetObjectName, item.targetComponentName, item.methodName);
-            if (!SkillResultHelper.TryGetError(addResult, out _))
-                added++;
+            new _BatchListenerItem { targetObjectName = "GameManager", targetComponentName = "GameManager", methodName = "OnButtonClicked" },
+            new _BatchListenerItem { targetObjectName = "AudioController", targetComponentName = "AudioController", methodName = "PlayClickSound" },
+        };
+
+        var (sourceGo, sourceErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (sourceErr != null) { result.SetResult(sourceErr); return; }
+
+        var sourceComp = sourceGo.GetComponent(componentName);
+        if (sourceComp == null) { result.SetResult(new { error = "Source component not found: " + componentName }); return; }
+
+        var sourceType = sourceComp.GetType();
+        object rawEvent = null;
+        var field = sourceType.GetFields().FirstOrDefault(f => f.Name == eventName);
+        var prop = field == null ? sourceType.GetProperties().FirstOrDefault(p => p.Name == eventName) : null;
+        if (field != null) rawEvent = field.GetValue(sourceComp);
+        else if (prop != null) rawEvent = prop.GetValue(sourceComp);
+        var unityEvent = rawEvent as UnityEvent;
+        if (unityEvent == null) { result.SetResult(new { error = "UnityEvent '" + eventName + "' not found or wrong type (only parameterless UnityEvent supported)" }); return; }
+
+        WorkflowManager.SnapshotObject(sourceComp);
+        Undo.RecordObject(sourceComp, "Add Event Listeners");
+
+        var results = new List<object>();
+        int addedCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var (targetGo, targetErr) = GameObjectFinder.FindOrError(item.targetObjectName);
+            if (targetErr != null) { results.Add(new { target = item.targetObjectName, success = false, error = "Target GameObject not found" }); failCount++; continue; }
+
+            UnityEngine.Object targetObj;
+            Type targetType;
+            if (item.targetComponentName == "GameObject" || item.targetComponentName == "UnityEngine.GameObject")
+            { targetObj = targetGo; targetType = typeof(GameObject); }
+            else
+            {
+                var targetComp = targetGo.GetComponent(item.targetComponentName);
+                if (targetComp == null) { results.Add(new { target = item.targetObjectName, success = false, error = "Target component not found: " + item.targetComponentName }); failCount++; continue; }
+                targetObj = targetComp;
+                targetType = targetComp.GetType();
+            }
+
+            var mi = targetType.GetMethods().FirstOrDefault(m => m.Name == item.methodName && m.GetParameters().Length == 0 && m.ReturnType == typeof(void));
+            if (mi == null) { results.Add(new { target = item.targetObjectName, success = false, error = "Method not found: " + item.methodName }); failCount++; continue; }
+
+            var action = (UnityAction)Delegate.CreateDelegate(typeof(UnityAction), targetObj, mi, false);
+            if (action == null) { results.Add(new { target = item.targetObjectName, success = false, error = "CreateDelegate failed" }); failCount++; continue; }
+
+            UnityEventTools.AddPersistentListener(unityEvent, action);
+            results.Add(new { target = item.targetObjectName, success = true, method = item.methodName });
+            addedCount++;
         }
 
-        result.SetResult(new { success = true, added, total = list.Count });
-    }
-
-    // Delegates to event_add_listener logic with void/RuntimeOnly defaults
-    private object EventAddListener(string name, int instanceId, string path,
-        string componentName, string eventName,
-        string targetObjectName, string targetComponentName, string methodName)
-    {
-        // See event_add_listener.md for full implementation
-        // This batch command calls it with argType = "void", mode = "RuntimeOnly"
-        throw new System.NotImplementedException("Delegate to EventSkills.EventAddListener");
-    }
-
-    private class BatchListenerItem
-    {
-        public string targetObjectName { get; set; }
-        public string targetComponentName { get; set; }
-        public string methodName { get; set; }
+        EditorUtility.SetDirty(sourceComp);
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, added = addedCount, failCount, results });
     }
 }
 ```

@@ -48,34 +48,54 @@ The `count` field reports how many instances of the component were removed from 
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType`
 
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchRemoveComponentItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public string componentType;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        { result.SetResult(BatchExecutor.Execute<BatchRemoveComponentItem>(items, item =>
+        var items = new[]
         {
-            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Object not found");
+            new _BatchRemoveComponentItem { name = "Enemy1", componentType = "Rigidbody" },
+            new _BatchRemoveComponentItem { path = "Level/Prop", componentType = "AudioSource" },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
             if (string.IsNullOrEmpty(item.componentType))
-                throw new System.Exception("componentType required");
+            { results.Add(new { target, success = false, error = "componentType required" }); failCount++; continue; }
 
-            var type = FindComponentType(item.componentType);
+            var type = ComponentSkills.FindComponentType(item.componentType);
             if (type == null)
-                throw new System.Exception($"Component type not found: {item.componentType}");
+            { results.Add(new { target, success = false, error = "Component type not found: " + item.componentType }); failCount++; continue; }
 
             var components = go.GetComponents(type);
             if (components.Length == 0)
-                throw new System.Exception($"Component not found: {item.componentType}");
+            { results.Add(new { target, success = false, error = "Component not found: " + item.componentType }); failCount++; continue; }
 
             Undo.RecordObject(go, "Batch Remove Component");
             foreach (var c in components)
@@ -85,8 +105,11 @@ internal class CommandScript : IRunCommand
             }
 
             EditorUtility.SetDirty(go);
-            return new { target = go.name, success = true, removed = type.Name, count = components.Length };
-        }, item => item.name ?? item.path)); return; }
+            results.Add(new { target = go.name, success = true, removed = type.Name, count = components.Length });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

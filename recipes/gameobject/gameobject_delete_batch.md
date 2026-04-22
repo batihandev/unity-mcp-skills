@@ -17,51 +17,51 @@ Delete multiple GameObjects in one call.
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
 
 ## Recipe
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchDeleteItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        // Simple form: array of names
-        string items = @"[""Cube"", ""Sphere"", ""EmptyObj""]";
-
-        // Full form: array of objects (can also use instanceId or path)
-        // string items = @"[
-        //     { ""name"": ""Cube"" },
-        //     { ""instanceId"": 12345 },
-        //     { ""path"": ""Parent/Child"" }
-        // ]";
-
-        if (Validate.RequiredJsonArray(items, "items") is object err) { result.SetResult(err); return; }
-
-        try
+        var items = new[]
         {
-            var normalizedItems = NormalizeDeleteBatchItems(items);
-            { result.SetResult(BatchExecutor.Execute<BatchDeleteItem>(normalizedItems, item =>
-            {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null)
-                    throw new System.Exception("Object not found");
+            new _BatchDeleteItem { name = "Cube" },
+            new _BatchDeleteItem { instanceId = 12345 },
+            new _BatchDeleteItem { path = "Parent/Child" },
+        };
 
-                var deletedName = go.name;
-                WorkflowManager.SnapshotObject(go);
-                Undo.DestroyObjectImmediate(go);
-                return new { target = deletedName, success = true };
-            }, item => item.name ?? item.path ?? item.instanceId.ToString())); return; }
-        }
-        catch (System.Exception ex)
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
         {
-            { result.SetResult(new { error = $"Failed to parse items JSON: {ex.Message}" }); return; }
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
+
+            var deletedName = go.name;
+            WorkflowManager.SnapshotObject(go);
+            Undo.DestroyObjectImmediate(go);
+            results.Add(new { target = deletedName, success = true });
+            successCount++;
         }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

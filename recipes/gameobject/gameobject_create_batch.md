@@ -27,29 +27,44 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchCreateItem
+{
+    public string name;
+    public string primitiveType;
+    public float x, y, z;
+    public float rotX, rotY, rotZ;
+    public float scaleX = 1, scaleY = 1, scaleZ = 1;
+    public string parentName;
+    public int parentInstanceId;
+    public string parentPath;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Cube1"", ""primitiveType"": ""Cube"", ""x"": 0, ""y"": 0, ""z"": 0 },
-            { ""name"": ""Sphere1"", ""primitiveType"": ""Sphere"", ""x"": 2, ""y"": 0, ""z"": 0 },
-            { ""name"": ""Empty1"", ""x"": 4, ""y"": 0, ""z"": 0 }
-        ]";
+        var items = new[]
+        {
+            new _BatchCreateItem { name = "Cube1", primitiveType = "Cube" },
+            new _BatchCreateItem { name = "Sphere1", primitiveType = "Sphere", x = 2 },
+            new _BatchCreateItem { name = "Empty1", x = 4 },
+        };
 
-        { result.SetResult(BatchExecutor.Execute<BatchCreateItem>(items, item =>
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
         {
             GameObject go;
             string primitiveType = item.primitiveType;
-
-            // Support "Empty", "", or null to create an empty GameObject
             if (string.IsNullOrEmpty(primitiveType) ||
                 primitiveType.Equals("Empty", System.StringComparison.OrdinalIgnoreCase) ||
                 primitiveType.Equals("None", System.StringComparison.OrdinalIgnoreCase))
             {
                 go = new GameObject(item.name);
-                primitiveType = null; // Normalize to null for downstream metadata and workflow tracking.
+                primitiveType = null;
             }
             else if (System.Enum.TryParse<PrimitiveType>(primitiveType, true, out var pt))
             {
@@ -58,14 +73,21 @@ internal class CommandScript : IRunCommand
             }
             else
             {
-                throw new System.Exception($"Unknown primitive type: {primitiveType}");
+                results.Add(new { success = false, name = item.name, error = "Unknown primitive type: " + primitiveType });
+                failCount++;
+                continue;
             }
 
-            // Set parent if specified
             if (!string.IsNullOrEmpty(item.parentName) || item.parentInstanceId != 0 || !string.IsNullOrEmpty(item.parentPath))
             {
                 var (parentGo, parentErr) = GameObjectFinder.FindOrError(item.parentName, item.parentInstanceId, item.parentPath);
-                if (parentErr != null) throw new System.Exception($"Parent not found for '{item.name}'");
+                if (parentErr != null)
+                {
+                    Object.DestroyImmediate(go);
+                    results.Add(new { success = false, name = item.name, error = "Parent not found" });
+                    failCount++;
+                    continue;
+                }
                 go.transform.SetParent(parentGo.transform, false);
             }
 
@@ -78,15 +100,18 @@ internal class CommandScript : IRunCommand
             Undo.RegisterCreatedObjectUndo(go, "Batch Create " + item.name);
             WorkflowManager.SnapshotCreatedGameObject(go, primitiveType);
 
-            return new
+            results.Add(new
             {
                 success = true,
                 name = go.name,
                 instanceId = go.GetInstanceID(),
                 path = GameObjectFinder.GetPath(go),
                 position = new { x = item.x, y = item.y, z = item.z }
-            };
-        }, item => item.name)); return; }
+            });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

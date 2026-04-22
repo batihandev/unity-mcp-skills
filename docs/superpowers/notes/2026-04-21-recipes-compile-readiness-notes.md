@@ -101,7 +101,7 @@ MCP tools NOT used as retirement targets because their use case is narrower than
 
 ## Session 2 close state (live)
 
-**Gate counts after 2026-04-22 dirty-domain sweep:** ext 461/484, pre 461/484, **comp 109/484** (+73 from the dirty-domain resume — probuilder + xr + cinemachine moved fully green), run 11/484, retired 24/484, blockers 6/484.
+**Gate counts after 2026-04-22 Task 15 + 16 closeouts:** ext 461/484, pre 461/484, **comp 132/484**, run 11/484, retired 24/484, blockers 6/484.
 
 ### Dirty-domain resume sweep (2026-04-22)
 
@@ -129,9 +129,22 @@ Named scope in plan (`FindShaderByNameOrPath`, `GetSimilarTypes`, `AllowMultiple
 
 **Deferred out of Task 16 to a later async split:** `test_list`, `test_list_categories` use upstream `DiscoverTests` which is ~200 lines of source-scan + JsonConvert/JObject (unavailable in `Unity_RunCommand`). The Unity-native replacement `TestRunnerApi.RetrieveTestList` is callback-based via `EditorApplication.delayCall`, structurally incompatible with stateless `Execute`. Marked `comp:B` with reason; follow-up would be a `test_list_start` + `test_list_read` split matching the Task 5 pattern.
 
-### Task 15 actual state (not "completed" — partial)
+### Task 15 closeout (2026-04-22)
 
-The task list marked Task 15 complete after 4 batch pilots; tracker scan still finds `BatchExecutor.Execute<T>` in **22 recipe files** (+3 using `SkillResultHelper`). Pattern is proven (typed `_BatchFooItem` + `foreach`), but the mechanical sweep across the remaining files is open work. Pickup point for the next slice.
+After Task 16 closeout, tracker scan found 23 recipes still using `BatchExecutor.Execute<T>` / `SkillResultHelper`. All 23 rewritten to the typed-array + `foreach` pattern; 22 verified `comp:x`, 1 marked `comp:B`.
+
+**Green (22):** gameobject_{create,delete,duplicate,rename,set_layer,set_parent,set_tag}_batch, light_{set_enabled,set_properties}_batch, material_{create,set_colors,set_emission}_batch, asset_{import,move}_batch, {texture,audio,model}_set_settings_batch, component_{remove,set_property}_batch, event_add_listener_batch, uitk_create_batch.
+
+**Harness blocker (1):** `asset_delete_batch` — rewrite applied correctly, but Unity MCP analyzer rejects any module containing `AssetDatabase.DeleteAsset` even inside `if (false)` (`"User interactions are not supported"`). Same guard that blocks `shader_delete`. Recipe is structurally correct; the smoke harness just can't validate it.
+
+**B by design (not a code defect):** `ui_create_batch` — dispatcher to 12 distinct `UICreate*` methods (canvas/panel/button/text/image/inputfield/slider/toggle/dropdown/scrollview/rawimage/scrollbar), each with ~50-100 lines of unique setup. No single-pattern rewrite fits. Guidance: agents call individual `ui_create_<primitive>` recipes sequentially; batch primitive added nothing a for-loop over single recipes doesn't already cover.
+
+**Simplifications during sweep:**
+- `ServerAvailabilityHelper` (REST-era transient-unavailable notices) dropped from asset batch recipes — useless in stateless `Unity_RunCommand`.
+- `Newtonsoft.Json` removed from `event_add_listener_batch` — unavailable in compile context anyway.
+- `component_set_property_batch` simplified: `value` + `assetPath` retained; `referencePath` / `referenceName` dropped (~100 lines of `ResolveReference` port; agents can chain two recipes to cover the case).
+- `material_create_batch`, `material_set_emission_batch`, `material_set_colors_batch` no longer delegate to upstream — logic inlined per-item.
+- `uitk_create_batch` inlined minimal `UitkCreateUss` / `UitkCreateUxml` bodies (File.WriteAllText + AssetDatabase.ImportAsset).
 
 Tasks done session 2: 19, 11, 12, 13, **14, 15 (partial: 3 of 5 verification pilots + bonus gameobject_set_active_batch), 17, 18 (enumeration only), 21 (eligible pool only)**.
 

@@ -25,27 +25,44 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchSetTagItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public string tag;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Hero"", ""tag"": ""Player"" },
-            { ""name"": ""Goblin"", ""tag"": ""Enemy"" },
-            { ""instanceId"": 12345, ""tag"": ""Untagged"" }
-        ]";
-
-        { result.SetResult(BatchExecutor.Execute<BatchSetTagItem>(items, item =>
+        var items = new[]
         {
-            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Object not found");
+            new _BatchSetTagItem { name = "Hero", tag = "Player" },
+            new _BatchSetTagItem { name = "Goblin", tag = "Enemy" },
+            new _BatchSetTagItem { instanceId = 12345, tag = "Untagged" },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
             WorkflowManager.SnapshotObject(go);
             Undo.RecordObject(go, "Batch Set Tag");
             go.tag = item.tag;
-            return new { target = go.name, success = true, tag = item.tag };
-        }, item => item.name ?? item.path)); return; }
+            results.Add(new { target = go.name, success = true, tag = item.tag });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

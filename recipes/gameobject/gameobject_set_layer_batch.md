@@ -26,25 +26,39 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchSetLayerItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public string layer;
+    public bool recursive;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Player"", ""layer"": ""Player"" },
-            { ""name"": ""EnemyRoot"", ""layer"": ""Enemy"", ""recursive"": true },
-            { ""instanceId"": 12345, ""layer"": ""Default"" }
-        ]";
-
-        { result.SetResult(BatchExecutor.Execute<BatchSetLayerItem>(items, item =>
+        var items = new[]
         {
-            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Object not found");
+            new _BatchSetLayerItem { name = "Player", layer = "Player" },
+            new _BatchSetLayerItem { name = "EnemyRoot", layer = "Enemy", recursive = true },
+            new _BatchSetLayerItem { instanceId = 12345, layer = "Default" },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
             int layerId = LayerMask.NameToLayer(item.layer);
-            if (layerId == -1)
-                throw new System.Exception($"Layer not found: {item.layer}");
+            if (layerId == -1) { results.Add(new { target, success = false, error = "Layer not found: " + item.layer }); failCount++; continue; }
 
             WorkflowManager.SnapshotObject(go);
             Undo.RecordObject(go, "Batch Set Layer");
@@ -59,8 +73,11 @@ internal class CommandScript : IRunCommand
                 }
             }
 
-            return new { target = go.name, success = true, layer = item.layer };
-        }, item => item.name ?? item.path)); return; }
+            results.Add(new { target = go.name, success = true, layer = item.layer });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

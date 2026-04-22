@@ -25,36 +25,52 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchDuplicateItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Cube"" },
-            { ""instanceId"": 12345 },
-            { ""path"": ""Parent/ChildObject"" }
-        ]";
-
-        { result.SetResult(BatchExecutor.Execute<BatchDuplicateItem>(items, item =>
+        var items = new[]
         {
-            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Object not found");
+            new _BatchDuplicateItem { name = "Cube" },
+            new _BatchDuplicateItem { instanceId = 12345 },
+            new _BatchDuplicateItem { path = "Parent/ChildObject" },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
             var copy = Object.Instantiate(go, go.transform.parent);
             copy.name = go.name + "_Copy";
             Undo.RegisterCreatedObjectUndo(copy, "Batch Duplicate " + go.name);
             WorkflowManager.SnapshotObject(copy, SnapshotType.Created);
 
-            return new
+            results.Add(new
             {
                 success = true,
                 originalName = go.name,
                 copyName = copy.name,
                 copyInstanceId = copy.GetInstanceID(),
                 copyPath = GameObjectFinder.GetPath(copy)
-            };
-        }, item => item.name ?? item.path ?? item.instanceId.ToString())); return; }
+            });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

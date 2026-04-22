@@ -64,75 +64,93 @@ Each item supports: `name`, `instanceId`, `path` (at least one required), `compo
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType`
+- `recipes/_shared/value_converter.md` — for `ComponentSkills.ConvertValue`
+
+## Notes
+
+The `value` and `assetPath` input paths are supported. Cross-scene reference resolution (`referencePath` / `referenceName` from upstream) is out of scope — use a dedicated recipe if you need that.
 
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
+using System.Collections.Generic;
+
+internal sealed class _BatchSetPropertyItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public string componentType;
+    public string propertyName;
+    public string value;      // primitive value, CSV vector, hex color, etc. — see ComponentSkills.ConvertValue
+    public string assetPath;  // asset reference alternative
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        { result.SetResult(BatchExecutor.Execute<BatchSetPropertyItem>(items, item =>
+        var items = new[]
         {
+            new _BatchSetPropertyItem { name = "Player", componentType = "Rigidbody", propertyName = "mass", value = "5" },
+            new _BatchSetPropertyItem { instanceId = 12346, componentType = "MeshRenderer", propertyName = "sharedMaterial", assetPath = "Assets/Materials/Metal.mat" },
+            new _BatchSetPropertyItem { path = "Level/Light", componentType = "Light", propertyName = "color", value = "#FF8800" },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
             if (string.IsNullOrEmpty(item.componentType) || string.IsNullOrEmpty(item.propertyName))
-                throw new System.Exception("componentType and propertyName required");
+            { results.Add(new { target, success = false, error = "componentType and propertyName required" }); failCount++; continue; }
 
-            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Object not found");
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
-            var type = FindComponentType(item.componentType);
-            if (type == null)
-                throw new System.Exception($"Component type not found: {item.componentType}");
+            var type = ComponentSkills.FindComponentType(item.componentType);
+            if (type == null) { results.Add(new { target, success = false, error = "Component type not found: " + item.componentType }); failCount++; continue; }
 
             var comp = go.GetComponent(type);
-            if (comp == null)
-                throw new System.Exception($"Component not found: {item.componentType}");
+            if (comp == null) { results.Add(new { target, success = false, error = "Component not found: " + item.componentType }); failCount++; continue; }
 
-            // Find property or field (with caching)
-            var (prop, field) = FindMember(type, item.propertyName);
-
+            var prop = type.GetProperties().FirstOrDefault(p => string.Equals(p.Name, item.propertyName, System.StringComparison.OrdinalIgnoreCase));
+            var field = prop == null ? type.GetFields().FirstOrDefault(f => string.Equals(f.Name, item.propertyName, System.StringComparison.OrdinalIgnoreCase)) : null;
             if (prop == null && field == null)
-                throw new System.Exception($"Property/field not found: {item.propertyName}");
+            { results.Add(new { target, success = false, error = "Property/field not found: " + item.propertyName }); failCount++; continue; }
 
             WorkflowManager.SnapshotObject(comp);
             Undo.RecordObject(comp, "Batch Set Property");
 
             var targetType = prop?.PropertyType ?? field.FieldType;
             object converted;
-
             if (!string.IsNullOrEmpty(item.assetPath))
             {
-                converted = ResolveAssetReference(targetType, item.assetPath);
-                if (converted == null)
-                    throw new System.Exception($"Asset not found or type mismatch: '{item.assetPath}' (expected {targetType.Name})");
-            }
-            else if (!string.IsNullOrEmpty(item.referencePath) || !string.IsNullOrEmpty(item.referenceName))
-            {
-                converted = ResolveReference(targetType, item.referencePath, item.referenceName);
-                if (converted == null)
-                    throw new System.Exception($"Reference resolution failed for {item.propertyName}");
+                converted = AssetDatabase.LoadAssetAtPath(item.assetPath, targetType);
+                if (converted == null) { results.Add(new { target, success = false, error = "Asset not found or type mismatch: " + item.assetPath }); failCount++; continue; }
             }
             else
             {
-                var valStr = item.value?.ToString();
-                converted = ConvertValue(valStr, targetType);
+                converted = ComponentSkills.ConvertValue(item.value, targetType);
             }
 
-            if (prop != null && prop.CanWrite)
-                prop.SetValue(comp, converted);
-            else if (field != null)
-                field.SetValue(comp, converted);
-            else
-                throw new System.Exception($"Property {item.propertyName} is read-only");
+            if (prop != null && prop.CanWrite) prop.SetValue(comp, converted);
+            else if (field != null) field.SetValue(comp, converted);
+            else { results.Add(new { target, success = false, error = "Property is read-only: " + item.propertyName }); failCount++; continue; }
 
             EditorUtility.SetDirty(comp);
-            return new { target = go.name, success = true, property = item.propertyName };
-        }, item => item.name ?? item.path)); return; }
+            results.Add(new { target = go.name, success = true, property = item.propertyName });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

@@ -19,33 +19,61 @@ Set colors on multiple GameObjects or material assets in a single call (efficien
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
 
 ## Recipe
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchColorItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public float r = 1f, g = 1f, b = 1f, a = 1f;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string propertyName = null; // null → auto-detect per render pipeline
-        string items = @"[
-            { ""name"": ""Cube"",   ""r"": 1.0, ""g"": 0.0, ""b"": 0.0, ""a"": 1.0 },
-            { ""name"": ""Sphere"", ""r"": 0.0, ""g"": 1.0, ""b"": 0.0, ""a"": 1.0 },
-            { ""name"": ""Plane"",  ""r"": 0.0, ""g"": 0.0, ""b"": 1.0, ""a"": 1.0 }
-        ]";
+        string propertyName = null; // null → probe _BaseColor / _Color
 
-        // Auto-detect color property if not specified
-        if (string.IsNullOrEmpty(propertyName))
-            propertyName = ProjectSkills.GetColorPropertyName();
-
-        { result.SetResult(BatchExecutor.Execute<BatchColorItem>(items, item =>
+        var items = new[]
         {
-            var (material, go, error) = FindMaterial(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Material not found");
+            new _BatchColorItem { name = "Cube", r = 1f, g = 0f, b = 0f, a = 1f },
+            new _BatchColorItem { name = "Sphere", r = 0f, g = 1f, b = 0f, a = 1f },
+            new _BatchColorItem { name = "Plane", r = 0f, g = 0f, b = 1f, a = 1f },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            Material material = null;
+            GameObject go = null;
+
+            if (!string.IsNullOrEmpty(item.path) && item.path.EndsWith(".mat"))
+            {
+                material = AssetDatabase.LoadAssetAtPath<Material>(item.path);
+            }
+            else
+            {
+                var (foundGo, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+                if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
+                go = foundGo;
+                var renderer = go.GetComponent<Renderer>();
+                if (renderer == null) { results.Add(new { target, success = false, error = "No Renderer" }); failCount++; continue; }
+                material = renderer.sharedMaterial;
+            }
+
+            if (material == null) { results.Add(new { target, success = false, error = "No material" }); failCount++; continue; }
 
             var color = new Color(item.r, item.g, item.b, item.a);
 
@@ -56,6 +84,7 @@ internal class CommandScript : IRunCommand
             var propertiesToTry = new[] { propertyName, "_BaseColor", "_Color" };
             foreach (var prop in propertiesToTry)
             {
+                if (string.IsNullOrEmpty(prop)) continue;
                 if (material.HasProperty(prop))
                 {
                     material.SetColor(prop, color);
@@ -64,12 +93,14 @@ internal class CommandScript : IRunCommand
                 }
             }
 
-            if (!colorSet)
-                throw new System.Exception("No color property found");
+            if (!colorSet) { results.Add(new { target, success = false, error = "No color property found" }); failCount++; continue; }
 
             if (go == null) EditorUtility.SetDirty(material);
-            return new { target = go?.name ?? item.path, success = true };
-        }, item => item.name ?? item.path)); return; }
+            results.Add(new { target = go?.name ?? item.path, success = true });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

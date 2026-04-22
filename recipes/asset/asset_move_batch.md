@@ -20,48 +20,56 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchAssetMoveItem
+{
+    public string sourcePath;
+    public string destinationPath;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        // items must be a JSON string — not a native array
-        string items = "[{\"sourcePath\":\"Assets/Old/A.png\",\"destinationPath\":\"Assets/New/A.png\"},{\"sourcePath\":\"Assets/Old/B.png\",\"destinationPath\":\"Assets/New/B.png\"}]";
-
-        result.SetResult(BatchExecutor.Execute<BatchMoveItem>(items, item =>
+        var items = new[]
         {
-            if (Validate.SafePath(item.sourcePath, "sourcePath") is object srcErr)
-                throw new System.Exception(((dynamic)srcErr).error);
-            if (Validate.SafePath(item.destinationPath, "destinationPath") is object dstErr)
-                throw new System.Exception(((dynamic)dstErr).error);
+            new _BatchAssetMoveItem { sourcePath = "Assets/Old/A.png", destinationPath = "Assets/New/A.png" },
+            new _BatchAssetMoveItem { sourcePath = "Assets/Old/B.png", destinationPath = "Assets/New/B.png" },
+        };
 
-            var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(item.sourcePath);
-            if (asset != null) WorkflowManager.SnapshotObject(asset);
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
 
-            string error = AssetDatabase.MoveAsset(item.sourcePath, item.destinationPath);
-            if (!string.IsNullOrEmpty(error))
-                throw new System.Exception(error);
-
-            return new
+        AssetDatabase.StartAssetEditing();
+        try
+        {
+            foreach (var item in items)
             {
-                target = item.sourcePath,
-                success = true,
-                from = item.sourcePath,
-                to = item.destinationPath,
-                serverAvailability =
-                    (ServerAvailabilityHelper.AffectsScriptDomain(item.sourcePath) || ServerAvailabilityHelper.AffectsScriptDomain(item.destinationPath))
-                        ? ServerAvailabilityHelper.CreateTransientUnavailableNotice(
-                            $"Moved script-domain asset: {item.sourcePath} -> {item.destinationPath}. Unity may briefly reload the script domain.",
-                            alwaysInclude: true)
-                        : ServerAvailabilityHelper.CreateTransientUnavailableNotice(
-                            $"Asset move completed: {item.destinationPath}. Unity may still be refreshing assets.",
-                            alwaysInclude: false)
-            };
-        }, item => item.sourcePath ?? item.destinationPath,
-        setup: () => AssetDatabase.StartAssetEditing(),
-        teardown: () => { AssetDatabase.StopAssetEditing(); AssetDatabase.Refresh(); }));
-    }
+                var target = item.sourcePath ?? item.destinationPath;
+                if (Validate.SafePath(item.sourcePath, "sourcePath") is object srcErr)
+                { results.Add(new { target, success = false, error = "Invalid sourcePath" }); failCount++; continue; }
+                if (Validate.SafePath(item.destinationPath, "destinationPath") is object dstErr)
+                { results.Add(new { target, success = false, error = "Invalid destinationPath" }); failCount++; continue; }
 
-    private class BatchMoveItem { public string sourcePath; public string destinationPath; }
+                var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(item.sourcePath);
+                if (asset != null) WorkflowManager.SnapshotObject(asset);
+
+                string error = AssetDatabase.MoveAsset(item.sourcePath, item.destinationPath);
+                if (!string.IsNullOrEmpty(error))
+                { results.Add(new { target, success = false, error }); failCount++; continue; }
+
+                results.Add(new { target, success = true, from = item.sourcePath, to = item.destinationPath });
+                successCount++;
+            }
+        }
+        finally
+        {
+            AssetDatabase.StopAssetEditing();
+            AssetDatabase.Refresh();
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
+    }
 }
 ```

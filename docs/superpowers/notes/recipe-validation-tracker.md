@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **484**
 - ext: **462** / 484
 - pre: **462** / 484
-- comp: **111** / 484
+- comp: **132** / 484
 - run: **11** / 484
 - retired: **22** / 484
 
@@ -45,15 +45,15 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 |---|---|---|---|---|---|
 | asset_create_folder | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_delete | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_delete_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| asset_delete_batch | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15 rewrite applied (BatchExecutor → foreach) but cannot smoke-verify: Unity_RunCommand MCP analyzer rejects any module containing AssetDatabase.DeleteAsset even inside if(false) — 'User interactions are not supported'. Same guard that blocked shader_delete. Recipe code is structurally correct. |
 | asset_duplicate | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_find | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_get_labels | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_import | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_import_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| asset_import_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; ServerAvailabilityHelper dropped (REST-era) |
 | asset_move | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_move_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| asset_move_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; ServerAvailabilityHelper dropped (REST-era) |
 | asset_refresh | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_reimport | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: normalize summary |
 | asset_reimport_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: scripted via inject_prerequisites.py |
@@ -140,10 +140,10 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | component_get_properties | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | component_list | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | component_remove | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| component_remove_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| component_remove_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | component_set_enabled | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | component_set_property | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| component_set_property_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| component_set_property_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 
 ## console (13 recipes)
 
@@ -185,7 +185,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
 | event_add_listener | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| event_add_listener_batch | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses Newtonsoft JsonConvert + undefined SkillResultHelper; body contains NotImplementedException |
+| event_add_listener_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses Newtonsoft JsonConvert + undefined SkillResultHelper; body contains NotImplementedException; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | event_clear_listeners | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | event_copy_listeners | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | event_get_listener_count | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -200,21 +200,21 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
 | gameobject_create | x | x | x | x | 2026-04-21: pilot; 2026-04-21: pilot; 2026-04-21: pilot; 2026-04-21: scripted via inject_prerequisites.py |
-| gameobject_create_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| gameobject_create_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | gameobject_delete | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| gameobject_delete_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| gameobject_delete_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | gameobject_duplicate | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| gameobject_duplicate_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| gameobject_duplicate_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | gameobject_find | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | gameobject_get_info | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | gameobject_rename | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| gameobject_rename_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| gameobject_rename_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | gameobject_set_active | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | gameobject_set_active_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| gameobject_set_layer_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| gameobject_set_layer_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | gameobject_set_parent | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| gameobject_set_parent_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| gameobject_set_tag_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| gameobject_set_parent_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
+| gameobject_set_tag_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | gameobject_set_transform | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | gameobject_set_transform_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: BatchExecutor removed, typed _BatchTransformItem + foreach (Task 15 pilot) |
 
@@ -234,7 +234,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | audio_get_source_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | audio_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | audio_set_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| audio_set_settings_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| audio_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | audio_set_source_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | model_find_assets | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | model_get_animations_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -247,7 +247,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | model_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | model_set_rig | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | model_set_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| model_set_settings_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| model_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | sprite_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | texture_find_assets | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | texture_find_by_size | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -258,7 +258,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | texture_set_import_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | texture_set_platform_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | texture_set_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| texture_set_settings_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| texture_set_settings_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | texture_set_sprite_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | texture_set_type | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 
@@ -273,9 +273,9 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | light_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | light_get_lightmap_settings | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: Task 21 |
 | light_set_enabled | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_set_enabled_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| light_set_enabled_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | light_set_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_set_properties_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| light_set_properties_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 
 ## material (21 recipes)
 
@@ -284,14 +284,14 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | material_assign | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_assign_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses BatchExecutor + SkillResultHelper not in _shared; 2026-04-21: BatchExecutor removed, typed item + foreach (Task 15 pilot) |
 | material_create | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| material_create_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| material_create_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | material_duplicate | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_get_keywords | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_get_properties | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_set_color | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| material_set_colors_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| material_set_colors_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | material_set_emission | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| material_set_emission_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| material_set_emission_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 | material_set_float | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_set_gi_flags | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_set_int | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
@@ -580,7 +580,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | ui_add_outline | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | ui_align_selected | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | ui_configure_selectable | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| ui_create_batch | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Dispatcher pattern: delegates to 12 upstream UICreate* methods (canvas/panel/button/text/image/inputfield/slider/toggle/dropdown/scrollview/rawimage/scrollbar). Each primitive has ~50-100 lines of setup logic — full inlining would 10x the recipe size. Guidance: agents should call individual ui_create_canvas / ui_create_button / etc. recipes sequentially rather than this batch. No single-pattern rewrite fits. |
 | ui_create_button | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | ui_create_canvas | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | ui_create_dropdown | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -608,7 +608,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | uitk_add_element | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | uitk_add_uss_rule | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | uitk_clone_element | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| uitk_create_batch | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses BatchExecutor / UIToolkitSkills helpers not in _shared |
+| uitk_create_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses BatchExecutor / UIToolkitSkills helpers not in _shared; 2026-04-22: Task 15: BatchExecutor → typed _UitkFileItem foreach; File.WriteAllText + AssetDatabase.ImportAsset direct (UitkCreateUss/Uxml logic inlined minimally) |
 | uitk_create_document | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | uitk_create_editor_window | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | uitk_create_from_template | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
