@@ -1,15 +1,10 @@
 # console_stop_capture
 
-Stop capturing Unity console logs and detach the log listener.
+Clear the console capture session marker set by `console_start_capture`.
 
 **Signature:** `ConsoleStopCapture()` — no parameters.
 
-**Returns:** `{ success, message, capturedCount }`
-
-## Notes
-
-- Captured logs remain in the buffer after stopping; `console_get_logs` can still read them.
-- Call `console_clear` or start a new capture session to discard the buffer.
+**Returns:** `{ success, message }`
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
@@ -23,14 +18,9 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        if (_capturing)
-        {
-            Application.logMessageReceived -= OnLogMessage;
-            _capturing = false;
-        }
-        int count;
-        lock (_logLock) { count = _logs.Count; }
-        result.SetResult(new { success = true, message = "Console capture stopped", capturedCount = count });
+        EditorPrefs.SetBool("UnitySkills_Capture_Active", false);
+        EditorPrefs.DeleteKey("UnitySkills_Capture_StartTime");
+        result.SetResult(new { success = true, message = "Capture session stopped" });
     }
 }
 ```

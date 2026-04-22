@@ -1,6 +1,6 @@
 # console_start_capture
 
-Start capturing Unity console logs into an in-memory buffer. Once active, `console_get_logs` returns buffered entries with timestamps rather than reading the raw console history.
+Mark the start of a console capture session. Sets an EditorPrefs timestamp that `console_get_stats` and `console_export` can use as a reference point.
 
 **Signature:** `ConsoleStartCapture()` — no parameters.
 
@@ -8,9 +8,8 @@ Start capturing Unity console logs into an in-memory buffer. Once active, `conso
 
 ## Notes
 
-- The buffer is cleared on each call to `console_start_capture`.
-- Buffer capacity: 1000 entries (oldest are dropped when exceeded).
-- Call `console_stop_capture` when done to detach the log listener.
+- Unity_RunCommand is stateless between calls; this sets an EditorPrefs marker only.
+- `console_get_stats` and `console_export` always read from the live Unity console.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
@@ -24,13 +23,9 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        if (!_capturing)
-        {
-            Application.logMessageReceived += OnLogMessage;
-            _capturing = true;
-        }
-        lock (_logLock) { _logs.Clear(); }
-        result.SetResult(new { success = true, message = "Console capture started" });
+        EditorPrefs.SetBool("UnitySkills_Capture_Active", true);
+        EditorPrefs.SetString("UnitySkills_Capture_StartTime", System.DateTime.UtcNow.ToString("o"));
+        result.SetResult(new { success = true, message = "Capture session started" });
     }
 }
 ```

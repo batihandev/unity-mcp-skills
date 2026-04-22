@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **247** / 485
+- comp: **255** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -150,18 +150,18 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
 | console_clear | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP |
-| console_export | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| console_export | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: rewritten: StartGettingEntries/GetEntryInternal, GetField('message'/'mode'), no BindingFlags |
 | console_get_logs | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP |
-| console_get_stats | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| console_log | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| console_set_clear_on_play | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| console_set_collapse | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| console_set_pause_on_error | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| console_start_capture | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| console_stop_capture | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| debug_force_recompile | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper; fully-qualified UnityEditor.Compilation.CompilationPipeline (namespace collision in Unity_RunCommand wrapper) |
-| debug_get_defines | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: defines returned (Task 21) |
-| debug_set_defines | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper |
+| console_get_stats | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: rewritten: LogEntries.GetCountsByType via GetMethods()+foreach |
+| console_log | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: trivial Debug.Log/LogWarning/LogError switch |
+| console_set_clear_on_play | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: removed BindingFlags; GetMethods()+foreach for SetConsoleFlag, EditorPrefs fallback |
+| console_set_collapse | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: same pattern as set_clear_on_play, bit 32 |
+| console_set_pause_on_error | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: s_ConsoleFlags unreachable; simplified to EditorPrefs only |
+| console_start_capture | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: rewritten: stateless EditorPrefs marker |
+| console_stop_capture | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: rewritten: clears EditorPrefs marker |
+| debug_force_recompile | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper; fully-qualified UnityEditor.Compilation.CompilationPipeline (namespace collision in Unity_RunCommand wrapper); 2026-04-23: fully-qualified CompilationPipeline call passes cleanly |
+| debug_get_defines | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: defines returned (Task 21); 2026-04-23: EditorUserBuildSettings+PlayerSettings only |
+| debug_set_defines | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper; 2026-04-23: PlayerSettings.SetScriptingDefineSymbolsForGroup |
 
 ## editor (12 recipes)
 
