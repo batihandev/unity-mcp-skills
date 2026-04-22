@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **389** / 485
+- comp: **400** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -558,18 +558,18 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| timeline_add_activation_track | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_add_animation_track | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_add_audio_track | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_add_clip | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_add_control_track | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_add_signal_track | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_create | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
-| timeline_list_tracks | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_play | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_remove_track | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_set_binding | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| timeline_set_duration | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| timeline_add_activation_track | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_add_animation_track | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_add_audio_track | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_add_clip | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_add_control_track | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_add_signal_track | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_create | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-23: clean |
+| timeline_list_tracks | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_play | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_remove_track | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_set_binding | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
+| timeline_set_duration | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: clean |
 
 ## ui (26 recipes)
 
