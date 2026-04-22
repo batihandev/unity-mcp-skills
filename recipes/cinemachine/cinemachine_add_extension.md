@@ -24,6 +24,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -37,10 +38,13 @@ internal class CommandScript : IRunCommand
         var (go, err) = GameObjectFinder.FindOrError(vcamName, instanceId, path);
         if (err != null) { result.SetResult(err); return; }
 
-        var vcam = CinemachineAdapter.GetVCam(go);
-        if (CinemachineAdapter.VCamOrError(vcam) is object vcamErr) { result.SetResult(vcamErr); return; }
+        var vcam = go.GetComponent<CinemachineCamera>();
+        if (vcam == null) { result.SetResult(new { error = "Not a CinemachineCamera" }); return; }
 
-        var type = CinemachineAdapter.FindCinemachineType(extensionName);
+        var normalized = extensionName;
+        if (!string.IsNullOrEmpty(normalized) && !normalized.StartsWith("Cinemachine"))
+            normalized = "Cinemachine" + normalized;
+        var type = typeof(CinemachineCamera).Assembly.GetType("Unity.Cinemachine." + normalized, false, true);
         if (type == null) { result.SetResult(new { error = "Could not find Cinemachine extension type: " + extensionName }); return; }
         if (!typeof(CinemachineExtension).IsAssignableFrom(type))
         {

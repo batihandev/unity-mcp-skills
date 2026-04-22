@@ -38,11 +38,7 @@ internal class CommandScript : IRunCommand
             return;
         }
 
-#if UNITY_6000_0_OR_NEWER
         var mat = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(materialPath);
-#else
-        var mat = AssetDatabase.LoadAssetAtPath<PhysicMaterial>(materialPath);
-#endif
         if (mat == null)
         {
             result.SetResult(new { error = $"PhysicMaterial not found: {materialPath}" });

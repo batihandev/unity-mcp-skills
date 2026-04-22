@@ -9,7 +9,6 @@ Sets the InteractionLayerMask on an XR interactor or interactable for filtering 
 **Notes:**
 - `layers`: comma-separated XR interaction layer names, e.g. `"Default,Teleport"`.
 - `isInteractor = true` targets an interactor component; `false` targets an interactable component.
-- Uses `InteractionLayerMask.GetMask()` via reflection. Falls back to integer parsing if the type is unavailable.
 - Do not confuse XR InteractionLayerMask with Unity physics Layer — they are separate systems.
 
 ## Prerequisites
@@ -19,74 +18,73 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
-                    if (findErr != null) { result.SetResult(findErr); return; }
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        string layers = "Default";
+        bool isInteractor = true;
 
-                    // Find the XR component
-                    Component comp;
-                    if (isInteractor)
-                    {
-                        comp = XRReflectionHelper.GetXRComponent(go, "XRRayInteractor")
-                            ?? XRReflectionHelper.GetXRComponent(go, "XRDirectInteractor")
-                            ?? XRReflectionHelper.GetXRComponent(go, "XRSocketInteractor")
-                            ?? XRReflectionHelper.GetXRComponent(go, "XRBaseInteractor");
-                    }
-                    else
-                    {
-                        comp = XRReflectionHelper.GetXRComponent(go, "XRGrabInteractable")
-                            ?? XRReflectionHelper.GetXRComponent(go, "XRSimpleInteractable")
-                            ?? XRReflectionHelper.GetXRComponent(go, "XRBaseInteractable");
-                    }
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-                    if (comp == null)
-                        { result.SetResult(new { error = $"No XR {(isInteractor ? "interactor" : "interactable")} found on '{go.name}'." }); return; }
+        // Parse layer mask once — InteractionLayerMask.GetMask takes string[] and returns int.
+        var layerNames = layers.Split(',').Select(l => l.Trim()).ToArray();
+        int mask = InteractionLayerMask.GetMask(layerNames);
+        if (mask == 0 && int.TryParse(layers, out int parsed))
+            mask = parsed;
 
-                    Undo.RecordObject(comp, "Configure Interaction Layers");
-                    WorkflowManager.SnapshotObject(comp);
+        string componentType = null;
+        if (isInteractor)
+        {
+            XRBaseInteractor interactor = go.GetComponent<XRRayInteractor>();
+            if (interactor == null) interactor = go.GetComponent<XRDirectInteractor>();
+            if (interactor == null) interactor = go.GetComponent<XRSocketInteractor>();
+            if (interactor == null) interactor = go.GetComponent<XRBaseInteractor>();
+            if (interactor == null)
+                { result.SetResult(new { error = $"No XR interactor found on '{go.name}'." }); return; }
 
-                    // Try to set interaction layers via InteractionLayerMask
-                    var ilmType = XRReflectionHelper.ResolveXRType("InteractionLayerMask");
-                    if (ilmType != null)
-                    {
-                        var getMethod = ilmType.GetMethod("GetMask", BindingFlags.Public | BindingFlags.Static);
-                        if (getMethod != null)
-                        {
-                            try
-                            {
-                                var layerNames = layers.Split(',').Select(l => l.Trim()).ToArray();
-                                var mask = getMethod.Invoke(null, new object[] { layerNames });
-                                XRReflectionHelper.SetProperty(comp, "interactionLayers", mask);
-                            }
-                            catch
-                            {
-                                // Fallback: try setting by integer value
-                                if (int.TryParse(layers, out int layerMask))
-                                    XRReflectionHelper.SetProperty(comp, "interactionLayers", layerMask);
-                            }
-                        }
-                    }
+            Undo.RecordObject(interactor, "Configure Interaction Layers");
+            WorkflowManager.SnapshotObject(interactor);
+            interactor.interactionLayers = mask;
+            componentType = interactor.GetType().Name;
+        }
+        else
+        {
+            XRBaseInteractable interactable = go.GetComponent<XRGrabInteractable>();
+            if (interactable == null) interactable = go.GetComponent<XRSimpleInteractable>();
+            if (interactable == null) interactable = go.GetComponent<XRBaseInteractable>();
+            if (interactable == null)
+                { result.SetResult(new { error = $"No XR interactable found on '{go.name}'." }); return; }
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = go.name,
-                        instanceId = go.GetInstanceID(),
-                        componentType = comp.GetType().Name,
-                        layers,
-                        isInteractor
-                    }); return; }
-        #endif
+            Undo.RecordObject(interactable, "Configure Interaction Layers");
+            WorkflowManager.SnapshotObject(interactable);
+            interactable.interactionLayers = mask;
+            componentType = interactable.GetType().Name;
+        }
+
+        { result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            componentType,
+            layers,
+            isInteractor
+        }); return; }
     }
 }
 ```

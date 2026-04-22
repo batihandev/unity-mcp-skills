@@ -20,98 +20,103 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System;
+using System.Linq;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    if (Validate.Required(targetName, "targetName") is object err1) { result.SetResult(err1); return; }
-                    if (Validate.Required(targetMethod, "targetMethod") is object err2) { result.SetResult(err2); return; }
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        string eventType = "selectEntered";
+        string targetName = null;
+        string targetMethod = null;
 
-                    var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
-                    if (findErr != null) { result.SetResult(findErr); return; }
+        if (Validate.Required(targetName, "targetName") is object err1) { result.SetResult(err1); return; }
+        if (Validate.Required(targetMethod, "targetMethod") is object err2) { result.SetResult(err2); return; }
 
-                    // Find interactable
-                    var comp = XRReflectionHelper.GetXRComponent(go, "XRGrabInteractable")
-                            ?? XRReflectionHelper.GetXRComponent(go, "XRSimpleInteractable")
-                            ?? XRReflectionHelper.GetXRComponent(go, "XRBaseInteractable");
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-                    if (comp == null)
-                        { result.SetResult(new { error = $"No XR interactable found on '{go.name}'." }); return; }
+        // Find interactable (XRGrabInteractable first, then XRSimpleInteractable, then any XRBaseInteractable)
+        Component comp = go.GetComponent<XRGrabInteractable>();
+        if (comp == null) comp = go.GetComponent<XRSimpleInteractable>();
+        if (comp == null) comp = go.GetComponent<XRBaseInteractable>();
 
-                    // Find target object
-                    var targetGo = GameObjectFinder.Find(targetName);
-                    if (targetGo == null)
-                        { result.SetResult(new { error = $"Target GameObject '{targetName}' not found." }); return; }
+        if (comp == null)
+            { result.SetResult(new { error = $"No XR interactable found on '{go.name}'." }); return; }
 
-                    // Find the event property
-                    var eventProp = comp.GetType().GetProperty(eventType,
-                        BindingFlags.Public | BindingFlags.Instance);
-                    if (eventProp == null)
-                        { result.SetResult(new
-                        {
-                            error = $"Event '{eventType}' not found on {comp.GetType().Name}.",
-                            availableEvents = new[] { "selectEntered", "selectExited", "hoverEntered", "hoverExited",
-                                "firstSelectEntered", "lastSelectExited", "firstHoverEntered", "lastHoverExited",
-                                "activated", "deactivated" }
-                        }); return; }
+        // Find target object
+        var targetGo = GameObjectFinder.Find(targetName);
+        if (targetGo == null)
+            { result.SetResult(new { error = $"Target GameObject '{targetName}' not found." }); return; }
 
-                    Undo.RecordObject(comp, "Add XR Interaction Event");
-                    WorkflowManager.SnapshotObject(comp);
+        // Find the event property (no BindingFlags — reformatter gotcha).
+        var eventProp = comp.GetType().GetProperty(eventType);
+        if (eventProp == null)
+            { result.SetResult(new
+            {
+                error = $"Event '{eventType}' not found on {comp.GetType().Name}.",
+                availableEvents = new[] { "selectEntered", "selectExited", "hoverEntered", "hoverExited",
+                    "firstSelectEntered", "lastSelectExited", "firstHoverEntered", "lastHoverExited",
+                    "activated", "deactivated" }
+            }); return; }
 
-                    // Get the UnityEvent and add persistent listener
-                    var eventObj = eventProp.GetValue(comp);
-                    if (eventObj == null)
-                        { result.SetResult(new { error = $"Event '{eventType}' returned null." }); return; }
+        Undo.RecordObject(comp, "Add XR Interaction Event");
+        WorkflowManager.SnapshotObject(comp);
 
-                    // Find target method on any component of the target
-                    MonoBehaviour targetComponent = null;
-                    MethodInfo targetMethodInfo = null;
-                    foreach (var targetComp in targetGo.GetComponents<MonoBehaviour>())
-                    {
-                        var method = targetComp.GetType().GetMethod(targetMethod,
-                            BindingFlags.Public | BindingFlags.Instance);
-                        if (method != null)
-                        {
-                            targetComponent = targetComp;
-                            targetMethodInfo = method;
-                            break;
-                        }
-                    }
+        var eventObj = eventProp.GetValue(comp);
+        if (eventObj == null)
+            { result.SetResult(new { error = $"Event '{eventType}' returned null." }); return; }
 
-                    if (targetComponent == null || targetMethodInfo == null)
-                        { result.SetResult(new { error = $"Method '{targetMethod}' not found on any component of '{targetName}'." }); return; }
+        // Find target method on any component of the target (GetMethod without flags to avoid reformatter NRE).
+        MonoBehaviour targetComponent = null;
+        System.Reflection.MethodInfo targetMethodInfo = null;
+        foreach (var targetComp in targetGo.GetComponents<MonoBehaviour>())
+        {
+            var method = targetComp.GetType().GetMethod(targetMethod);
+            if (method != null)
+            {
+                targetComponent = targetComp;
+                targetMethodInfo = method;
+                break;
+            }
+        }
 
-                    // Use UnityEventTools to add persistent listener
-                    var addMethod = typeof(UnityEditor.Events.UnityEventTools).GetMethods()
-                        .FirstOrDefault(m => m.Name == "AddVoidPersistentListener" && m.GetParameters().Length == 2);
+        if (targetComponent == null || targetMethodInfo == null)
+            { result.SetResult(new { error = $"Method '{targetMethod}' not found on any component of '{targetName}'." }); return; }
 
-                    if (addMethod != null)
-                    {
-                        var action = Delegate.CreateDelegate(typeof(UnityEngine.Events.UnityAction), targetComponent, targetMethodInfo, false);
-                        if (action != null)
-                        {
-                            addMethod.Invoke(null, new object[] { eventObj, action });
-                        }
-                    }
+        // Use UnityEventTools to add persistent listener
+        var addMethod = typeof(UnityEditor.Events.UnityEventTools).GetMethods()
+            .FirstOrDefault(m => m.Name == "AddVoidPersistentListener" && m.GetParameters().Length == 2);
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = go.name,
-                        instanceId = go.GetInstanceID(),
-                        eventType,
-                        targetObject = targetName,
-                        targetMethod,
-                        interactableType = comp.GetType().Name
-                    }); return; }
-        #endif
+        if (addMethod != null)
+        {
+            var action = Delegate.CreateDelegate(typeof(UnityEngine.Events.UnityAction), targetComponent, targetMethodInfo, false);
+            if (action != null)
+            {
+                addMethod.Invoke(null, new object[] { eventObj, action });
+            }
+        }
+
+        { result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            eventType,
+            targetObject = targetName,
+            targetMethod,
+            interactableType = comp.GetType().Name
+        }); return; }
     }
 }
 ```

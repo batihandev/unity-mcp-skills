@@ -22,6 +22,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -45,7 +46,8 @@ internal class CommandScript : IRunCommand
             WorkflowManager.SnapshotCreatedComponent(perlin);
         }
 
-        CinemachineAdapter.SetNoiseGains(perlin, amplitudeGain, frequencyGain);
+        perlin.AmplitudeGain = amplitudeGain;
+        perlin.FrequencyGain = frequencyGain;
         EditorUtility.SetDirty(perlin);
 
         result.SetResult(new { success = true, message = "Set Noise profile." });

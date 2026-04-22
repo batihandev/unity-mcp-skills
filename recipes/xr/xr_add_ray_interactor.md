@@ -18,67 +18,74 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
-                    if (findErr != null) { result.SetResult(findErr); return; }
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        float maxDistance = 30f;
+        string lineType = "StraightLine";
+        bool addLineVisual = true;
 
-                    Undo.RecordObject(go, "Add XRRayInteractor");
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-                    // Add XRRayInteractor
-                    var comp = XRReflectionHelper.AddXRComponent(go, "XRRayInteractor");
-                    if (comp == null)
-                        { result.SetResult(new { error = "Failed to add XRRayInteractor. Type not found in current XRI version." }); return; }
+        Undo.RecordObject(go, "Add XRRayInteractor");
 
-                    Undo.RegisterCreatedObjectUndo(comp, "Add XRRayInteractor");
+        var existing = go.GetComponent<XRRayInteractor>();
+        var comp = existing != null ? existing : go.AddComponent<XRRayInteractor>();
+        if (existing == null)
+            Undo.RegisterCreatedObjectUndo(comp, "Add XRRayInteractor");
 
-                    // Configure properties
-                    XRReflectionHelper.SetProperty(comp, "maxRaycastDistance", maxDistance);
-                    if (!string.IsNullOrEmpty(lineType))
-                        XRReflectionHelper.SetEnumProperty(comp, "lineType", lineType);
+        // Configure properties
+        comp.maxRaycastDistance = maxDistance;
+        if (!string.IsNullOrEmpty(lineType) &&
+            Enum.TryParse<XRRayInteractor.LineType>(lineType, true, out var lt))
+            comp.lineType = lt;
 
-                    // Add LineRenderer if not present
-                    var lr = go.GetComponent<LineRenderer>();
-                    if (lr == null)
-                    {
-                        lr = go.AddComponent<LineRenderer>();
-                        lr.startWidth = 0.01f;
-                        lr.endWidth = 0.01f;
-                        lr.material = new Material(Shader.Find("Sprites/Default"));
-                        lr.startColor = Color.white;
-                        lr.endColor = new Color(1, 1, 1, 0.5f);
-                    }
+        // Add LineRenderer if not present
+        var lr = go.GetComponent<LineRenderer>();
+        if (lr == null)
+        {
+            lr = go.AddComponent<LineRenderer>();
+            lr.startWidth = 0.01f;
+            lr.endWidth = 0.01f;
+            lr.material = new Material(Shader.Find("Sprites/Default"));
+            lr.startColor = Color.white;
+            lr.endColor = new Color(1, 1, 1, 0.5f);
+        }
 
-                    // Add XRInteractorLineVisual if requested
-                    Component lineVisual = null;
-                    if (addLineVisual)
-                    {
-                        lineVisual = XRReflectionHelper.AddXRComponent(go, "XRInteractorLineVisual");
-                    }
+        // Add XRInteractorLineVisual if requested
+        XRInteractorLineVisual lineVisual = null;
+        if (addLineVisual)
+        {
+            lineVisual = go.GetComponent<XRInteractorLineVisual>() ?? go.AddComponent<XRInteractorLineVisual>();
+        }
 
-                    WorkflowManager.SnapshotObject(go);
+        WorkflowManager.SnapshotObject(go);
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = go.name,
-                        instanceId = go.GetInstanceID(),
-                        interactorType = comp.GetType().Name,
-                        maxRaycastDistance = maxDistance,
-                        lineType,
-                        hasLineVisual = lineVisual != null,
-                        lineTypeOptions = XRReflectionHelper.GetEnumValues(comp, "lineType")
-                    }); return; }
-        #endif
+        { result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            interactorType = comp.GetType().Name,
+            maxRaycastDistance = maxDistance,
+            lineType,
+            hasLineVisual = lineVisual != null,
+            lineTypeOptions = Enum.GetNames(typeof(XRRayInteractor.LineType))
+        }); return; }
     }
 }
 ```

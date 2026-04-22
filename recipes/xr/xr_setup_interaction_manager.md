@@ -16,46 +16,42 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.XR.Interaction.Toolkit;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    var managerType = XRReflectionHelper.ResolveXRType("XRInteractionManager");
-                    if (managerType == null)
-                        { result.SetResult(new { error = "XRInteractionManager type not found." }); return; }
+        string name = null;
 
-                    // Check if one already exists
-                    var existing = XRReflectionHelper.FindFirstOfXRType("XRInteractionManager");
-                    if (existing != null)
-                        { result.SetResult(new
-                        {
-                            success = true,
-                            alreadyExists = true,
-                            name = existing.gameObject.name,
-                            instanceId = existing.gameObject.GetInstanceID()
-                        }); return; }
+        var existing = UnityEngine.Object.FindFirstObjectByType<XRInteractionManager>();
+        if (existing != null)
+            { result.SetResult(new
+            {
+                success = true,
+                alreadyExists = true,
+                name = existing.gameObject.name,
+                instanceId = existing.gameObject.GetInstanceID()
+            }); return; }
 
-                    var go = new GameObject(name ?? "XR Interaction Manager");
-                    go.AddComponent(managerType);
+        var go = new GameObject(name ?? "XR Interaction Manager");
+        go.AddComponent<XRInteractionManager>();
 
-                    Undo.RegisterCreatedObjectUndo(go, "Create XRInteractionManager");
-                    WorkflowManager.SnapshotObject(go, SnapshotType.Created);
+        Undo.RegisterCreatedObjectUndo(go, "Create XRInteractionManager");
+        WorkflowManager.SnapshotObject(go, SnapshotType.Created);
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        alreadyExists = false,
-                        name = go.name,
-                        instanceId = go.GetInstanceID()
-                    }); return; }
-        #endif
+        { result.SetResult(new
+        {
+            success = true,
+            alreadyExists = false,
+            name = go.name,
+            instanceId = go.GetInstanceID()
+        }); return; }
     }
 }
 ```

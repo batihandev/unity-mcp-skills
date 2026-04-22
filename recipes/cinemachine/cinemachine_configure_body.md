@@ -32,6 +32,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -66,7 +67,11 @@ internal class CommandScript : IRunCommand
         var (go, err) = GameObjectFinder.FindOrError(vcamName, instanceId, path);
         if (err != null) { result.SetResult(err); return; }
 
-        var body = CinemachineAdapter.GetPipelineComponent(go, "Body");
+        CinemachineComponentBase body = null;
+        foreach (var c in go.GetComponents<CinemachineComponentBase>())
+        {
+            if (c != null && c.Stage == CinemachineCore.Stage.Body) { body = c; break; }
+        }
         if (body == null)
         {
             result.SetResult(new { error = "No Body stage component found. Add one first." });
@@ -78,16 +83,13 @@ internal class CommandScript : IRunCommand
         var typeName = body.GetType().Name;
         var changes = new List<string>();
 
-        // CM3 CinemachineFollow
-#if CINEMACHINE_3
         if (typeName == "CinemachineFollow" && (offsetX.HasValue || offsetY.HasValue || offsetZ.HasValue))
         {
-            var f = (Unity.Cinemachine.CinemachineFollow)body;
+            var f = (CinemachineFollow)body;
             var cur = f.FollowOffset;
             f.FollowOffset = new Vector3(offsetX ?? cur.x, offsetY ?? cur.y, offsetZ ?? cur.z);
             changes.Add("offset=(" + f.FollowOffset.x + "," + f.FollowOffset.y + "," + f.FollowOffset.z + ")");
         }
-#endif
 
         EditorUtility.SetDirty(body);
         if (changes.Count == 0)

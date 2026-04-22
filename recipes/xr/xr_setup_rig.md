@@ -7,7 +7,7 @@ Creates a complete XR Origin rig with Camera Offset, Main Camera, Left Controlle
 **Returns:** `{ success, name, instanceId, xriVersion, hierarchy, position, cameraYOffset, note }`
 
 **Notes:**
-- Requires `com.unity.xr.core-utils` in addition to XRI.
+- Requires `com.unity.xr.core-utils` (XROrigin) and `com.unity.inputsystem` (TrackedPoseDriver).
 - `cameraYOffset` sets standing eye height on the Camera Offset child object.
 - After this call, add interactors via `xr_add_ray_interactor` or `xr_add_direct_interactor`.
 
@@ -17,100 +17,80 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4), `com.unity.xr.core-utils`, `com.unity.inputsystem`.
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.XR.CoreUtils;
+using UnityEngine.InputSystem.XR;
+using UnityEngine.XR.Interaction.Toolkit;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    // Check XROrigin type availability
-                    var xrOriginType = XRReflectionHelper.ResolveXRType("XROrigin");
-                    if (xrOriginType == null)
-                        { result.SetResult(new { error = "XROrigin type not found. Ensure com.unity.xr.core-utils is installed." }); return; }
+        string name = "XR Origin";
+        float x = 0f, y = 0f, z = 0f;
+        float cameraYOffset = 1.36144f;
 
-                    // Root: XR Origin
-                    var root = new GameObject(name);
-                    root.transform.position = new Vector3(x, y, z);
+        // Root: XR Origin
+        var root = new GameObject(name);
+        root.transform.position = new Vector3(x, y, z);
 
-                    // Add XROrigin component
-                    var originComp = root.AddComponent(xrOriginType);
-                    if (originComp == null)
-                    {
-                        UnityEngine.Object.DestroyImmediate(root);
-                        { result.SetResult(new { error = "Failed to add XROrigin component." }); return; }
-                    }
+        var originComp = root.AddComponent<XROrigin>();
 
-                    // Camera Offset child
-                    var cameraOffset = new GameObject("Camera Offset");
-                    cameraOffset.transform.SetParent(root.transform, false);
-                    cameraOffset.transform.localPosition = new Vector3(0, cameraYOffset, 0);
+        // Camera Offset child
+        var cameraOffset = new GameObject("Camera Offset");
+        cameraOffset.transform.SetParent(root.transform, false);
+        cameraOffset.transform.localPosition = new Vector3(0, cameraYOffset, 0);
+        originComp.CameraFloorOffsetObject = cameraOffset;
 
-                    // Set CameraFloorOffsetObject via reflection
-                    XRReflectionHelper.SetProperty(originComp, "CameraFloorOffsetObject", cameraOffset);
+        // Main Camera
+        var camGo = new GameObject("Main Camera");
+        camGo.tag = "MainCamera";
+        camGo.transform.SetParent(cameraOffset.transform, false);
+        var cam = camGo.AddComponent<Camera>();
+        cam.nearClipPlane = 0.01f;
+        camGo.AddComponent<AudioListener>();
+        camGo.AddComponent<TrackedPoseDriver>();
+        originComp.Camera = cam;
 
-                    // Main Camera
-                    var camGo = new GameObject("Main Camera");
-                    camGo.tag = "MainCamera";
-                    camGo.transform.SetParent(cameraOffset.transform, false);
-                    var cam = camGo.AddComponent<Camera>();
-                    cam.nearClipPlane = 0.01f;
-                    camGo.AddComponent<AudioListener>();
+        // Left Controller
+        var leftCtrl = new GameObject("Left Controller");
+        leftCtrl.transform.SetParent(root.transform, false);
+        leftCtrl.AddComponent<TrackedPoseDriver>();
 
-                    // Add TrackedPoseDriver to camera
-                    var tpdType = FindTrackedPoseDriverType();
-                    if (tpdType != null)
-                        camGo.AddComponent(tpdType);
+        // Right Controller
+        var rightCtrl = new GameObject("Right Controller");
+        rightCtrl.transform.SetParent(root.transform, false);
+        rightCtrl.AddComponent<TrackedPoseDriver>();
 
-                    // Set Camera on XROrigin
-                    XRReflectionHelper.SetProperty(originComp, "Camera", cam);
+        // Add XRInteractionManager if none exists
+        var manager = UnityEngine.Object.FindFirstObjectByType<XRInteractionManager>();
+        if (manager == null)
+            root.AddComponent<XRInteractionManager>();
 
-                    // Left Controller
-                    var leftCtrl = new GameObject("Left Controller");
-                    leftCtrl.transform.SetParent(root.transform, false);
-                    if (tpdType != null)
-                        leftCtrl.AddComponent(tpdType);
+        Undo.RegisterCreatedObjectUndo(root, "Create XR Origin Rig");
+        WorkflowManager.SnapshotObject(root, SnapshotType.Created);
 
-                    // Right Controller
-                    var rightCtrl = new GameObject("Right Controller");
-                    rightCtrl.transform.SetParent(root.transform, false);
-                    if (tpdType != null)
-                        rightCtrl.AddComponent(tpdType);
-
-                    // Add XRInteractionManager if none exists
-                    var managerComp = XRReflectionHelper.FindFirstOfXRType("XRInteractionManager");
-                    if (managerComp == null)
-                    {
-                        var managerType = XRReflectionHelper.ResolveXRType("XRInteractionManager");
-                        if (managerType != null)
-                            root.AddComponent(managerType);
-                    }
-
-                    Undo.RegisterCreatedObjectUndo(root, "Create XR Origin Rig");
-                    WorkflowManager.SnapshotObject(root, SnapshotType.Created);
-
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = root.name,
-                        instanceId = root.GetInstanceID(),
-                        xriVersion = XRReflectionHelper.XRIMajorVersion,
-                        hierarchy = new
-                        {
-                            cameraOffset = cameraOffset.name,
-                            mainCamera = camGo.name,
-                            leftController = leftCtrl.name,
-                            rightController = rightCtrl.name
-                        },
-                        position = new { x, y, z },
-                        cameraYOffset,
-                        note = "Add interactors to controllers via xr_add_ray_interactor or xr_add_direct_interactor."
-                    }); return; }
-        #endif
+        { result.SetResult(new
+        {
+            success = true,
+            name = root.name,
+            instanceId = root.GetInstanceID(),
+            xriVersion = 3,
+            hierarchy = new
+            {
+                cameraOffset = cameraOffset.name,
+                mainCamera = camGo.name,
+                leftController = leftCtrl.name,
+                rightController = rightCtrl.name
+            },
+            position = new { x, y, z },
+            cameraYOffset,
+            note = "Add interactors to controllers via xr_add_ray_interactor or xr_add_direct_interactor."
+        }); return; }
     }
 }
 ```

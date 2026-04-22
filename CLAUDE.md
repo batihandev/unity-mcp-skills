@@ -94,6 +94,26 @@ everywhere. Listed here so a fresh session knows the shape.
   prefix (see `_GameObjectFinderCache`).
 - `BindingFlags.Public | BindingFlags.Instance` triggers an NRE in the
   reformatter. Use `GetProperties()` / `GetFields()` without args.
+- The same reformatter NRE also hits when `BindingFlags` is passed to
+  `Type.GetMethod(name, flags, binder, types, modifiers)`. Use
+  `type.GetMethods()` + a `foreach` filter on `Name` / `IsStatic` /
+  `GetParameters()` instead. The 2-arg `GetMethod(name, Type[])` overload
+  (no BindingFlags) is also safe.
+- A static field typed as `PropertyInfo` / `FieldInfo` / `MethodInfo`
+  (imported via `using System.Reflection;`) also triggers the reformatter
+  NRE. Fully-qualify instead: `private static System.Reflection.PropertyInfo
+  _cached;`. The `using System.Reflection;` directive itself is fine; only
+  field-typed-via-short-name breaks.
+- Same NRE hits a `catch (ReflectionTypeLoadException ex)` clause when
+  `using System.Reflection;` is in scope. Fully-qualify the exception
+  type: `catch (System.Reflection.ReflectionTypeLoadException ex)`.
+- `System.Xml.XmlDocument` / `XmlNode` / `XmlElement` are not in the
+  `Unity_RunCommand` compile context (CS1069, forwarded to `System.Xml.dll`).
+  Parse XML with `string.IndexOf` scans instead.
+- `System.Text.RegularExpressions.Regex` / `Match` are likewise unavailable
+  (CS0103 for `Regex`/`RegexOptions`, CS1069 for `Match`). A `using
+  System.Text.RegularExpressions;` directive compiles, but the types resolve
+  to nothing usable. Use `string` methods or a hand-written scanner.
 - `Newtonsoft.Json` is not available in the dynamic compile context even
   when `com.unity.nuget.newtonsoft-json` is installed. Use the MiniJson
   serializer in `_shared/execution_result.md`.

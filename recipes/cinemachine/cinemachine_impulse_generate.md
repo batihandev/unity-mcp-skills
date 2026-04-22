@@ -23,13 +23,14 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using Newtonsoft.Json.Linq;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string sourceParams = "{\"velocity\": {\"x\": 0, \"y\": -1, \"z\": 0}}";
+        // sourceParams accepts a JsonUtility-parseable shape: {"velocity":{"x":0,"y":-1,"z":0}}
+        string sourceParams = "{\"velocity\":{\"x\":0,\"y\":-1,\"z\":0}}";
 
         var sources = FindHelper.FindAll<CinemachineImpulseSource>();
         if (sources.Length == 0)
@@ -45,12 +46,9 @@ internal class CommandScript : IRunCommand
         {
             try
             {
-                var json = JObject.Parse(sourceParams);
-                if (json["velocity"] != null)
-                {
-                    var v = json["velocity"];
-                    velocity = new Vector3((float)v["x"], (float)v["y"], (float)v["z"]);
-                }
+                var parsed = JsonUtility.FromJson<_ImpulseParams>(sourceParams);
+                if (parsed != null && parsed.velocity != null)
+                    velocity = new Vector3(parsed.velocity.x, parsed.velocity.y, parsed.velocity.z);
             }
             catch (System.Exception ex)
             {
@@ -62,4 +60,11 @@ internal class CommandScript : IRunCommand
         result.SetResult(new { success = true, message = "Generated Impulse from " + source.name + " with velocity " + velocity });
     }
 }
+
+// Named serializable types so JsonUtility can round-trip them (no anonymous / Newtonsoft).
+[System.Serializable]
+internal class _ImpulseParams { public _ImpulseVelocity velocity; }
+
+[System.Serializable]
+internal class _ImpulseVelocity { public float x; public float y; public float z; }
 ```

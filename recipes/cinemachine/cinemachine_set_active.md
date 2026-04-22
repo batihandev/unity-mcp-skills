@@ -7,9 +7,8 @@ Force a VCam to become the active camera by giving it a priority higher than all
 **Returns:** `{ success, message }` or `{ error }`
 
 **Notes:**
-- This sets `priority = maxExistingPriority + 1`. It does not revert other cameras.
+- This sets `Priority.Value = maxExistingPriority + 1`. It does not revert other cameras.
 - To revert, manually set the priority back with `cinemachine_set_priority`.
-- In CM3, priority is accessed via `Priority.Value`; the adapter handles this transparently.
 
 ## Prerequisites
 
@@ -21,6 +20,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -35,14 +35,20 @@ internal class CommandScript : IRunCommand
 
         WorkflowManager.SnapshotObject(go);
 
-        var vcam = CinemachineAdapter.GetVCam(go);
-        if (CinemachineAdapter.VCamOrError(vcam) is object vcamErr) { result.SetResult(vcamErr); return; }
+        var vcam = go.GetComponent<CinemachineCamera>();
+        if (vcam == null) { result.SetResult(new { error = "Not a CinemachineCamera" }); return; }
 
-        int maxPrio = CinemachineAdapter.GetMaxPriority();
-        CinemachineAdapter.SetPriority(vcam, maxPrio + 1);
+        int maxPrio = 0;
+        foreach (var other in FindHelper.FindAll<CinemachineCamera>())
+        {
+            int p = other.Priority.Value;
+            if (p > maxPrio) maxPrio = p;
+        }
+
+        vcam.Priority.Value = maxPrio + 1;
         EditorUtility.SetDirty(vcam);
 
-        result.SetResult(new { success = true, message = "Set Priority to " + CinemachineAdapter.GetPriority(vcam) + " (Highest)" });
+        result.SetResult(new { success = true, message = "Set Priority to " + vcam.Priority.Value + " (Highest)" });
     }
 }
 ```

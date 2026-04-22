@@ -22,6 +22,8 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -53,7 +55,17 @@ internal class CommandScript : IRunCommand
 
         WorkflowManager.SnapshotObject(go);
         Undo.RecordObject(stateCam, "Add Instruction");
-        CinemachineAdapter.AddStateDrivenInstruction(stateCam, hash, childVcam, minDuration, activateAfter);
+
+        var list = new List<CinemachineStateDrivenCamera.Instruction>();
+        if (stateCam.Instructions != null) list.AddRange(stateCam.Instructions);
+        list.Add(new CinemachineStateDrivenCamera.Instruction
+        {
+            FullHash = hash,
+            Camera = childVcam,
+            MinDuration = minDuration,
+            ActivateAfter = activateAfter
+        });
+        stateCam.Instructions = list.ToArray();
         EditorUtility.SetDirty(stateCam);
 
         result.SetResult(new { success = true, message = "Added instruction: " + stateName + " -> " + childGo.name });

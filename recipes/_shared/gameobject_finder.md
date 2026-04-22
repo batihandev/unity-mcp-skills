@@ -32,15 +32,9 @@ hierarchy path, tag, or component.
     {
         internal static T[] FindAll<T>(bool includeInactive = false) where T : UnityEngine.Object
         {
-#if UNITY_6000_0_OR_NEWER
             return includeInactive
                 ? UnityEngine.Object.FindObjectsByType<T>(UnityEngine.FindObjectsInactive.Include, UnityEngine.FindObjectsSortMode.None)
                 : UnityEngine.Object.FindObjectsByType<T>(UnityEngine.FindObjectsSortMode.None);
-#else
-            return includeInactive
-                ? UnityEngine.Resources.FindObjectsOfTypeAll<T>()
-                : UnityEngine.Object.FindObjectsOfType<T>();
-#endif
         }
     }
 

@@ -1,46 +1,66 @@
 # gameobject_set_transform_batch
 
-Set transform properties for multiple objects in one call.
+Set transform properties for multiple objects in one call via a typed item array.
 
-**Signature:** `GameObjectSetTransformBatch(string items)`
-
-`items`: JSON array of objects. Each item supports all of the same fields as `gameobject_set_transform`: `name`, `instanceId`, `path`, `posX/Y/Z`, `rotX/Y/Z`, `scaleX/Y/Z`, `localPosX/Y/Z`, and the full set of RectTransform fields (`anchoredPosX/Y`, `anchorMinX/Y`, `anchorMaxX/Y`, `pivotX/Y`, `sizeDeltaX/Y`, `width`, `height`).
+**Signature:** `GameObjectSetTransformBatch(BatchTransformItem[] items)`
 
 **Returns:** `{ success, totalItems, successCount, failCount, results: [{ success, name, pos: { x, y, z } }] }`
 
 ## Notes
 
-- Per-item return key for position is `pos` (not `position`).
-- UI (RectTransform) properties are supported per-item, same as the single variant.
+- Define one `BatchTransformItem` per object to modify. Every transform field is nullable — unset fields leave the current value untouched.
+- RectTransform fields (`anchoredPosX/Y`, `anchorMinX/Y`, `anchorMaxX/Y`, `pivotX/Y`, `sizeDeltaX/Y`, `width`, `height`) only apply when the target has a `RectTransform`.
 - A missing object causes that item to fail without stopping the rest.
 
 ## Prerequisites
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
 
 ## Recipe
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchTransformItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public float? posX, posY, posZ;
+    public float? localPosX, localPosY, localPosZ;
+    public float? rotX, rotY, rotZ;
+    public float? scaleX, scaleY, scaleZ;
+    public float? anchoredPosX, anchoredPosY;
+    public float? anchorMinX, anchorMinY;
+    public float? anchorMaxX, anchorMaxY;
+    public float? pivotX, pivotY;
+    public float? sizeDeltaX, sizeDeltaY;
+    public float? width, height;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Cube1"", ""posX"": 0, ""posY"": 1, ""posZ"": 0 },
-            { ""name"": ""Cube2"", ""posX"": 3, ""rotY"": 45, ""scaleX"": 2, ""scaleY"": 2, ""scaleZ"": 2 },
-            { ""instanceId"": 12345, ""localPosX"": 1, ""localPosY"": 0, ""localPosZ"": 0 }
-        ]";
-
-        { result.SetResult(BatchExecutor.Execute<BatchTransformItem>(items, item =>
+        var items = new[]
         {
-            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Object not found");
+            new _BatchTransformItem { name = "Cube1", posX = 0, posY = 1, posZ = 0 },
+            new _BatchTransformItem { name = "Cube2", posX = 3, rotY = 45, scaleX = 2, scaleY = 2, scaleZ = 2 },
+            new _BatchTransformItem { instanceId = 12345, localPosX = 1, localPosY = 0, localPosZ = 0 },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { success = false, name = item.name ?? item.path, error = err }); failCount++; continue; }
 
             WorkflowManager.SnapshotObject(go.transform);
             Undo.RecordObject(go.transform, "Batch Set Transform");
@@ -75,13 +95,30 @@ internal class CommandScript : IRunCommand
                     rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, item.height.Value);
             }
 
-            return new
+            results.Add(new
             {
                 success = true,
                 name = go.name,
                 pos = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z }
-            };
-        }, item => item.name ?? item.path)); return; }
+            });
+            successCount++;
+        }
+
+        result.SetResult(new { success = true, totalItems = items.Length, successCount, failCount, results });
+    }
+
+    private static bool TryMergeVector3(float? x, float? y, float? z, Vector3 current, out Vector3 result)
+    {
+        if (!x.HasValue && !y.HasValue && !z.HasValue) { result = current; return false; }
+        result = new Vector3(x ?? current.x, y ?? current.y, z ?? current.z);
+        return true;
+    }
+
+    private static bool TryMergeVector2(float? x, float? y, Vector2 current, out Vector2 result)
+    {
+        if (!x.HasValue && !y.HasValue) { result = current; return false; }
+        result = new Vector2(x ?? current.x, y ?? current.y);
+        return true;
     }
 }
 ```

@@ -101,9 +101,82 @@ MCP tools NOT used as retirement targets because their use case is narrower than
 
 ## Session 2 close state (live)
 
-**Gate counts:** ext 461/484, pre 461/484, comp 20/484, run 1/484, retired 23/484.
+**Gate counts after 2026-04-22 dirty-domain sweep:** ext 461/484, pre 461/484, **comp 109/484** (+73 from the dirty-domain resume — probuilder + xr + cinemachine moved fully green), run 11/484, retired 24/484, blockers 6/484.
 
-Tasks done session 2: 19, 11, 12, 13 (plus post-cleanup of skill-file phrasing in `a30f2c6` + recipe-file deletions in `698a45b`).
+### Dirty-domain resume sweep (2026-04-22)
+
+Three session-2 parallel subagents for Task 16 (probuilder / xr / cinemachine) had been killed before returning; their 74 rewritten files were on disk but unverified. This session re-smoked every recipe in all three domains end-to-end against live Unity MCP.
+
+**Results:** 61 recipes moved from `comp:-` / `comp:B` → `comp:x`. Zero remaining blockers.
+
+| Domain | Pending at start | Smoked green | Inline fixes applied |
+|---|---:|---:|---|
+| probuilder | 21 (+ 2 B) | 22/22 | `probuilder_create_batch` / `probuilder_set_vertices`: promoted nested `private class` → top-level `internal sealed class` (CS1527 reformatter fix). `probuilder_project_uv`: replaced `Type.GetMethod(name, BindingFlags, …)` with `GetMethods()`+filter loop (BindingFlags reformatter NRE). |
+| xr | 20 (+ 1 B) | 22/22 | Clean — agent-produced code compiled without edits. |
+| cinemachine | 32 (+ 1 B) | 34/34 | `cinemachine_list_components`: fully-qualified `catch (System.Reflection.ReflectionTypeLoadException …)` (short-name + `using System.Reflection;` triggers reformatter NRE). |
+
+### New reformatter gotchas discovered this sweep (CLAUDE.md updated)
+
+- Passing `BindingFlags` to `Type.GetMethod(name, flags, binder, types, modifiers)` triggers the same NRE as `BindingFlags.Public | BindingFlags.Instance`. Use parameterless `type.GetMethods()` + a `foreach` filter instead, or the `(name, Type[])` 2-arg overload.
+- `catch (ReflectionTypeLoadException ex)` with `using System.Reflection;` in scope trips the NRE. Fully-qualify the catch type.
+
+Tasks done session 2: 19, 11, 12, 13, **14, 15 (partial: 3 of 5 verification pilots + bonus gameobject_set_active_batch), 17, 18 (enumeration only), 21 (eligible pool only)**.
+
+### Task 17 — Unity 6000+ commit + deprecation replacements
+
+- 9 terrain recipes: `Object.FindObjectOfType<Terrain>()` → `Object.FindFirstObjectByType<Terrain>()`.
+- 2 cleaner recipes (`cleaner_find_missing_references`, `cleaner_fix_missing_scripts`): `Object.FindObjectsOfType<GameObject>()` → `Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None)`.
+- 4 recipes with `#if UNITY_6000_0_OR_NEWER` / `#if UNITY_6000_3_OR_NEWER` branches collapsed to the new-API-only path: `physics_create_material`, `physics_set_material`, `uitoolkit/uitk_get_panel_settings`, `_shared/gameobject_finder`.
+- `README.md` now carries a single-line Unity 6000+ requirement statement.
+- `rg '#if UNITY_|FindObjectsOfType<|FindObjectOfType<' recipes/` returns zero matches.
+
+### Task 18 — Reflection `[Obsolete]` sweep
+
+- One `Unity_RunCommand` script enumerated `[Obsolete]` types / members in the loaded UnityEngine / UnityEditor modules: **252 types, 6797 members**. Output written to `Temp/obsolete-sweep.tsv` in the Unity project.
+- Cross-checking every name against every recipe is deferred to Task 20, where `compilationLogs` from the full comp re-smoke naturally surfaces any obsolete-use warnings for the recipes we actually ship. Task 17 already covered the confirmed-by-web set (`FindObjectOfType`, `FindObjectsOfType`, `NavMeshBuilder`, `PhysicMaterial`, XRI 2 / CM2 shims).
+
+### Task 21 — Selective run gate on eligible read-only recipes
+
+- Ran 10 read-only recipes end-to-end via `Unity_RunCommand` (no `if (false)` wrap). Each executed without crashing, returned a sensible payload, tracker advanced to `run:x`:
+  - `project_get_layers` (8 layers), `editor_get_tags` (9 tags), `physics_get_gravity`, `debug_get_defines`, `light_get_lightmap_settings`, `shader_list` (298 shaders), `smart_select_by_component` (1 camera), `validate_shader_errors` (6 errors in 298 shaders), `optimize_find_large_assets` (5 ≥1 MB), `scriptableobject_find` (1149 SOs).
+- Further read-only recipes (66 `*_get_*`, plus `*_list` / `*_find*` / `*_check_*`) are still `comp:-` or `comp:B` pending Task 16 helper inlining; they'll re-enter the Task 21 pool after Task 20's comp re-smoke.
+
+### Task 14 complete
+
+Pilots comp-green per domain:
+
+| Domain | Pilot recipe | Notes |
+|---|---|---|
+| navmesh | `navmesh_bake`, `navmesh_clear` | rewrote both to `NavMeshSurface.BuildNavMesh()` / `.RemoveData()` |
+| probuilder | `probuilder_get_info` | inlined `GetShapeTypeName` reflection helper; discovered + documented reformatter gotcha (static fields typed as short-name `PropertyInfo` trigger NRE; fully-qualify as `System.Reflection.PropertyInfo`) |
+| xr | `xr_setup_event_system` | direct `XRUIInputModule` from `UnityEngine.XR.Interaction.Toolkit.UI`; `XRReflectionHelper.ResolveXRType` removed |
+| cinemachine | `cinemachine_set_priority` | direct `CinemachineCamera.Priority.Value`; `CinemachineAdapter.{GetVCam,VCamOrError,SetPriority}` removed |
+
+Mechanical gate strips applied:
+
+- `recipes/probuilder/*.md` — 22 files, `#if !PROBUILDER / NoProBuilder() / #else / #endif` wrapper removed via `/tmp/strip_pbgate.py`. Inner bodies still reference upstream private helpers (`FindProBuilderMesh`, `CreatePBShape`, `ShapeTypeMap`, `GetShapeTypeName`, `SelectFaces`, etc.) that must be inlined in Task 16 per recipe.
+- `recipes/xr/*.md` — 22 files, `#if !XRI / NoXRI() / #else / #endif` wrapper removed via `/tmp/strip_xrigate.py`. Inner bodies still reference `XRReflectionHelper.*` surface (ResolveXRType/AddXRComponent/SetProperty/SetEnumProperty/GetProperty/GetEnumValues/GetComponentInfo/FindComponentsOfXRType/GetXRComponent/IsXRIInstalled/XRIMajorVersion) — pattern is in Task 16 scope; each call needs per-recipe replacement with typed XRI 3 API.
+- `recipes/cinemachine/*.md` — 24 files have 84 `CinemachineAdapter.*` calls + some `#if CINEMACHINE_2/3` gates. Not yet stripped; Task 20 per-domain sweep is the right vehicle. Mappings for the adapter surface: `GetVCam` → `GetComponent<CinemachineCamera>`, `VCamOrError` → inline null check, `GetFollow/SetFollow/GetLookAt/SetLookAt` → `.Follow`/`.LookAt` properties, `GetPriority/SetPriority` → `.Priority.Value`, `GetLens/SetLens` → `.Lens` property, reflection-based `FindCinemachineType`/`GetPipelineComponent`/`SetBrainBool` need case-by-case handling.
+
+### Reformatter gotcha discovered this session
+
+A static field typed as `PropertyInfo` (i.e. short name from `using System.Reflection;`) triggers the `Unity_RunCommand` reformatter NRE. Field-level typing only — method parameters and locals are fine. Fix: fully-qualify the field type as `System.Reflection.PropertyInfo`. Added to `CLAUDE.md` Gotchas section.
+
+### Task 15 partial — batch pilot pattern established
+
+Verified pattern (comp-green: `gameobject_set_transform_batch`, `prefab_instantiate_batch`, `material_assign_batch`, `gameobject_set_active_batch`):
+
+1. Declare the item struct as `internal sealed class _BatchFooItem { ... }` at top-level (NOT nested inside `CommandScript` — the reformatter duplicates `private` nested classes to namespace scope and emits CS1527).
+2. `items` becomes a typed array literal `new[] { new _BatchFooItem { ... }, ... }`, not a JSON string.
+3. Body is a `foreach (var item in items)` loop; per-item errors go into `results.Add(new { success = false, ... }); failCount++; continue;` instead of `throw`.
+4. Final `result.SetResult(new { success = true, totalItems, successCount, failCount, results });`.
+5. No `JsonConvert.DeserializeObject`, no `BatchExecutor`, no `SkillResultHelper`.
+
+Remaining batch recipes still using `BatchExecutor.Execute<T>`: ~28 files. These fall into two categories:
+- **Simple** (per-item logic is already inline in the upstream lambda): same mechanical pattern as the 4 pilots. `gameobject_set_layer_batch`, `gameobject_set_tag_batch`, `gameobject_set_parent_batch`, `gameobject_rename_batch`, `gameobject_delete_batch`, `gameobject_duplicate_batch`, `gameobject_create_batch`, `light_set_enabled_batch`, `light_set_properties_batch`, `material_set_colors_batch`, `material_set_emission_batch`, `material_create_batch`, `scriptableobject_set_batch`, `terrain_set_heights_batch`, `asset_delete_batch`, `asset_move_batch`, `asset_import_batch`, `asset_reimport_batch`, `importer/*_batch`, `component_*_batch`.
+- **Compound** (per-item calls an undefined upstream method that must itself be inlined from its non-batch sibling): `event_add_listener_batch`, `uitk_create_batch`, `ui_create_batch`, `probuilder_create_batch`. These are Task 16 scope (inline upstream siblings).
+
+Verification targets from plan: 3 of 5 delivered (material_assign_batch, prefab_instantiate_batch, gameobject_set_transform_batch). `event_add_listener_batch` and `uitk_create_batch` are compound — Task 16.
 
 ## Next session — start here
 

@@ -24,6 +24,8 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -42,8 +44,8 @@ internal class CommandScript : IRunCommand
         var (go, err) = GameObjectFinder.FindOrError(sequencerName, sequencerInstanceId, sequencerPath);
         if (err != null) { result.SetResult(err); return; }
 
-        var seq = CinemachineAdapter.GetSequencer(go);
-        if (seq == null) { result.SetResult(new { error = "Not a " + CinemachineAdapter.SequencerTypeName }); return; }
+        var seq = go.GetComponent<CinemachineSequencerCamera>();
+        if (seq == null) { result.SetResult(new { error = "Not a CinemachineSequencerCamera" }); return; }
 
         var (childGo, childErr) = GameObjectFinder.FindOrError(childCameraName, childInstanceId, childPath);
         if (childErr != null) { result.SetResult(childErr); return; }
@@ -54,11 +56,21 @@ internal class CommandScript : IRunCommand
         WorkflowManager.SnapshotObject(go);
         Undo.RecordObject(seq, "Add Sequencer Instruction");
 
-        var blend = CinemachineAdapter.CreateBlendDefinition(blendStyle, blendTime);
-        CinemachineAdapter.AddSequencerInstruction(seq, childVcam, hold, blend);
+        var blend = new CinemachineBlendDefinition { Time = blendTime };
+        if (System.Enum.TryParse<CinemachineBlendDefinition.Styles>(blendStyle, true, out var parsed))
+            blend.Style = parsed;
+
+        if (seq.Instructions == null)
+            seq.Instructions = new List<CinemachineSequencerCamera.Instruction>();
+        seq.Instructions.Add(new CinemachineSequencerCamera.Instruction
+        {
+            Camera = childVcam,
+            Hold = hold,
+            Blend = blend
+        });
         EditorUtility.SetDirty(seq);
 
-        int count = CinemachineAdapter.GetSequencerInstructionCount(seq);
+        int count = seq.Instructions.Count;
         result.SetResult(new
         {
             success = true,

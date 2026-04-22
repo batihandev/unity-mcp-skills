@@ -5,6 +5,10 @@ description: "Use when users want to bake NavMesh or calculate paths for AI navi
 
 # NavMesh Skills
 
+## Requirements
+
+- `com.unity.ai.navigation` (≥ 2.0). `navmesh_bake` and `navmesh_clear` operate on `NavMeshSurface` components in the active scene — the scene must contain at least one `NavMeshSurface` for a bake to do anything.
+
 ## Overview
 
 Baking and pathfinding.

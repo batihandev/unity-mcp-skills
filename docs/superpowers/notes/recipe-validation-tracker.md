@@ -16,8 +16,8 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **484**
 - ext: **462** / 484
 - pre: **462** / 484
-- comp: **19** / 484
-- run: **1** / 484
+- comp: **109** / 484
+- run: **11** / 484
 - retired: **22** / 484
 
 ## Domains
@@ -80,40 +80,40 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| cinemachine_add_component | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_add_extension | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_configure_aim | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_configure_body | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_configure_camera_manager | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_configure_extension | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_configure_impulse_source | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_create_clear_shot | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_create_freelook | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_create_mixing_camera | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_create_sequencer | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_create_state_driven_camera | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_create_target_group | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_create_vcam | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_get_brain_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_impulse_generate | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_inspect_vcam | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_list_components | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses CinemachineAdapter.CmAssembly — upstream helper not ported |
-| cinemachine_mixing_camera_set_weight | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_remove_extension | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_sequencer_add_instruction | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_active | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_blend | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_brain | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_component | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_lens | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_noise | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_priority | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_spline | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_targets | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_set_vcam_property | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_state_driven_camera_add_instruction | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_target_group_add_member | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| cinemachine_target_group_remove_member | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| cinemachine_add_component | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: direct CinemachineCamera API |
+| cinemachine_add_extension | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: direct CinemachineExtension type probe |
+| cinemachine_configure_aim | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineRotationComposer.Composition direct API |
+| cinemachine_configure_body | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineFollow.FollowOffset direct API |
+| cinemachine_configure_camera_manager | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: ClearShot/StateDriven/Sequencer direct API |
+| cinemachine_configure_extension | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: Confiner/FollowZoom/GroupFraming reflection direct |
+| cinemachine_configure_impulse_source | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: ImpulseDefinition nested reflection |
+| cinemachine_create_clear_shot | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: Undo.AddComponent<CinemachineClearShot> |
+| cinemachine_create_freelook | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CM3 FreeLook rig direct API |
+| cinemachine_create_mixing_camera | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: Undo.AddComponent<CinemachineMixingCamera> |
+| cinemachine_create_sequencer | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineSequencerCamera.Loop direct API |
+| cinemachine_create_state_driven_camera | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineStateDrivenCamera.AnimatedTarget direct |
+| cinemachine_create_target_group | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineTargetGroup direct |
+| cinemachine_create_vcam | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineCamera + CinemachineBrain direct API |
+| cinemachine_get_brain_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineBrain.ActiveVirtualCamera/ActiveBlend direct |
+| cinemachine_impulse_generate | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: source.GenerateImpulse + JsonUtility direct |
+| cinemachine_inspect_vcam | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineCamera.Follow/LookAt/Priority.Value/Lens direct |
+| cinemachine_list_components | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses CinemachineAdapter.CmAssembly — upstream helper not ported; 2026-04-22: Task 16: fully-qualify ReflectionTypeLoadException to dodge reformatter NRE |
+| cinemachine_mixing_camera_set_weight | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: mixer.SetWeight direct API |
+| cinemachine_remove_extension | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: type probe + Undo.DestroyObjectImmediate direct |
+| cinemachine_sequencer_add_instruction | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: seq.Instructions + Instruction/BlendDefinition direct |
+| cinemachine_set_active | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: Priority.Value max+1 direct |
+| cinemachine_set_blend | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineBrain.DefaultBlend direct |
+| cinemachine_set_brain | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineBrain all props direct |
+| cinemachine_set_component | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: vcam.GetCinemachineComponent direct |
+| cinemachine_set_lens | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: vcam.Lens direct API |
+| cinemachine_set_noise | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineBasicMultiChannelPerlin direct |
+| cinemachine_set_priority | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: direct CM3 CinemachineCamera.Priority.Value (Task 14 pilot) |
+| cinemachine_set_spline | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: CinemachineSplineDolly.Spline direct |
+| cinemachine_set_targets | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: vcam.Follow/LookAt direct |
+| cinemachine_set_vcam_property | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: GetFields()+FirstOrDefault + Convert.ChangeType direct |
+| cinemachine_state_driven_camera_add_instruction | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: StateDrivenCamera.Instructions array direct |
+| cinemachine_target_group_add_member | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: TargetGroup.AddMember/RemoveMember direct |
+| cinemachine_target_group_remove_member | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: TargetGroup.RemoveMember direct |
 
 ## cleaner (10 recipes)
 
@@ -160,7 +160,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | console_start_capture | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | console_stop_capture | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | debug_force_recompile | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| debug_get_defines | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| debug_get_defines | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: defines returned (Task 21) |
 | debug_set_defines | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 
 ## editor (12 recipes)
@@ -172,9 +172,9 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | editor_get_layers | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | editor_get_selection | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | editor_get_state | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_get_tags | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| editor_get_tags | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 9 tags returned (Task 21) |
 | editor_pause | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| editor_play | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| editor_play | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | editor_redo | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | editor_select | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | editor_stop | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -216,7 +216,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | gameobject_set_parent_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | gameobject_set_tag_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | gameobject_set_transform | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| gameobject_set_transform_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| gameobject_set_transform_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: BatchExecutor removed, typed _BatchTransformItem + foreach (Task 15 pilot) |
 
 ## importer (39 recipes)
 
@@ -271,7 +271,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | light_create | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | light_find_all | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | light_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| light_get_lightmap_settings | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| light_get_lightmap_settings | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: Task 21 |
 | light_set_enabled | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | light_set_enabled_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | light_set_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -282,7 +282,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
 | material_assign | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| material_assign_batch | x | x | B | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses BatchExecutor + SkillResultHelper not in _shared |
+| material_assign_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses BatchExecutor + SkillResultHelper not in _shared; 2026-04-21: BatchExecutor removed, typed item + foreach (Task 15 pilot) |
 | material_create | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_create_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | material_duplicate | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
@@ -309,9 +309,9 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 |---|---|---|---|---|---|
 | navmesh_add_agent | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | navmesh_add_obstacle | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| navmesh_bake | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| navmesh_bake | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: NavMeshSurface rewrite (Task 14) |
 | navmesh_calculate_path | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| navmesh_clear | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| navmesh_clear | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: NavMeshSurface rewrite (Task 14) |
 | navmesh_get_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | navmesh_sample_position | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | navmesh_set_agent | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -326,7 +326,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | optimize_analyze_scene | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | optimize_audio_compression | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | optimize_find_duplicate_materials | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| optimize_find_large_assets | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| optimize_find_large_assets | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 5 large assets (Task 21) |
 | optimize_get_static_flags | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | optimize_mesh_compression | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | optimize_set_lod_group | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -379,7 +379,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | physics_boxcast | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | physics_check_overlap | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | physics_create_material | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| physics_get_gravity | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| physics_get_gravity | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: (0,-9.81,0) returned (Task 21) |
 | physics_get_layer_collision | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | physics_overlap_box | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | physics_raycast | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -400,7 +400,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | prefab_find_instances | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | prefab_get_overrides | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | prefab_instantiate | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| prefab_instantiate_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| prefab_instantiate_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: BatchExecutor removed, typed _PrefabInstantiateItem + foreach (Task 15 pilot) |
 | prefab_revert_overrides | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | prefab_set_property | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | prefab_unpack | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
@@ -409,28 +409,28 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| probuilder_bevel_edges | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_bridge_edges | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_center_pivot | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_combine_meshes | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: bridge-stub extract carries upstream issues: local 'result' var shadows ExecutionResult param; uses #if !PROBUILDER + upstream helpers (NoProBuilder, CombineMeshes.Combine) not in _shared |
-| probuilder_conform_normals | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_create_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_create_shape | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_delete_faces | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_detach_faces | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_extrude_edges | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_extrude_faces | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_flip_normals | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_get_vertices | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_merge_faces | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_move_vertices | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_project_uv | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_set_face_material | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_set_material | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_set_vertices | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_subdivide | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| probuilder_weld_vertices | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| probuilder_bevel_edges | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: direct ProBuilder API + Bevel.BevelEdges; dirty-domain re-verify |
+| probuilder_bridge_edges | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.Bridge direct API |
+| probuilder_center_pivot | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.SetPivot/CenterPivot direct API |
+| probuilder_combine_meshes | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: bridge-stub extract carries upstream issues: local 'result' var shadows ExecutionResult param; uses #if !PROBUILDER + upstream helpers (NoProBuilder, CombineMeshes.Combine) not in _shared; 2026-04-22: Task 16: CombineMeshes.Combine direct API; previous B cleared |
+| probuilder_conform_normals | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.ConformNormals direct API |
+| probuilder_create_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: promoted _PBBatchItem to top-level (CS1527 fix); ShapeFactory.Instantiate direct API |
+| probuilder_create_shape | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: ShapeFactory.Instantiate direct API |
+| probuilder_delete_faces | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.DeleteFaces direct API |
+| probuilder_detach_faces | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.DetachFaces direct API |
+| probuilder_extrude_edges | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.Extrude(edges) direct API |
+| probuilder_extrude_faces | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.Extrude(faces, method) direct API |
+| probuilder_flip_normals | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: face.Reverse() direct API |
+| probuilder_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: PropertyInfo gotcha: fully-qualify static fields (Task 14 pilot) |
+| probuilder_get_vertices | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.positions direct API |
+| probuilder_merge_faces | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: MergeElements.Merge direct API |
+| probuilder_move_vertices | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.positions = array direct API |
+| probuilder_project_uv | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: GetMethods()+filter (avoid GetMethod+BindingFlags reformatter NRE) |
+| probuilder_set_face_material | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: face.submeshIndex + renderer.sharedMaterials direct API |
+| probuilder_set_material | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: renderer.sharedMaterial direct API |
+| probuilder_set_vertices | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: promoted _VertexPos top-level; pbMesh.positions = array |
+| probuilder_subdivide | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: ConnectElements.Connect direct API |
+| probuilder_weld_vertices | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: pbMesh.WeldVertices direct API |
 
 ## project (11 recipes)
 
@@ -439,7 +439,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | project_add_tag | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_build_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| project_get_layers | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| project_get_layers | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 8 layers returned (Task 21) |
 | project_get_packages | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_player_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | project_get_quality_settings | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -484,7 +484,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | scriptableobject_delete | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scriptableobject_duplicate | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scriptableobject_export_json | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scriptableobject_find | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| scriptableobject_find | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 1149 SOs (Task 21) |
 | scriptableobject_get | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scriptableobject_import_json | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | scriptableobject_list_types | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -503,7 +503,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | shader_get_keywords | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | shader_get_properties | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | shader_get_variant_count | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| shader_list | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; lambda-transform fix |
+| shader_list | x | x | x | x | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; lambda-transform fix; 2026-04-21: Task 21 |
 | shader_read | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | shader_set_global_keyword | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
 
@@ -519,7 +519,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | smart_scene_layout | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | smart_scene_query | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | smart_scene_query_spatial | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| smart_select_by_component | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| smart_select_by_component | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: Task 21 |
 | smart_snap_to_grid | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 
 ## terrain (10 recipes)
@@ -541,17 +541,17 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| test_cancel | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| test_create_editmode | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| test_create_playmode | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| test_get_last_result | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| test_get_result | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| test_get_summary | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined private helpers EnumerateRealTestRuns/GetResultInt/GetResultStringList from upstream TestSkills |
+| test_cancel | x | x | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired: TestRunnerApi has no public hard-cancel surface |
+| test_create_editmode | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
+| test_create_playmode | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
+| test_get_last_result | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
+| test_get_result | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
+| test_get_summary | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined private helpers EnumerateRealTestRuns/GetResultInt/GetResultStringList from upstream TestSkills; 2026-04-21: Task 5 async redesign |
 | test_list | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | test_list_categories | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined DiscoverTests helper from upstream TestSkills |
-| test_run | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| test_run_by_name | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| test_smoke_skills | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| test_run | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
+| test_run_by_name | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
+| test_smoke_skills | x | x | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired: depended on upstream REST SkillRegistry |
 
 ## timeline (12 recipes)
 
@@ -643,33 +643,33 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | validate_missing_references | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | validate_project_structure | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | validate_scene | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| validate_shader_errors | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
+| validate_shader_errors | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-21: 6 errors across 298 shaders (Task 21) |
 | validate_texture_sizes | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 
 ## xr (22 recipes)
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| xr_add_direct_interactor | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_add_grab_interactable | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_add_interaction_event | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_add_ray_interactor | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_add_simple_interactable | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_add_socket_interactor | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_add_teleport_anchor | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_add_teleport_area | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_check_setup | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_configure_haptics | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_configure_interactable | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_configure_interaction_layers | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_get_scene_report | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_list_interactables | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_list_interactors | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_setup_continuous_move | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_setup_event_system | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_setup_interaction_manager | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: #if !XRI gate + undefined NoXRI/XRReflectionHelper upstream helpers; references undeclared name param |
-| xr_setup_rig | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_setup_teleportation | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_setup_turn_provider | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| xr_setup_ui_canvas | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| xr_add_direct_interactor | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRDirectInteractor direct API |
+| xr_add_grab_interactable | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRGrabInteractable + XRBaseInteractable.MovementType direct API |
+| xr_add_interaction_event | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: UnityEventTools.AddVoidPersistentListener direct API |
+| xr_add_ray_interactor | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRRayInteractor + XRInteractorLineVisual direct API |
+| xr_add_simple_interactable | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRSimpleInteractable direct API |
+| xr_add_socket_interactor | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRSocketInteractor direct API |
+| xr_add_teleport_anchor | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: TeleportationAnchor + MatchOrientation direct API |
+| xr_add_teleport_area | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: TeleportationArea direct API |
+| xr_check_setup | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: direct XRI 3 types + FindFirstObjectByType migrations |
+| xr_configure_haptics | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRRayInteractor/XRDirectInteractor haptic props direct |
+| xr_configure_interactable | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRBaseInteractable.selectMode + XRGrabInteractable props direct |
+| xr_configure_interaction_layers | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: InteractionLayerMask.GetMask direct API |
+| xr_get_scene_report | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRI 3 type enumeration + FindObjectsByType direct API |
+| xr_list_interactables | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRGrabInteractable/XRSimpleInteractable direct API |
+| xr_list_interactors | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XRRayInteractor/XRDirectInteractor/XRSocketInteractor/NearFarInteractor direct API |
+| xr_setup_continuous_move | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: ContinuousMoveProvider direct API |
+| xr_setup_event_system | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: XRI3 direct types, XRReflectionHelper removed (Task 14 pilot) |
+| xr_setup_interaction_manager | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: #if !XRI gate + undefined NoXRI/XRReflectionHelper upstream helpers; references undeclared name param; 2026-04-22: Task 16: XRInteractionManager direct API (B cleared) |
+| xr_setup_rig | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: XROrigin rig build direct API |
+| xr_setup_teleportation | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: TeleportationProvider direct API |
+| xr_setup_turn_provider | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: SnapTurnProvider/ContinuousTurnProvider direct API |
+| xr_setup_ui_canvas | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: TrackedDeviceGraphicRaycaster direct API |
 

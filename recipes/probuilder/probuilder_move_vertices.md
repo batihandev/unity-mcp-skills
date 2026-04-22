@@ -16,58 +16,90 @@ Offset vertices by a delta vector on a ProBuilder mesh.
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError(...)`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
+**Requires:** `com.unity.probuilder` package.
 
 ## Recipe
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.ProBuilder;
+using System.Collections.Generic;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !PROBUILDER
-                    { result.SetResult(NoProBuilder()); return; }
-        #else
-                    var (pbMesh, err) = FindProBuilderMesh(name, instanceId, path);
-                    if (err != null) { result.SetResult(err); return; }
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        string vertexIndexes = null;
+        float deltaX = 0, deltaY = 0, deltaZ = 0;
 
-                    if (string.IsNullOrEmpty(vertexIndexes))
-                        { result.SetResult(new { error = "vertexIndexes is required (comma-separated, e.g. \"4,5,6,7\" for top vertices of a Cube)" }); return; }
+        var (pbMesh, err) = FindProBuilderMesh(name, instanceId, path);
+        if (err != null) { result.SetResult(err); return; }
 
-                    var indices = ParseIntList(vertexIndexes);
-                    if (indices == null || indices.Count == 0)
-                        { result.SetResult(new { error = "Invalid vertexIndexes format" }); return; }
+        if (string.IsNullOrEmpty(vertexIndexes))
+        { result.SetResult(new { error = "vertexIndexes is required (comma-separated, e.g. \"4,5,6,7\" for top vertices of a Cube)" }); return; }
 
-                    var positions = pbMesh.positions;
-                    var validIndices = indices.Where(i => i >= 0 && i < positions.Count).ToList();
-                    if (validIndices.Count == 0)
-                        { result.SetResult(new { error = $"No valid vertex indices. Mesh has {positions.Count} vertices (0-{positions.Count - 1})." }); return; }
+        var indices = ParseIntList(vertexIndexes);
+        if (indices == null || indices.Count == 0)
+        { result.SetResult(new { error = "Invalid vertexIndexes format" }); return; }
 
-                    Undo.RecordObject(pbMesh, "Move Vertices");
-                    WorkflowManager.SnapshotObject(pbMesh);
+        var positions = pbMesh.positions;
+        var validIndices = indices.Where(i => i >= 0 && i < positions.Count).ToList();
+        if (validIndices.Count == 0)
+        { result.SetResult(new { error = "No valid vertex indices. Mesh has " + positions.Count + " vertices (0-" + (positions.Count - 1) + ")." }); return; }
 
-                    var delta = new Vector3(deltaX, deltaY, deltaZ);
-                    var newPositions = positions.ToArray();
-                    foreach (var idx in validIndices)
-                        newPositions[idx] += delta;
-                    pbMesh.positions = newPositions;
+        Undo.RecordObject(pbMesh, "Move Vertices");
+        WorkflowManager.SnapshotObject(pbMesh);
 
-                    pbMesh.ToMesh();
-                    pbMesh.Refresh();
+        var delta = new Vector3(deltaX, deltaY, deltaZ);
+        var newPositions = positions.ToArray();
+        foreach (var idx in validIndices)
+            newPositions[idx] += delta;
+        pbMesh.positions = newPositions;
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = pbMesh.gameObject.name,
-                        instanceId = pbMesh.gameObject.GetInstanceID(),
-                        movedVertexCount = validIndices.Count,
-                        delta = new { x = deltaX, y = deltaY, z = deltaZ },
-                        totalVertices = pbMesh.vertexCount
-                    }); return; }
-        #endif
+        pbMesh.ToMesh();
+        pbMesh.Refresh();
+
+        result.SetResult(new
+        {
+            success = true,
+            name = pbMesh.gameObject.name,
+            instanceId = pbMesh.gameObject.GetInstanceID(),
+            movedVertexCount = validIndices.Count,
+            delta = new { x = deltaX, y = deltaY, z = deltaZ },
+            totalVertices = pbMesh.vertexCount
+        });
+    }
+
+    private static (ProBuilderMesh mesh, object error) FindProBuilderMesh(string fname, int fid, string fpath)
+    {
+        var (go, findErr) = GameObjectFinder.FindOrError(fname, fid, fpath);
+        if (findErr != null) return (null, findErr);
+
+        var pbMesh = go.GetComponent<ProBuilderMesh>();
+        if (pbMesh == null)
+            return (null, new { error = "GameObject '" + go.name + "' does not have a ProBuilderMesh component" });
+
+        return (pbMesh, null);
+    }
+
+    private static List<int> ParseIntList(string csv)
+    {
+        if (string.IsNullOrEmpty(csv)) return null;
+        var list = new List<int>();
+        foreach (var part in csv.Split(','))
+        {
+            if (int.TryParse(part.Trim(), out var val))
+                list.Add(val);
+        }
+        return list.Count > 0 ? list : null;
     }
 }
 ```

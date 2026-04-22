@@ -38,11 +38,7 @@ internal class CommandScript : IRunCommand
             return;
         }
 
-#if UNITY_6000_0_OR_NEWER
         var mat = new PhysicsMaterial(name)
-#else
-        var mat = new PhysicMaterial(name)
-#endif
         {
             dynamicFriction = dynamicFriction,
             staticFriction = staticFriction,

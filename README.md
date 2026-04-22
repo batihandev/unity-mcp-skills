@@ -6,6 +6,8 @@ It contains **skills** (per-system guardrails and routing) and **recipes** (read
 
 > **Work in progress.** Things may be incomplete or rough around the edges — use with that expectation.
 
+**Requires:** Unity 6000+ (Unity 6). Recipes use the new object-find APIs (`FindFirstObjectByType` / `FindObjectsByType`) and assume the single-package baseline versions documented in each domain skill's `## Requirements` block. Older Unity versions are not supported.
+
 ---
 
 ## Install

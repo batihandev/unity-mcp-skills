@@ -4,10 +4,11 @@ Read all properties from an existing PanelSettings asset.
 
 **Signature:** `UitkGetPanelSettings(assetPath string)`
 
-**Returns:** `{ path, scaleMode, referenceResolution, screenMatchMode, themeStyleSheet, textSettings, targetTexture, targetDisplay, sortingOrder, scale, match, referenceDpi, fallbackDpi, referenceSpritePixelsPerUnit, dynamicAtlasSettings, clearColor, colorClearValue, clearDepthStencil, [Unity 6+: renderMode, forceGammaRendering, bindingLogLevel, colliderUpdateMode, colliderIsTrigger, vertexBudget, textureSlotCount] }`
+**Returns:** `{ path, scaleMode, referenceResolution, screenMatchMode, themeStyleSheet, textSettings, targetTexture, targetDisplay, sortingOrder, scale, match, referenceDpi, fallbackDpi, referenceSpritePixelsPerUnit, dynamicAtlasSettings, clearColor, colorClearValue, clearDepthStencil, renderMode, forceGammaRendering, bindingLogLevel, colliderUpdateMode, colliderIsTrigger, vertexBudget, textureSlotCount }`
 
 **Notes:**
-- On Unity 6+, `renderMode`, `colliderUpdateMode`, and `colliderIsTrigger` are internal fields read via `SerializedObject`.
+- `renderMode`, `colliderUpdateMode`, and `colliderIsTrigger` are internal fields read via `SerializedObject`.
+- `textureSlotCount` requires Unity 6000.3+; earlier 6000.x returns only `vertexBudget`.
 
 ## Prerequisites
 
@@ -33,7 +34,6 @@ internal class CommandScript : IRunCommand
         var atlas = settings.dynamicAtlasSettings;
         var cc = settings.colorClearValue;
 
-#if UNITY_6000_0_OR_NEWER
         var so = new SerializedObject(settings);
         var rmProp = so.FindProperty("m_RenderMode");
         int rmVal = rmProp != null ? rmProp.intValue : 0;
@@ -62,10 +62,10 @@ internal class CommandScript : IRunCommand
             referenceSpritePixelsPerUnit = settings.referenceSpritePixelsPerUnit,
             dynamicAtlasSettings = new
             {
-                minAtlasSize    = atlas.minAtlasSize,
-                maxAtlasSize    = atlas.maxAtlasSize,
+                minAtlasSize      = atlas.minAtlasSize,
+                maxAtlasSize      = atlas.maxAtlasSize,
                 maxSubTextureSize = atlas.maxSubTextureSize,
-                activeFilters   = atlas.activeFilters.ToString()
+                activeFilters     = atlas.activeFilters.ToString()
             },
             clearColor          = settings.clearColor,
             colorClearValue     = new { r = cc.r, g = cc.g, b = cc.b, a = cc.a },
@@ -75,42 +75,8 @@ internal class CommandScript : IRunCommand
             bindingLogLevel     = settings.bindingLogLevel.ToString(),
             colliderUpdateMode  = colliderUpdateStr,
             colliderIsTrigger   = colliderIsTriggerVal,
-#if UNITY_6000_3_OR_NEWER
-            vertexBudget        = settings.vertexBudget,
-            textureSlotCount    = (int)settings.textureSlotCount
-#else
             vertexBudget        = settings.vertexBudget
-#endif
         });
-#else
-        result.SetResult(new
-        {
-            path = assetPath,
-            scaleMode = settings.scaleMode.ToString(),
-            referenceResolution = new { x = settings.referenceResolution.x, y = settings.referenceResolution.y },
-            screenMatchMode = settings.screenMatchMode.ToString(),
-            themeStyleSheet = settings.themeStyleSheet != null ? AssetDatabase.GetAssetPath(settings.themeStyleSheet) : null,
-            textSettings    = settings.textSettings    != null ? AssetDatabase.GetAssetPath(settings.textSettings)    : null,
-            targetTexture   = settings.targetTexture   != null ? AssetDatabase.GetAssetPath(settings.targetTexture)   : null,
-            targetDisplay   = settings.targetDisplay,
-            sortingOrder    = settings.sortingOrder,
-            scale           = settings.scale,
-            match           = settings.match,
-            referenceDpi    = settings.referenceDpi,
-            fallbackDpi     = settings.fallbackDpi,
-            referenceSpritePixelsPerUnit = typeof(PanelSettings).GetProperty("referenceSpritePixelsPerUnit")?.GetValue(settings),
-            dynamicAtlasSettings = new
-            {
-                minAtlasSize    = atlas.minAtlasSize,
-                maxAtlasSize    = atlas.maxAtlasSize,
-                maxSubTextureSize = atlas.maxSubTextureSize,
-                activeFilters   = atlas.activeFilters.ToString()
-            },
-            clearColor        = settings.clearColor,
-            colorClearValue   = new { r = cc.r, g = cc.g, b = cc.b, a = cc.a },
-            clearDepthStencil = settings.clearDepthStencil
-        });
-#endif
     }
 }
 ```

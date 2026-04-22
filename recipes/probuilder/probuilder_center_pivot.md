@@ -16,51 +16,71 @@ Center the pivot to mesh bounds, or move it to a specific world position.
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError(...)`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+
+**Requires:** `com.unity.probuilder` package.
 
 ## Recipe
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.ProBuilder;
+using UnityEngine.ProBuilder.MeshOperations;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !PROBUILDER
-                    { result.SetResult(NoProBuilder()); return; }
-        #else
-                    var (pbMesh, err) = FindProBuilderMesh(name, instanceId, path);
-                    if (err != null) { result.SetResult(err); return; }
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        float? worldX = null;
+        float? worldY = null;
+        float? worldZ = null;
 
-                    Undo.RecordObject(pbMesh.transform, "Center Pivot");
-                    Undo.RecordObject(pbMesh, "Center Pivot");
-                    WorkflowManager.SnapshotObject(pbMesh.gameObject);
+        var (pbMesh, err) = FindProBuilderMesh(name, instanceId, path);
+        if (err != null) { result.SetResult(err); return; }
 
-                    if (worldX.HasValue || worldY.HasValue || worldZ.HasValue)
-                    {
-                        var pos = pbMesh.transform.position;
-                        var worldPos = new Vector3(worldX ?? pos.x, worldY ?? pos.y, worldZ ?? pos.z);
-                        pbMesh.SetPivot(worldPos);
-                    }
-                    else
-                    {
-                        pbMesh.CenterPivot(null);
-                    }
+        Undo.RecordObject(pbMesh.transform, "Center Pivot");
+        Undo.RecordObject(pbMesh, "Center Pivot");
+        WorkflowManager.SnapshotObject(pbMesh.gameObject);
 
-                    pbMesh.ToMesh();
-                    pbMesh.Refresh();
+        if (worldX.HasValue || worldY.HasValue || worldZ.HasValue)
+        {
+            var pos = pbMesh.transform.position;
+            var worldPos = new Vector3(worldX ?? pos.x, worldY ?? pos.y, worldZ ?? pos.z);
+            pbMesh.SetPivot(worldPos);
+        }
+        else
+        {
+            pbMesh.CenterPivot(null);
+        }
 
-                    var newPos = pbMesh.transform.position;
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = pbMesh.gameObject.name,
-                        instanceId = pbMesh.gameObject.GetInstanceID(),
-                        pivot = new { x = newPos.x, y = newPos.y, z = newPos.z }
-                    }); return; }
-        #endif
+        pbMesh.ToMesh();
+        pbMesh.Refresh();
+
+        var newPos = pbMesh.transform.position;
+        result.SetResult(new
+        {
+            success = true,
+            name = pbMesh.gameObject.name,
+            instanceId = pbMesh.gameObject.GetInstanceID(),
+            pivot = new { x = newPos.x, y = newPos.y, z = newPos.z }
+        });
+    }
+
+    private static (ProBuilderMesh mesh, object error) FindProBuilderMesh(string name, int instanceId, string path)
+    {
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) return (null, findErr);
+
+        var pbMesh = go.GetComponent<ProBuilderMesh>();
+        if (pbMesh == null)
+            return (null, new { error = "GameObject '" + go.name + "' does not have a ProBuilderMesh component" });
+
+        return (pbMesh, null);
     }
 }
 ```

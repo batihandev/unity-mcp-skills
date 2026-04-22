@@ -1,6 +1,6 @@
 # cinemachine_set_component
 
-Switch the pipeline component for a given stage (Body, Aim, or Noise) on a VCam. Removes the existing component and adds the new one. **CM3 only** — for CM2 use `cinemachine_add_component`.
+Switch the pipeline component for a given stage (Body, Aim, or Noise) on a `CinemachineCamera`. Removes the existing component at that stage and adds the new one.
 
 **Signature:** `CinemachineSetComponent(string vcamName = null, int instanceId = 0, string path = null, string stage = null, string componentType = null)`
 
@@ -24,10 +24,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
-
-#if CINEMACHINE_3
 using Unity.Cinemachine;
-#endif
 
 internal class CommandScript : IRunCommand
 {
@@ -39,7 +36,6 @@ internal class CommandScript : IRunCommand
         string stage = "Body";
         string componentType = "CinemachineFollow";  // or "None" to remove
 
-#if CINEMACHINE_3
         var (go, err) = GameObjectFinder.FindOrError(vcamName, instanceId, path);
         if (err != null) { result.SetResult(err); return; }
 
@@ -60,7 +56,8 @@ internal class CommandScript : IRunCommand
 
         if (!string.IsNullOrEmpty(componentType) && !componentType.Equals("None", System.StringComparison.OrdinalIgnoreCase))
         {
-            var type = CinemachineAdapter.FindCinemachineType(componentType);
+            var normalized = componentType.StartsWith("Cinemachine") ? componentType : "Cinemachine" + componentType;
+            var type = typeof(CinemachineCamera).Assembly.GetType("Unity.Cinemachine." + normalized, false, true);
             if (type == null) { result.SetResult(new { error = "Could not find type: " + componentType }); return; }
             var comp = Undo.AddComponent(go, type);
             if (comp == null) { result.SetResult(new { error = "Failed to add component " + type.Name }); return; }
@@ -69,9 +66,6 @@ internal class CommandScript : IRunCommand
 
         EditorUtility.SetDirty(go);
         result.SetResult(new { success = true, message = "Set " + stage + " to " + (componentType ?? "None") });
-#else
-        result.SetResult(new { error = "cinemachine_set_component requires Cinemachine 3.x. For CM2, use cinemachine_add_component." });
-#endif
     }
 }
 ```

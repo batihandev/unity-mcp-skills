@@ -5,17 +5,19 @@ description: "Use when users want to create ProBuilder shapes, extrude faces, be
 
 # Unity ProBuilder Skills
 
+## Requirements
+
+- `com.unity.probuilder` (≥ 6.0). If missing, install via `Unity_PackageManager_ExecuteAction` with `operation=Add`, `package=com.unity.probuilder`, `version=6.0.9`.
+
 ## When to Use
 
 Use this module for editable ProBuilder meshes, not regular primitive GameObjects. It is best for blockout, level geometry, and procedural mesh refinement.
 
-> **Requires**: `com.unity.probuilder` package.
 > **Batch-first**: For scene blockout or level generation, prefer `probuilder_create_batch` when creating `2+` shapes.
 
 ## Common Mistakes
 
 **DO NOT** (common hallucinations):
-- Package not installed → recipes silently fail; install first: `Unity_PackageManager_ExecuteAction` with `packageId=com.unity.probuilder`, `action=Add`
 - `probuilder_create_mesh` does not exist -> use `probuilder_create_shape`
 - `probuilder_edit_face` does not exist -> use the specific face skills such as `probuilder_extrude_faces`, `probuilder_delete_faces`, `probuilder_merge_faces`
 - `probuilder_set_material` and `probuilder_set_face_material` are different -> whole object vs selected faces

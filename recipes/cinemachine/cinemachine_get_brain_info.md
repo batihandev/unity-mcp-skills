@@ -19,6 +19,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -31,7 +32,6 @@ internal class CommandScript : IRunCommand
         if (brain == null) { result.SetResult(new { error = "No CinemachineBrain on Main Camera" }); return; }
 
         var activeCam = brain.ActiveVirtualCamera as Component;
-        var updateMethod = CinemachineAdapter.GetBrainUpdateMethod(brain);
 
         result.SetResult(new
         {
@@ -39,7 +39,7 @@ internal class CommandScript : IRunCommand
             activeCamera = activeCam ? activeCam.name : "None",
             isBlending = brain.IsBlending,
             activeBlend = brain.ActiveBlend?.Description ?? "None",
-            updateMethod
+            updateMethod = brain.UpdateMethod.ToString()
         });
     }
 }

@@ -1,10 +1,8 @@
 # gameobject_set_active_batch
 
-Enable or disable multiple GameObjects in one call.
+Enable or disable multiple GameObjects in one call via a typed item array.
 
-**Signature:** `GameObjectSetActiveBatch(string items)`
-
-`items`: JSON array of objects `{ name, instanceId, path, active }`. `active` defaults to `true`.
+**Signature:** `GameObjectSetActiveBatch(_BatchSetActiveItem[] items)`
 
 **Returns:** `{ success, totalItems, successCount, failCount, results: [{ success, target, active }] }`
 
@@ -17,35 +15,52 @@ Enable or disable multiple GameObjects in one call.
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
 
 ## Recipe
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchSetActiveItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public bool active = true;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Enemy1"", ""active"": false },
-            { ""name"": ""Enemy2"", ""active"": false },
-            { ""instanceId"": 12345, ""active"": true }
-        ]";
-
-        { result.SetResult(BatchExecutor.Execute<BatchSetActiveItem>(items, item =>
+        var items = new[]
         {
-            var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-            if (error != null) throw new System.Exception("Object not found");
+            new _BatchSetActiveItem { name = "Enemy1", active = false },
+            new _BatchSetActiveItem { name = "Enemy2", active = false },
+            new _BatchSetActiveItem { instanceId = 12345, active = true },
+        };
+
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { success = false, target = item.name ?? item.path, error = err }); failCount++; continue; }
 
             WorkflowManager.SnapshotObject(go);
             Undo.RecordObject(go, "Batch Set Active");
             go.SetActive(item.active);
-            return new { target = go.name, success = true, active = item.active };
-        }, item => item.name ?? item.path)); return; }
+
+            results.Add(new { success = true, target = go.name, active = item.active });
+            successCount++;
+        }
+
+        result.SetResult(new { success = true, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

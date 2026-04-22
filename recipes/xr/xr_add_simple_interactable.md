@@ -17,43 +17,45 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
-                    if (findErr != null) { result.SetResult(findErr); return; }
+        string name = null;
+        int instanceId = 0;
+        string path = null;
 
-                    Undo.RecordObject(go, "Add XRSimpleInteractable");
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-                    var comp = XRReflectionHelper.AddXRComponent(go, "XRSimpleInteractable");
-                    if (comp == null)
-                        { result.SetResult(new { error = "Failed to add XRSimpleInteractable. Type not found in current XRI version." }); return; }
+        Undo.RecordObject(go, "Add XRSimpleInteractable");
 
-                    Undo.RegisterCreatedObjectUndo(comp, "Add XRSimpleInteractable");
+        var existing = go.GetComponent<XRSimpleInteractable>();
+        var comp = existing != null ? existing : go.AddComponent<XRSimpleInteractable>();
+        if (existing == null)
+            Undo.RegisterCreatedObjectUndo(comp, "Add XRSimpleInteractable");
 
-                    // Ensure collider exists for interaction detection
-                    if (go.GetComponent<Collider>() == null)
-                        go.AddComponent<BoxCollider>();
+        // Ensure collider exists for interaction detection
+        if (go.GetComponent<Collider>() == null)
+            go.AddComponent<BoxCollider>();
 
-                    WorkflowManager.SnapshotObject(go);
+        WorkflowManager.SnapshotObject(go);
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = go.name,
-                        instanceId = go.GetInstanceID(),
-                        interactableType = comp.GetType().Name,
-                        note = "Use xr_add_interaction_event to wire up hover/select callbacks."
-                    }); return; }
-        #endif
+        { result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            interactableType = comp.GetType().Name,
+            note = "Use xr_add_interaction_event to wire up hover/select callbacks."
+        }); return; }
     }
 }
 ```

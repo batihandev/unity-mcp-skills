@@ -21,6 +21,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -39,10 +40,10 @@ internal class CommandScript : IRunCommand
 
         WorkflowManager.SnapshotObject(go);
 
-        var vcam = CinemachineAdapter.GetVCam(go);
-        if (CinemachineAdapter.VCamOrError(vcam) is object vcamErr) { result.SetResult(vcamErr); return; }
+        var vcam = go.GetComponent<CinemachineCamera>();
+        if (vcam == null) { result.SetResult(new { error = "Not a CinemachineCamera" }); return; }
 
-        var lens = CinemachineAdapter.GetLens(vcam);
+        var lens = vcam.Lens;
         bool changed = false;
 
         if (fov.HasValue) { lens.FieldOfView = fov.Value; changed = true; }
@@ -52,7 +53,7 @@ internal class CommandScript : IRunCommand
 
         if (changed)
         {
-            CinemachineAdapter.SetLens(vcam, lens);
+            vcam.Lens = lens;
             EditorUtility.SetDirty(go);
             result.SetResult(new { success = true, message = "Updated Lens settings" });
         }

@@ -1,14 +1,14 @@
 # cinemachine_add_component
 
-Add a Cinemachine component to a VCam by type name. **Legacy / CM2** — for CM3, prefer `cinemachine_set_component` which respects pipeline stages and removes conflicts.
+Add a Cinemachine component to a VCam by type name. Prefer `cinemachine_set_component` when you want to replace the existing Body/Aim/Noise pipeline slot; this recipe just adds a component without removing conflicts at the same stage.
 
 **Signature:** `CinemachineAddComponent(string vcamName = null, int instanceId = 0, string path = null, string componentType = null)`
 
 **Returns:** `{ success, message }` or `{ error }`
 
 **Notes:**
-- The type name is resolved via `CinemachineAdapter.FindCinemachineType`; the `"Cinemachine"` prefix is added automatically if omitted.
-- This command does not remove existing components at the same pipeline stage. Use `cinemachine_set_component` on CM3 for proper stage management.
+- The `"Cinemachine"` prefix is added automatically if the passed `componentType` omits it.
+- This command does not remove existing components at the same pipeline stage. Use `cinemachine_set_component` for proper stage management.
 
 ## Prerequisites
 
@@ -20,6 +20,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -33,7 +34,11 @@ internal class CommandScript : IRunCommand
         var (go, err) = GameObjectFinder.FindOrError(vcamName, instanceId, path);
         if (err != null) { result.SetResult(err); return; }
 
-        var type = CinemachineAdapter.FindCinemachineType(componentType);
+        var normalized = componentType;
+        if (!string.IsNullOrEmpty(normalized) && !normalized.StartsWith("Cinemachine"))
+            normalized = "Cinemachine" + normalized;
+
+        var type = typeof(CinemachineCamera).Assembly.GetType("Unity.Cinemachine." + normalized, false, true);
         if (type == null) { result.SetResult(new { error = "Could not find Cinemachine component type: " + componentType }); return; }
 
         WorkflowManager.SnapshotObject(go);

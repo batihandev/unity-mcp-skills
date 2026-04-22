@@ -32,6 +32,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -64,7 +65,11 @@ internal class CommandScript : IRunCommand
         var (go, err) = GameObjectFinder.FindOrError(vcamName, instanceId, path);
         if (err != null) { result.SetResult(err); return; }
 
-        var aim = CinemachineAdapter.GetPipelineComponent(go, "Aim");
+        CinemachineComponentBase aim = null;
+        foreach (var c in go.GetComponents<CinemachineComponentBase>())
+        {
+            if (c != null && c.Stage == CinemachineCore.Stage.Aim) { aim = c; break; }
+        }
         if (aim == null)
         {
             result.SetResult(new { error = "No Aim stage component found. Add one first (e.g. CinemachineRotationComposer, CinemachinePanTilt)." });
@@ -76,10 +81,9 @@ internal class CommandScript : IRunCommand
         var typeName = aim.GetType().Name;
         var changes = new List<string>();
 
-#if CINEMACHINE_3
         if (typeName.Contains("Composer"))
         {
-            var rc = (Unity.Cinemachine.CinemachineRotationComposer)aim;
+            var rc = (CinemachineRotationComposer)aim;
             if (screenX.HasValue || screenY.HasValue)
             {
                 var cur = rc.Composition.ScreenPosition;
@@ -92,17 +96,16 @@ internal class CommandScript : IRunCommand
         }
         else if (typeName.Contains("PanTilt") || typeName.Contains("POV"))
         {
-            if (referenceFrame != null) { aim.GetType().GetField("ReferenceFrame")?.SetValue(aim, System.Enum.Parse(aim.GetType().GetField("ReferenceFrame").FieldType, referenceFrame, true)); changes.Add("referenceFrame=" + referenceFrame); }
+            if (referenceFrame != null)
+            {
+                var f = aim.GetType().GetField("ReferenceFrame");
+                if (f != null)
+                {
+                    f.SetValue(aim, System.Enum.Parse(f.FieldType, referenceFrame, true));
+                    changes.Add("referenceFrame=" + referenceFrame);
+                }
+            }
         }
-#else
-        if (typeName.Contains("Composer"))
-        {
-            if (screenX.HasValue) { aim.GetType().GetField("m_ScreenX")?.SetValue(aim, screenX.Value); changes.Add("screenX=" + screenX.Value); }
-            if (screenY.HasValue) { aim.GetType().GetField("m_ScreenY")?.SetValue(aim, screenY.Value); changes.Add("screenY=" + screenY.Value); }
-            if (horizontalDamping.HasValue) { aim.GetType().GetField("m_HorizontalDamping")?.SetValue(aim, horizontalDamping.Value); changes.Add("hDamping=" + horizontalDamping.Value); }
-            if (verticalDamping.HasValue) { aim.GetType().GetField("m_VerticalDamping")?.SetValue(aim, verticalDamping.Value); changes.Add("vDamping=" + verticalDamping.Value); }
-        }
-#endif
 
         EditorUtility.SetDirty(aim);
         if (changes.Count == 0)

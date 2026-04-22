@@ -21,6 +21,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -31,15 +32,20 @@ internal class CommandScript : IRunCommand
         string fromCamera = null;  // leave null for default blend
         string toCamera = null;    // leave null for default blend
 
-        var brain = CinemachineAdapter.FindBrain();
+        CinemachineBrain brain = null;
+        var mainCam = Camera.main;
+        if (mainCam != null) brain = mainCam.GetComponent<CinemachineBrain>();
+        if (brain == null) brain = Object.FindFirstObjectByType<CinemachineBrain>();
         if (brain == null) { result.SetResult(new { error = "No CinemachineBrain found." }); return; }
 
-        var blend = CinemachineAdapter.CreateBlendDefinition(style, time);
+        var blend = new CinemachineBlendDefinition { Time = time };
+        if (System.Enum.TryParse<CinemachineBlendDefinition.Styles>(style, true, out var parsed))
+            blend.Style = parsed;
 
         if (string.IsNullOrEmpty(fromCamera) && string.IsNullOrEmpty(toCamera))
         {
             Undo.RecordObject(brain, "Set Default Blend");
-            CinemachineAdapter.SetBrainDefaultBlend(brain, blend);
+            brain.DefaultBlend = blend;
             EditorUtility.SetDirty(brain);
             result.SetResult(new { success = true, message = "Set default blend: " + style + " " + time + "s" });
         }

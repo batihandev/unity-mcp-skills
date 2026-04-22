@@ -18,53 +18,58 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
-                    if (findErr != null) { result.SetResult(findErr); return; }
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        string matchOrientation = "WorldSpaceUp";
 
-                    Undo.RecordObject(go, "Add TeleportationArea");
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-                    var comp = XRReflectionHelper.AddXRComponent(go, "TeleportationArea");
-                    if (comp == null)
-                        { result.SetResult(new { error = "Failed to add TeleportationArea. Type not found in current XRI version." }); return; }
+        Undo.RecordObject(go, "Add TeleportationArea");
 
-                    Undo.RegisterCreatedObjectUndo(comp, "Add TeleportationArea");
+        var existing = go.GetComponent<TeleportationArea>();
+        var comp = existing != null ? existing : go.AddComponent<TeleportationArea>();
+        if (existing == null)
+            Undo.RegisterCreatedObjectUndo(comp, "Add TeleportationArea");
 
-                    if (!string.IsNullOrEmpty(matchOrientation))
-                        XRReflectionHelper.SetEnumProperty(comp, "matchOrientation", matchOrientation);
+        if (!string.IsNullOrEmpty(matchOrientation) &&
+            Enum.TryParse<MatchOrientation>(matchOrientation, true, out var mo))
+            comp.matchOrientation = mo;
 
-                    // Ensure collider for raycast detection
-                    if (go.GetComponent<Collider>() == null)
-                    {
-                        var meshFilter = go.GetComponent<MeshFilter>();
-                        if (meshFilter != null && meshFilter.sharedMesh != null)
-                            go.AddComponent<MeshCollider>();
-                        else
-                            go.AddComponent<BoxCollider>();
-                    }
+        // Ensure collider for raycast detection
+        if (go.GetComponent<Collider>() == null)
+        {
+            var meshFilter = go.GetComponent<MeshFilter>();
+            if (meshFilter != null && meshFilter.sharedMesh != null)
+                go.AddComponent<MeshCollider>();
+            else
+                go.AddComponent<BoxCollider>();
+        }
 
-                    WorkflowManager.SnapshotObject(go);
+        WorkflowManager.SnapshotObject(go);
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = go.name,
-                        instanceId = go.GetInstanceID(),
-                        teleportType = "TeleportationArea",
-                        matchOrientation,
-                        matchOrientationOptions = XRReflectionHelper.GetEnumValues(comp, "matchOrientation")
-                    }); return; }
-        #endif
+        { result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            teleportType = "TeleportationArea",
+            matchOrientation,
+            matchOrientationOptions = Enum.GetNames(typeof(MatchOrientation))
+        }); return; }
     }
 }
 ```

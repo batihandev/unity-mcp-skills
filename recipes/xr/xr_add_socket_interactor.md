@@ -18,51 +18,55 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
-                    if (findErr != null) { result.SetResult(findErr); return; }
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        bool showHoverMesh = true;
+        float recycleDelay = 1f;
 
-                    Undo.RecordObject(go, "Add XRSocketInteractor");
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-                    var comp = XRReflectionHelper.AddXRComponent(go, "XRSocketInteractor");
-                    if (comp == null)
-                        { result.SetResult(new { error = "Failed to add XRSocketInteractor. Type not found in current XRI version." }); return; }
+        Undo.RecordObject(go, "Add XRSocketInteractor");
 
-                    Undo.RegisterCreatedObjectUndo(comp, "Add XRSocketInteractor");
+        var existing = go.GetComponent<XRSocketInteractor>();
+        var comp = existing != null ? existing : go.AddComponent<XRSocketInteractor>();
+        if (existing == null)
+            Undo.RegisterCreatedObjectUndo(comp, "Add XRSocketInteractor");
 
-                    XRReflectionHelper.SetProperty(comp, "showInteractableHoverMeshes", showHoverMesh);
-                    XRReflectionHelper.SetProperty(comp, "recycleDelayTime", recycleDelay);
+        comp.showInteractableHoverMeshes = showHoverMesh;
+        comp.recycleDelayTime = recycleDelay;
 
-                    // Add SphereCollider trigger if no collider exists
-                    if (go.GetComponent<Collider>() == null)
-                    {
-                        var sphere = go.AddComponent<SphereCollider>();
-                        sphere.isTrigger = true;
-                        sphere.radius = 0.15f;
-                    }
+        // Add SphereCollider trigger if no collider exists
+        if (go.GetComponent<Collider>() == null)
+        {
+            var sphere = go.AddComponent<SphereCollider>();
+            sphere.isTrigger = true;
+            sphere.radius = 0.15f;
+        }
 
-                    WorkflowManager.SnapshotObject(go);
+        WorkflowManager.SnapshotObject(go);
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = go.name,
-                        instanceId = go.GetInstanceID(),
-                        interactorType = comp.GetType().Name,
-                        showHoverMesh,
-                        recycleDelay
-                    }); return; }
-        #endif
+        { result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            interactorType = comp.GetType().Name,
+            showHoverMesh,
+            recycleDelay
+        }); return; }
     }
 }
 ```

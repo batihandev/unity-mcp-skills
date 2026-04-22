@@ -21,6 +21,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -33,13 +34,13 @@ internal class CommandScript : IRunCommand
         var (go, err) = GameObjectFinder.FindOrError(name: vcamName, instanceId: instanceId, path: path);
         if (err != null) { result.SetResult(err); return; }
 
-        var vcam = CinemachineAdapter.GetVCam(go);
-        if (CinemachineAdapter.VCamOrError(vcam) is object vcamErr) { result.SetResult(vcamErr); return; }
+        var vcam = go.GetComponent<CinemachineCamera>();
+        if (vcam == null) { result.SetResult(new { error = "Not a CinemachineCamera" }); return; }
 
-        var followName = CinemachineAdapter.GetFollow(vcam) ? CinemachineAdapter.GetFollow(vcam).name : "None";
-        var lookAtName = CinemachineAdapter.GetLookAt(vcam) ? CinemachineAdapter.GetLookAt(vcam).name : "None";
-        var priority = CinemachineAdapter.GetPriority(vcam);
-        var lens = CinemachineAdapter.GetLens(vcam);
+        var followName = vcam.Follow ? vcam.Follow.name : "None";
+        var lookAtName = vcam.LookAt ? vcam.LookAt.name : "None";
+        var priority = vcam.Priority.Value;
+        var lens = vcam.Lens;
 
         result.SetResult(new
         {

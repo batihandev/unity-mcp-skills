@@ -18,84 +18,99 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
-                    if (findErr != null) { result.SetResult(findErr); return; }
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        string movementType = "VelocityTracking";
+        bool throwOnDetach = true;
+        bool smoothPosition = true;
+        bool smoothRotation = true;
+        float smoothPositionAmount = 5f;
+        float smoothRotationAmount = 5f;
+        bool useGravity = true;
+        bool isKinematic = false;
+        string attachTransformOffset = null;
 
-                    Undo.RecordObject(go, "Add XRGrabInteractable");
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-                    // Ensure Rigidbody
-                    var rb = go.GetComponent<Rigidbody>();
-                    if (rb == null)
-                    {
-                        rb = go.AddComponent<Rigidbody>();
-                        rb.useGravity = useGravity;
-                        rb.isKinematic = isKinematic;
-                    }
+        Undo.RecordObject(go, "Add XRGrabInteractable");
 
-                    // Ensure Collider
-                    if (go.GetComponent<Collider>() == null)
-                    {
-                        // Auto-detect best collider based on mesh
-                        var meshFilter = go.GetComponent<MeshFilter>();
-                        if (meshFilter != null && meshFilter.sharedMesh != null)
-                            go.AddComponent<MeshCollider>().convex = true;
-                        else
-                            go.AddComponent<BoxCollider>();
-                    }
+        // Ensure Rigidbody
+        var rb = go.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = go.AddComponent<Rigidbody>();
+            rb.useGravity = useGravity;
+            rb.isKinematic = isKinematic;
+        }
 
-                    // Add XRGrabInteractable
-                    var comp = XRReflectionHelper.AddXRComponent(go, "XRGrabInteractable");
-                    if (comp == null)
-                        { result.SetResult(new { error = "Failed to add XRGrabInteractable. Type not found in current XRI version." }); return; }
+        // Ensure Collider
+        if (go.GetComponent<Collider>() == null)
+        {
+            var meshFilter = go.GetComponent<MeshFilter>();
+            if (meshFilter != null && meshFilter.sharedMesh != null)
+                go.AddComponent<MeshCollider>().convex = true;
+            else
+                go.AddComponent<BoxCollider>();
+        }
 
-                    Undo.RegisterCreatedObjectUndo(comp, "Add XRGrabInteractable");
+        // Add XRGrabInteractable
+        var existing = go.GetComponent<XRGrabInteractable>();
+        var comp = existing != null ? existing : go.AddComponent<XRGrabInteractable>();
+        if (existing == null)
+            Undo.RegisterCreatedObjectUndo(comp, "Add XRGrabInteractable");
 
-                    // Configure via reflection
-                    XRReflectionHelper.SetEnumProperty(comp, "movementType", movementType);
-                    XRReflectionHelper.SetProperty(comp, "throwOnDetach", throwOnDetach);
-                    XRReflectionHelper.SetProperty(comp, "smoothPosition", smoothPosition);
-                    XRReflectionHelper.SetProperty(comp, "smoothRotation", smoothRotation);
-                    XRReflectionHelper.SetProperty(comp, "smoothPositionAmount", smoothPositionAmount);
-                    XRReflectionHelper.SetProperty(comp, "smoothRotationAmount", smoothRotationAmount);
+        // Configure directly
+        if (Enum.TryParse<XRBaseInteractable.MovementType>(movementType, true, out var mt))
+            comp.movementType = mt;
+        comp.throwOnDetach = throwOnDetach;
+        comp.smoothPosition = smoothPosition;
+        comp.smoothRotation = smoothRotation;
+        comp.smoothPositionAmount = smoothPositionAmount;
+        comp.smoothRotationAmount = smoothRotationAmount;
 
-                    // Create and set custom attach transform if offset specified
-                    if (!string.IsNullOrEmpty(attachTransformOffset))
-                    {
-                        var offsets = ParseVector3(attachTransformOffset);
-                        if (offsets.HasValue)
-                        {
-                            var attachGo = new GameObject("Attach Point");
-                            attachGo.transform.SetParent(go.transform, false);
-                            attachGo.transform.localPosition = offsets.Value;
-                            XRReflectionHelper.SetProperty(comp, "attachTransform", attachGo.transform);
-                        }
-                    }
+        // Create and set custom attach transform if offset specified
+        if (!string.IsNullOrEmpty(attachTransformOffset))
+        {
+            var parts = attachTransformOffset.Split(',');
+            if (parts.Length == 3 &&
+                float.TryParse(parts[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ox) &&
+                float.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var oy) &&
+                float.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var oz))
+            {
+                var attachGo = new GameObject("Attach Point");
+                attachGo.transform.SetParent(go.transform, false);
+                attachGo.transform.localPosition = new Vector3(ox, oy, oz);
+                comp.attachTransform = attachGo.transform;
+            }
+        }
 
-                    WorkflowManager.SnapshotObject(go);
+        WorkflowManager.SnapshotObject(go);
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        name = go.name,
-                        instanceId = go.GetInstanceID(),
-                        movementType,
-                        throwOnDetach,
-                        smoothPosition,
-                        smoothRotation,
-                        movementTypeOptions = XRReflectionHelper.GetEnumValues(comp, "movementType")
-                    }); return; }
-        #endif
+        { result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            movementType,
+            throwOnDetach,
+            smoothPosition,
+            smoothRotation,
+            movementTypeOptions = Enum.GetNames(typeof(XRBaseInteractable.MovementType))
+        }); return; }
     }
 }
 ```

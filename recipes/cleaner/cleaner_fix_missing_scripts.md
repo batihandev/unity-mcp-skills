@@ -44,7 +44,7 @@ internal class CommandScript : IRunCommand
             ? Resources.FindObjectsOfTypeAll<GameObject>()
                 .Where(go => !EditorUtility.IsPersistent(go) && go.hideFlags == HideFlags.None)
                 .ToArray()
-            : Object.FindObjectsOfType<GameObject>();
+            : Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
 
         int totalRemoved = 0;
         foreach (var go in allObjects)

@@ -1,23 +1,29 @@
 # test_create_playmode
 
-Create a PlayMode test script template and return a compile-monitor job.
+Write a PlayMode test script template and import it. Synchronous — returns
+after `AssetDatabase.ImportAsset`. Unity may still domain-reload after the
+call, so the next MCP call can see a brief unavailability.
 
 **Signature:** `TestCreatePlayMode(testName string, folder string = "Assets/Tests/Runtime")`
 
-**Returns:** `{ success, status, path, testName, jobId, serverAvailability }`
+**Returns:** `{ success, path, testName }` — or `{ error }` on validation or
+file-exists failure.
 
 **Notes:**
-- `testName` must not contain path separators (`/`, `\`, or `..`)
-- Creates the folder if it does not exist; returns an error if the file already exists
-- Triggers a script mutation job (`jobId`) to monitor compile status after file creation
-- `serverAvailability` always includes a transient unavailability notice due to domain reload
+- `testName` must not contain `/`, `\`, or `..`.
+- Creates `folder` if it doesn't exist; fails if the target `.cs` already
+  exists.
+- The runtime test folder needs an `*.asmdef` with `UnityEngine.TestRunner`
+  and `UnityEditor.TestRunner` as precompiled references for the test to be
+  discovered. This recipe does not create that asmdef.
 
 ## Prerequisites
 
-Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
+Concatenate these shared helper classes into the same `Unity_RunCommand` code
+block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
 - `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+- `recipes/_shared/skills_common.md` — for `SkillsCommon.Utf8NoBom`
 
 ```csharp
 using UnityEngine;
@@ -46,7 +52,7 @@ internal class CommandScript : IRunCommand
             return;
         }
         if (!System.IO.Directory.Exists(folder)) System.IO.Directory.CreateDirectory(folder);
-        var path = System.IO.Path.Combine(folder, testName + ".cs");
+        var path = System.IO.Path.Combine(folder, testName + ".cs").Replace('\\', '/');
         if (System.IO.File.Exists(path))
         {
             result.SetResult(new { error = $"File already exists: {path}" });
@@ -69,18 +75,8 @@ public class {testName}
 ";
         System.IO.File.WriteAllText(path, content, SkillsCommon.Utf8NoBom);
         AssetDatabase.ImportAsset(path);
-        var job = AsyncJobService.StartScriptMutationJob("test_create_playmode", path.Replace("\\", "/"), true, 20);
-        result.SetResult(new
-        {
-            success = true,
-            status = "accepted",
-            path,
-            testName,
-            jobId = job.jobId,
-            serverAvailability = ServerAvailabilityHelper.CreateTransientUnavailableNotice(
-                $"已创建测试脚本: {path}。Unity 可能短暂重载脚本域。",
-                alwaysInclude: true)
-        });
+
+        result.SetResult(new { success = true, path, testName });
     }
 }
 ```

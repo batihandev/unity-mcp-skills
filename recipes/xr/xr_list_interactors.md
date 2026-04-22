@@ -7,7 +7,7 @@ Lists all XR interactors in the scene (XRRayInteractor, XRDirectInteractor, XRSo
 **Returns:** `{ success, count, interactors, xriVersion }`
 
 **Notes:**
-- Pass `verbose=true` to include a `properties` map for each interactor entry.
+- Pass `verbose=true` to include a short `properties` map for each interactor entry.
 - Read-only; does not modify the scene.
 
 ## Prerequisites
@@ -16,49 +16,94 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        #if !XRI
-                    { result.SetResult(NoXRI()); return; }
-        #else
-                    var interactorTypes = new[] { "XRRayInteractor", "XRDirectInteractor", "XRSocketInteractor", "NearFarInteractor" };
-                    var results = new List<object>();
+        bool verbose = false;
 
-                    foreach (var typeName in interactorTypes)
-                    {
-                        var found = XRReflectionHelper.FindComponentsOfXRType(typeName);
-                        foreach (var comp in found)
-                        {
-                            var entry = new Dictionary<string, object>
-                            {
-                                ["type"] = comp.GetType().Name,
-                                ["gameObject"] = comp.gameObject.name,
-                                ["instanceId"] = comp.gameObject.GetInstanceID(),
-                                ["path"] = GameObjectFinder.GetPath(comp.gameObject),
-                                ["enabled"] = comp is Behaviour b ? b.enabled : true
-                            };
+        var results = new List<object>();
 
-                            if (verbose)
-                                entry["properties"] = XRReflectionHelper.GetComponentInfo(comp);
+        foreach (var ray in UnityEngine.Object.FindObjectsByType<XRRayInteractor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            var entry = new Dictionary<string, object>
+            {
+                ["type"] = ray.GetType().Name,
+                ["gameObject"] = ray.gameObject.name,
+                ["instanceId"] = ray.gameObject.GetInstanceID(),
+                ["path"] = GameObjectFinder.GetPath(ray.gameObject),
+                ["enabled"] = ray.enabled
+            };
+            if (verbose)
+            {
+                entry["maxRaycastDistance"] = ray.maxRaycastDistance;
+                entry["lineType"] = ray.lineType.ToString();
+                entry["interactionLayers"] = (int)ray.interactionLayers;
+            }
+            results.Add(entry);
+        }
 
-                            results.Add(entry);
-                        }
-                    }
+        foreach (var dir in UnityEngine.Object.FindObjectsByType<XRDirectInteractor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            var entry = new Dictionary<string, object>
+            {
+                ["type"] = dir.GetType().Name,
+                ["gameObject"] = dir.gameObject.name,
+                ["instanceId"] = dir.gameObject.GetInstanceID(),
+                ["path"] = GameObjectFinder.GetPath(dir.gameObject),
+                ["enabled"] = dir.enabled
+            };
+            if (verbose)
+                entry["interactionLayers"] = (int)dir.interactionLayers;
+            results.Add(entry);
+        }
 
-                    { result.SetResult(new
-                    {
-                        success = true,
-                        count = results.Count,
-                        interactors = results,
-                        xriVersion = XRReflectionHelper.XRIMajorVersion
-                    }); return; }
-        #endif
+        foreach (var sock in UnityEngine.Object.FindObjectsByType<XRSocketInteractor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            var entry = new Dictionary<string, object>
+            {
+                ["type"] = sock.GetType().Name,
+                ["gameObject"] = sock.gameObject.name,
+                ["instanceId"] = sock.gameObject.GetInstanceID(),
+                ["path"] = GameObjectFinder.GetPath(sock.gameObject),
+                ["enabled"] = sock.enabled
+            };
+            if (verbose)
+            {
+                entry["showInteractableHoverMeshes"] = sock.showInteractableHoverMeshes;
+                entry["recycleDelayTime"] = sock.recycleDelayTime;
+                entry["socketActive"] = sock.socketActive;
+            }
+            results.Add(entry);
+        }
+
+        foreach (var nf in UnityEngine.Object.FindObjectsByType<NearFarInteractor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            results.Add(new Dictionary<string, object>
+            {
+                ["type"] = nf.GetType().Name,
+                ["gameObject"] = nf.gameObject.name,
+                ["instanceId"] = nf.gameObject.GetInstanceID(),
+                ["path"] = GameObjectFinder.GetPath(nf.gameObject),
+                ["enabled"] = nf.enabled
+            });
+        }
+
+        { result.SetResult(new
+        {
+            success = true,
+            count = results.Count,
+            interactors = results,
+            xriVersion = 3
+        }); return; }
     }
 }
 ```

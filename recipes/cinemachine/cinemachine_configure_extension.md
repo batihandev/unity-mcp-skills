@@ -35,6 +35,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -61,11 +62,12 @@ internal class CommandScript : IRunCommand
         var (go, err) = GameObjectFinder.FindOrError(vcamName, instanceId, path);
         if (err != null) { result.SetResult(err); return; }
 
-        MonoBehaviour ext = null;
+        CinemachineExtension ext = null;
         if (!string.IsNullOrEmpty(extensionName))
         {
-            var extType = CinemachineAdapter.FindCinemachineType(extensionName);
-            if (extType != null) ext = go.GetComponent(extType) as MonoBehaviour;
+            var normalized = extensionName.StartsWith("Cinemachine") ? extensionName : "Cinemachine" + extensionName;
+            var extType = typeof(CinemachineCamera).Assembly.GetType("Unity.Cinemachine." + normalized, false, true);
+            if (extType != null) ext = go.GetComponent(extType) as CinemachineExtension;
         }
         if (ext == null)
         {
@@ -94,13 +96,13 @@ internal class CommandScript : IRunCommand
                     var col3d = shapeGo.GetComponent<Collider>();
                     if (col2d != null)
                     {
-                        var f = ext.GetType().GetField("BoundingShape2D") ?? ext.GetType().GetField("m_BoundingShape2D");
+                        var f = ext.GetType().GetField("BoundingShape2D");
                         f?.SetValue(ext, col2d);
                         changes.Add("boundingShape=" + boundingShapeName + "(2D)");
                     }
                     else if (col3d != null)
                     {
-                        var f = ext.GetType().GetField("BoundingVolume") ?? ext.GetType().GetField("m_BoundingVolume");
+                        var f = ext.GetType().GetField("BoundingVolume");
                         f?.SetValue(ext, col3d);
                         changes.Add("boundingVolume=" + boundingShapeName + "(3D)");
                     }
@@ -108,7 +110,7 @@ internal class CommandScript : IRunCommand
             }
             if (damping.HasValue)
             {
-                var f = ext.GetType().GetField("Damping") ?? ext.GetType().GetField("m_Damping");
+                var f = ext.GetType().GetField("Damping");
                 f?.SetValue(ext, damping.Value);
                 changes.Add("damping=" + damping.Value);
             }
@@ -118,8 +120,8 @@ internal class CommandScript : IRunCommand
             if (width.HasValue) { ext.GetType().GetField("Width")?.SetValue(ext, width.Value); changes.Add("width=" + width.Value); }
             if (fovMin.HasValue && fovMax.HasValue)
             {
-                ext.GetType().GetField("m_MinFOV")?.SetValue(ext, fovMin.Value);
-                ext.GetType().GetField("m_MaxFOV")?.SetValue(ext, fovMax.Value);
+                var fr = ext.GetType().GetField("FovRange");
+                fr?.SetValue(ext, new Vector2(fovMin.Value, fovMax.Value));
                 changes.Add("fovRange=(" + fovMin.Value + "," + fovMax.Value + ")");
             }
         }

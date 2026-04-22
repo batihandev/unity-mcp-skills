@@ -1,6 +1,6 @@
 # cinemachine_create_freelook
 
-Create a FreeLook camera. CM2 creates `CinemachineFreeLook`; CM3 creates `CinemachineCamera` + `OrbitalFollow(ThreeRing)` + `RotationComposer`.
+Create a CM3 FreeLook rig: `CinemachineCamera` + `CinemachineOrbitalFollow(ThreeRing)` + `CinemachineRotationComposer`.
 
 **Signature:** `CinemachineCreateFreeLook(string name, string followName = null, string lookAtName = null)`
 
@@ -9,7 +9,7 @@ Create a FreeLook camera. CM2 creates `CinemachineFreeLook`; CM3 creates `Cinema
 **Notes:**
 - Auto-adds `CinemachineBrain` to Main Camera if missing.
 - `followName` and `lookAtName` can be set later with `cinemachine_set_targets`.
-- In CM3, tune the three-ring orbit with `cinemachine_configure_body` (`orbitStyle`, `topHeight`/`topRadius`, `midHeight`/`midRadius`, `bottomHeight`/`bottomRadius`).
+- Tune the three-ring orbit with `cinemachine_configure_body` (`orbitStyle`, `topHeight`/`topRadius`, `midHeight`/`midRadius`, `bottomHeight`/`bottomRadius`).
 
 ## Prerequisites
 
@@ -21,6 +21,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -30,44 +31,27 @@ internal class CommandScript : IRunCommand
         string followName = "Player";  // set to null to skip
         string lookAtName = "Player";  // set to null to skip
 
-        var go = CinemachineAdapter.CreateFreeLook(name);
+        var go = new GameObject(name);
+        var vcam = go.AddComponent<CinemachineCamera>();
+        vcam.Priority.Value = 10;
+        var orbital = go.AddComponent<CinemachineOrbitalFollow>();
+        orbital.OrbitStyle = CinemachineOrbitalFollow.OrbitStyles.ThreeRing;
+        go.AddComponent<CinemachineRotationComposer>();
 
         var mainCamera = Camera.main;
         if (mainCamera != null && mainCamera.GetComponent<CinemachineBrain>() == null)
             Undo.AddComponent<CinemachineBrain>(mainCamera.gameObject);
 
-        var vcam = CinemachineAdapter.GetVCam(go);
-        if (vcam != null)
+        if (!string.IsNullOrEmpty(followName))
         {
-            if (!string.IsNullOrEmpty(followName))
-            {
-                var followGo = GameObjectFinder.Find(followName);
-                if (followGo != null) CinemachineAdapter.SetFollow(vcam, followGo.transform);
-            }
-            if (!string.IsNullOrEmpty(lookAtName))
-            {
-                var lookAtGo = GameObjectFinder.Find(lookAtName);
-                if (lookAtGo != null) CinemachineAdapter.SetLookAt(vcam, lookAtGo.transform);
-            }
+            var followGo = GameObjectFinder.Find(followName);
+            if (followGo != null) vcam.Follow = followGo.transform;
         }
-
-#if CINEMACHINE_2
-        // CM2 FreeLook has its own Follow/LookAt fields
-        var freeLook = go.GetComponent<CinemachineFreeLook>();
-        if (freeLook != null)
+        if (!string.IsNullOrEmpty(lookAtName))
         {
-            if (!string.IsNullOrEmpty(followName))
-            {
-                var followGo = GameObjectFinder.Find(followName);
-                if (followGo != null) freeLook.m_Follow = followGo.transform;
-            }
-            if (!string.IsNullOrEmpty(lookAtName))
-            {
-                var lookAtGo = GameObjectFinder.Find(lookAtName);
-                if (lookAtGo != null) freeLook.m_LookAt = lookAtGo.transform;
-            }
+            var lookAtGo = GameObjectFinder.Find(lookAtName);
+            if (lookAtGo != null) vcam.LookAt = lookAtGo.transform;
         }
-#endif
 
         Undo.RegisterCreatedObjectUndo(go, "Create FreeLook Camera");
         WorkflowManager.SnapshotObject(go, SnapshotType.Created);

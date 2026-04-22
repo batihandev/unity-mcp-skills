@@ -5,23 +5,22 @@ description: "Use when users want to create cinematic cameras, set follow/look t
 
 # Cinemachine Skills
 
+## Requirements
+
+- `com.unity.cinemachine` (≥ 3.1). Recipes target Cinemachine 3 API only (`CinemachineCamera`, `Priority.Value`). If the package is missing, install via `Unity_PackageManager_ExecuteAction` with `operation=Add`, `package=com.unity.cinemachine`, `version=3.1.6`.
+
 ## Overview
 
-Control Cinemachine Virtual Cameras and settings (Cinemachine 2.x / 3.x).
+Control Cinemachine virtual cameras, brains, extensions, and blend settings.
 
 ## Common Mistakes
 
 
 **DO NOT** (common hallucinations):
-- Package not installed → recipes silently fail; install first: `Unity_PackageManager_ExecuteAction` with `packageId=com.unity.cinemachine`, `action=Add` (note: 2.x vs 3.x have different API — recipes target 3.x)
 - `cinemachine_create` does not exist → use `cinemachine_create_vcam` for virtual cameras
 - `cinemachine_set_target` / `cinemachine_set_follow` / `cinemachine_set_lookat` do not exist → use `cinemachine_set_targets` (sets both Follow and LookAt in one call)
-- `cinemachine_add_brain` does not exist → CinemachineBrain is auto-added to Main Camera
-- Cinemachine 2.x uses `CinemachineVirtualCamera`; Cinemachine 3.x uses `CinemachineCamera` — skills handle this automatically
-
-Additional compatibility notes:
-- CM3 priority access should use `Priority.Value` as the lowest common API when writing compatibility code.
-- Early CM3 previews before `3.0.0-pre.5` changed core camera APIs significantly and are outside the current support baseline.
+- `cinemachine_add_brain` does not exist → `CinemachineBrain` is auto-added to Main Camera
+- The runtime type is `CinemachineCamera` (CM3), not `CinemachineVirtualCamera` (CM2). Priority reads/writes go through `.Priority.Value`.
 
 **Routing**:
 - For basic Game Camera operations → use `camera` module

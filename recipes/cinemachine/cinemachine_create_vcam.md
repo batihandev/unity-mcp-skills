@@ -1,6 +1,6 @@
 # cinemachine_create_vcam
 
-Create a new Virtual Camera (CM2: `CinemachineVirtualCamera`, CM3: `CinemachineCamera`). Auto-adds `CinemachineBrain` to Main Camera if missing.
+Create a new `CinemachineCamera` GameObject. Auto-adds `CinemachineBrain` to Main Camera if missing.
 
 **Signature:** `CinemachineCreateVCam(string name, string folder = "Assets/Settings")`
 
@@ -15,6 +15,7 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -24,8 +25,8 @@ internal class CommandScript : IRunCommand
         // folder param is accepted but not used for scene placement
 
         var go = new GameObject(name);
-        var vcam = go.AddComponent(CinemachineAdapter.FindCinemachineType(CinemachineAdapter.VCamTypeName)) as MonoBehaviour;
-        CinemachineAdapter.SetPriority(vcam, 10);
+        var vcam = go.AddComponent<CinemachineCamera>();
+        vcam.Priority.Value = 10;
 
         Undo.RegisterCreatedObjectUndo(go, "Create Virtual Camera");
         WorkflowManager.SnapshotObject(go, SnapshotType.Created);
