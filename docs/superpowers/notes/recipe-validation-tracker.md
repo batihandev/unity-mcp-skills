@@ -541,7 +541,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| test_cancel | x | x | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired: TestRunnerApi has no public hard-cancel surface |
+| test_cancel | R | R | R | - | 2026-04-21: retired — TestRunnerApi has no public hard-cancel surface; file deleted |
 | test_create_editmode | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_create_playmode | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_get_last_result | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign; 2026-04-22: Task 21: live — TestResults/*.xml discovery works (1 report, 168KB); recipe XML-parsing logic was already comp:x under Task 5 |
@@ -552,7 +552,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | test_list_read | x | x | x | x | 2026-04-22: New recipe (Task 5 follow-up async split); stateless read of Temp/test-list-<mode>.json cache written by test_list.; 2026-04-22: Task 21: live — test_list fired RetrieveTestList; callback wrote Temp/test-list-EditMode.json (42KB); reads parse cleanly |
 | test_run | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_run_by_name | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
-| test_smoke_skills | x | x | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired: depended on upstream REST SkillRegistry |
+| test_smoke_skills | R | R | R | - | 2026-04-21: retired — depended on upstream REST SkillRegistry; file deleted |
 
 ## timeline (12 recipes)
 
