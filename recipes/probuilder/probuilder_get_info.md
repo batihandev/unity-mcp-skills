@@ -17,7 +17,7 @@ Get face, vertex, edge, material, and bounds info for a ProBuilder mesh.
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 
 **Requires:** `com.unity.probuilder` package.
 

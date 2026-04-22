@@ -37,7 +37,7 @@ Each object in the JSON array may contain:
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
 ## Unity_RunCommand Template
 

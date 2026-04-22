@@ -17,7 +17,7 @@ Extrude open edges outward on a ProBuilder mesh to create walls, rails, or flang
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
 **Requires:** `com.unity.probuilder` package.

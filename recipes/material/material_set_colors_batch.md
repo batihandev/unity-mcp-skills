@@ -19,8 +19,8 @@ Set colors on multiple GameObjects or material assets in a single call (efficien
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
 ## Recipe
 

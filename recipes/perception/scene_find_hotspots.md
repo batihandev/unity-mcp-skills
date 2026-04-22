@@ -25,8 +25,8 @@ Returns `success`, `sceneName`, `thresholds`, `hotspotCount`, and `hotspots` arr
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.GetSceneObjects` / `GetDepth` / `GetCachedPath`
-- `recipes/_shared/perception_helpers.md` — for `PerceptionHelpers.CollectSceneMetrics` / `CollectHotspots`
+- `recipes/_shared/perception_helpers.md` — for `PerceptionHelpers.*` / scene metric + hotspot types
+- `recipes/_shared/gameobject_finder.md` — required by `perception_helpers.md` for `GameObjectFinder.GetSceneObjects` / `GetDepth` / `GetCachedPath`
 
 ## RunCommand Recipe
 

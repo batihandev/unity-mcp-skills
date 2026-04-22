@@ -64,10 +64,11 @@ Each item supports: `name`, `instanceId`, `path` (at least one required), `compo
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
-- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType` (transitively needs `skills_common.md`)
 - `recipes/_shared/value_converter.md` — for `ComponentSkills.ConvertValue`
+- `recipes/_shared/skills_common.md` — required by `component_type_finder.md` for `SkillsCommon.GetAllLoadedTypes`
 
 ## Notes
 

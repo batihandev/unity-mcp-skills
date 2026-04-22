@@ -48,9 +48,10 @@ The `count` field reports how many instances of the component were removed from 
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError`
-- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.SnapshotObject`
-- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
+- `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType` (transitively needs `skills_common.md`)
+- `recipes/_shared/skills_common.md` — required by `component_type_finder.md` for `SkillsCommon.GetAllLoadedTypes`
 
 ## C# Template
 

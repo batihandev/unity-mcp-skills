@@ -19,8 +19,7 @@ Kick off all tests in a mode. Fire-and-forget: creates a `Filter` and calls
 
 ## Prerequisites
 
-Concatenate these shared helper classes into the same `Unity_RunCommand` code
-block as `CommandScript`:
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
 
 ```csharp

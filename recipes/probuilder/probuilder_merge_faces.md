@@ -16,7 +16,7 @@ Merge 2 or more faces into a single face on a ProBuilder mesh.
 
 Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder.FindOrError(...)`
+- `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
 
 **Requires:** `com.unity.probuilder` package.

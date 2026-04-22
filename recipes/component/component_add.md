@@ -51,8 +51,8 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 - `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
 - `recipes/_shared/gameobject_finder.md` — for `GameObjectFinder` / `FindHelper`
 - `recipes/_shared/workflow_manager.md` — for `WorkflowManager.*`
-- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType`
-- `recipes/_shared/skills_common.md` — for `SkillsCommon.GetAllLoadedTypes` (transitive)
+- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
+- `recipes/_shared/component_type_finder.md` — for `ComponentSkills.FindComponentType` (transitively needs `skills_common.md`)
 
 ## C# Template
 

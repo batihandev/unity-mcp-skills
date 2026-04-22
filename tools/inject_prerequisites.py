@@ -11,6 +11,9 @@ Detection targets (must match inside the recipe's `csharp` fenced block):
     SkillsCommon.*                      -> _shared/skills_common.md
     ComponentSkills.FindComponentType   -> _shared/component_type_finder.md (+ skills_common)
     ComponentSkills.ConvertValue        -> _shared/value_converter.md
+    ProjectSkills.*                     -> _shared/project_skills.md
+    PerceptionHelpers.* | _SceneMetricsSnapshot | _SceneHotspot
+                                        -> _shared/perception_helpers.md (+ gameobject_finder)
 
 Usage:
     python3 tools/inject_prerequisites.py --recipes recipes/ [--dry-run]
@@ -47,6 +50,11 @@ DETECTORS: list[tuple[re.Pattern[str], str, str]] = [
      'for `ComponentSkills.FindComponentType` (transitively needs `skills_common.md`)'),
     (re.compile(r'\bComponentSkills\.ConvertValue\b'), 'value_converter.md',
      'for `ComponentSkills.ConvertValue`'),
+    (re.compile(r'\bProjectSkills\.\w+|\bRenderPipelineType\b'), 'project_skills.md',
+     'for `ProjectSkills.*` / `RenderPipelineType`'),
+    (re.compile(r'\bPerceptionHelpers\.\w+|\b_SceneMetricsSnapshot\b|\b_SceneHotspot\b'),
+     'perception_helpers.md',
+     'for `PerceptionHelpers.*` / scene metric + hotspot types'),
 ]
 
 
@@ -67,6 +75,7 @@ def detect_prereqs(csharp_text: str) -> list[tuple[str, str]]:
     found: list[tuple[str, str]] = []
     seen: set[str] = set()
     needs_skills_common = False
+    needs_gameobject_finder = False
     for pat, fname, purpose in DETECTORS:
         if pat.search(csharp_text):
             if fname in seen:
@@ -75,9 +84,16 @@ def detect_prereqs(csharp_text: str) -> list[tuple[str, str]]:
             seen.add(fname)
             if fname == 'component_type_finder.md':
                 needs_skills_common = True
+            if fname == 'perception_helpers.md':
+                needs_gameobject_finder = True
     if needs_skills_common and 'skills_common.md' not in seen:
         found.append(('skills_common.md',
                       'required by `component_type_finder.md` for `SkillsCommon.GetAllLoadedTypes`'))
+        seen.add('skills_common.md')
+    if needs_gameobject_finder and 'gameobject_finder.md' not in seen:
+        found.append(('gameobject_finder.md',
+                      'required by `perception_helpers.md` for `GameObjectFinder.GetSceneObjects` / `GetDepth` / `GetCachedPath`'))
+        seen.add('gameobject_finder.md')
     return found
 
 
@@ -95,15 +111,34 @@ def render_section(prereqs: list[tuple[str, str]]) -> list[str]:
 
 def find_existing_prereq_span(lines: list[str]) -> tuple[int, int] | None:
     """Return (start_idx, end_idx_exclusive) of an existing `## Prerequisites` section, or None.
-    The section ends at the next `##` heading OR the next ```csharp fence (whichever comes
-    first). Without the fence sentinel, recipes whose csharp fence is not preceded by a
-    `##` heading would have their code block absorbed into the Prerequisites span."""
+    The section body is: optional description line(s), then `- ` bullets separated by blanks.
+    End the span at the first non-bullet non-blank non-description line (so footers like
+    `**Requires:** ...` that sit between the bullets and the next heading are preserved)."""
     for i, line in enumerate(lines):
         if PREREQ_HEADING.match(line):
-            for j in range(i + 1, len(lines)):
+            saw_bullet = False
+            last_content = i  # heading itself
+            j = i + 1
+            while j < len(lines):
+                stripped = lines[j].strip()
                 if HEADING.match(lines[j]) or CSHARP_FENCE.match(lines[j]):
-                    return i, j
-            return i, len(lines)
+                    break
+                if stripped.startswith('- '):
+                    saw_bullet = True
+                    last_content = j
+                elif stripped == '':
+                    pass
+                elif not saw_bullet and stripped.startswith('Concatenate '):
+                    # generator description line
+                    last_content = j
+                elif not saw_bullet:
+                    # unknown lead-in text before any bullet — absorb (old-style section)
+                    last_content = j
+                else:
+                    # bullets ended; whatever this is belongs to following content
+                    break
+                j += 1
+            return i, last_content + 1
     return None
 
 
@@ -158,6 +193,9 @@ def inject(recipe_path: Path, dry_run: bool) -> str:
 
     while prefix and prefix[-1].strip() == '':
         prefix.pop()
+    # section already ends with a blank; drop any leading blanks from tail to avoid doubling
+    while tail and tail[0].strip() == '':
+        tail.pop(0)
     new_lines = prefix + [''] + section + tail
 
     if not dry_run:

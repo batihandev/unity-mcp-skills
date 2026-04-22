@@ -15,10 +15,9 @@ after the run completes.
 
 ## Prerequisites
 
-Concatenate these shared helper classes into the same `Unity_RunCommand` code
-block as `CommandScript`:
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
-- `recipes/_shared/validate.md` — for `Validate.Required`
+- `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
 
 ```csharp
 using UnityEngine;

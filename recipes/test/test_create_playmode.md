@@ -19,11 +19,10 @@ file-exists failure.
 
 ## Prerequisites
 
-Concatenate these shared helper classes into the same `Unity_RunCommand` code
-block as `CommandScript`:
+Concatenate these shared helper classes into the same `Unity_RunCommand` code block as `CommandScript`:
 - `recipes/_shared/execution_result.md` — for `result.SetResult(...)`
 - `recipes/_shared/validate.md` — for `Validate.Required` / `Validate.SafePath`
-- `recipes/_shared/skills_common.md` — for `SkillsCommon.Utf8NoBom`
+- `recipes/_shared/skills_common.md` — for `SkillsCommon.*`
 
 ```csharp
 using UnityEngine;
