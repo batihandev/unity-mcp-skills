@@ -40,11 +40,15 @@ Concatenate these shared helper classes into the same `Unity_RunCommand` code bl
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
+        string sourcePrefabPath = "Assets/Prefabs/Enemy.prefab";
+        string variantPath = "Assets/Prefabs/EnemyElite.prefab";
+
         if (Validate.Required(sourcePrefabPath, "sourcePrefabPath") is object err) { result.SetResult(err); return; }
         if (Validate.SafePath(variantPath, "variantPath") is object pathErr) { result.SetResult(pathErr); return; }
 
@@ -59,7 +63,7 @@ internal class CommandScript : IRunCommand
             instance, variantPath, InteractionMode.AutomatedAction);
         Object.DestroyImmediate(instance);
 
-        { result.SetResult(new { success = true, sourcePath = sourcePrefabPath, variantPath, name = variant.name }); return; }
+        result.SetResult(new { success = true, sourcePath = sourcePrefabPath, variantPath, name = variant.name });
     }
 }
 ```

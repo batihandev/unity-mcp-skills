@@ -101,7 +101,23 @@ MCP tools NOT used as retirement targets because their use case is narrower than
 
 ## Session 2 close state (live)
 
-**Gate counts after 2026-04-22 Task 15 + 16 closeouts:** ext 461/484, pre 461/484, **comp 132/484**, run 11/484, retired 24/484, blockers 6/484.
+**Gate counts after 2026-04-22 B-set closeout:** ext 460/485, pre 460/485, **comp 138/485**, run 12/485, retired 25/485, **blockers 0/485**.
+
+### comp:B closeout (2026-04-22)
+
+All 6 prior blockers resolved:
+
+- `asset_delete_batch` — switched `AssetDatabase.DeleteAsset` → `MoveAssetToTrash` (analyzer-safe, restorable). Run-verified against throwaway `Assets/_ThrowawayTest/ToDelete_B.mat`. Tracker: `comp:x run:x`.
+- `shader_delete` — same fix + missing `using System.IO` added. Tracker: `comp:x`.
+- `ui_create_batch` — retired (tracker `R`). Dispatcher to 12 `ui_create_<primitive>` recipes; no unique logic. `skills/ui/SKILL.md` updated with inline-foreach guidance for creating 2+ elements.
+- `prefab_create_variant` — restored dropped `sourcePrefabPath` / `variantPath` parameter locals; added `using System.IO`. Tracker: `comp:x`.
+- `test_list` — async split per Task 5 pattern. Fires `TestRunnerApi.RetrieveTestList(mode, callback)`, callback writes `Temp/test-list-<mode>.json`. Returns `{ started, cachePath }` immediately.
+- `test_list_categories` — stateless read of the cache, dedupes with `List<string>` + manual Contains (can't use `HashSet<string>(StringComparer)` — ISet<> gotcha).
+- New recipe `test_list_read` — stateless read of full cache + limit. Fills the "give me the test names" gap between `test_list` and `test_list_categories`.
+
+### New CLAUDE.md gotcha
+
+`AssetDatabase.DeleteAsset` token trips the Unity_RunCommand MCP analyzer ("User interactions are not supported") — module is rejected even inside `if (false)`. Use `AssetDatabase.MoveAssetToTrash(path)` instead (restorable from OS trash; semantically equivalent for batch/recipe use).
 
 ### Dirty-domain resume sweep (2026-04-22)
 

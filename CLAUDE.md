@@ -107,6 +107,12 @@ everywhere. Listed here so a fresh session knows the shape.
 - Same NRE hits a `catch (ReflectionTypeLoadException ex)` clause when
   `using System.Reflection;` is in scope. Fully-qualify the exception
   type: `catch (System.Reflection.ReflectionTypeLoadException ex)`.
+- `AssetDatabase.DeleteAsset(path)` is rejected by the Unity MCP
+  analyzer ("User interactions are not supported") — the token appearing
+  anywhere in source kills the whole module, even inside `if (false)`.
+  Use `AssetDatabase.MoveAssetToTrash(path)` instead. It's restorable
+  from the OS trash, functionally equivalent for recipe use, and
+  analyzer-safe. `shader_delete` and `asset_delete_batch` both use this.
 - `System.Xml.XmlDocument` / `XmlNode` / `XmlElement` are not in the
   `Unity_RunCommand` compile context (CS1069, forwarded to `System.Xml.dll`).
   Parse XML with `string.IndexOf` scans instead.

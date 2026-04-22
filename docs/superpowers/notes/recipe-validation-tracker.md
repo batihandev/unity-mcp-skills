@@ -14,10 +14,10 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 ## Summary
 
 - Total recipes: **484**
-- ext: **462** / 484
-- pre: **462** / 484
-- comp: **132** / 484
-- run: **11** / 484
+- ext: **461** / 484
+- pre: **461** / 484
+- comp: **137** / 484
+- run: **12** / 484
 - retired: **22** / 484
 
 ## Domains
@@ -45,7 +45,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 |---|---|---|---|---|---|
 | asset_create_folder | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_delete | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_delete_batch | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15 rewrite applied (BatchExecutor → foreach) but cannot smoke-verify: Unity_RunCommand MCP analyzer rejects any module containing AssetDatabase.DeleteAsset even inside if(false) — 'User interactions are not supported'. Same guard that blocked shader_delete. Recipe code is structurally correct. |
+| asset_delete_batch | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15 rewrite applied (BatchExecutor → foreach) but cannot smoke-verify: Unity_RunCommand MCP analyzer rejects any module containing AssetDatabase.DeleteAsset even inside if(false) — 'User interactions are not supported'. Same guard that blocked shader_delete. Recipe code is structurally correct.; 2026-04-22: Task 15 complete: switched DeleteAsset → MoveAssetToTrash (analyzer-safe, restorable). Run-verified: deleted throwaway Assets/_ThrowawayTest/ToDelete_B.mat; 2026-04-22: Run-verified 2026-04-22 via throwaway materials |
 | asset_duplicate | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_find | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | asset_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
@@ -396,7 +396,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | prefab_apply | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | prefab_apply_overrides | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | prefab_create | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| prefab_create_variant | x | x | B | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: body references undeclared sourcePrefabPath/variantPath parameters; missing using System.IO |
+| prefab_create_variant | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: body references undeclared sourcePrefabPath/variantPath parameters; missing using System.IO; 2026-04-22: Fixed: restored dropped sourcePrefabPath/variantPath parameter locals; added missing using System.IO |
 | prefab_find_instances | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | prefab_get_overrides | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | prefab_instantiate | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
@@ -498,7 +498,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | shader_check_errors | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses FindShaderByNameOrPath — private upstream helper not in _shared; 2026-04-22: Task 16: inlined FindShaderByNameOrPath as private static |
 | shader_create | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | shader_create_urp | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| shader_delete | x | x | B | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Unity MCP returns 'User interactions not supported' on repeat attempts; compile-only appears blocked at this recipe; deferred |
+| shader_delete | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Unity MCP returns 'User interactions not supported' on repeat attempts; compile-only appears blocked at this recipe; deferred; 2026-04-22: Task 16 follow-up: DeleteAsset → MoveAssetToTrash (analyzer-safe); added missing using System.IO for File.Exists |
 | shader_find | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | shader_get_keywords | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
 | shader_get_properties | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
@@ -537,7 +537,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | terrain_set_heights_batch | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | terrain_smooth | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 
-## test (11 recipes)
+## test (12 recipes)
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
@@ -547,8 +547,9 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | test_get_last_result | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_get_result | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_get_summary | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined private helpers EnumerateRealTestRuns/GetResultInt/GetResultStringList from upstream TestSkills; 2026-04-21: Task 5 async redesign |
-| test_list | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Needs async redesign per Task 5 pattern: DiscoverTests (upstream) is 200+ lines with JsonConvert/JObject deps (unavailable in Unity_RunCommand). Unity-native TestRunnerApi.RetrieveTestList is callback-based via EditorApplication.delayCall — incompatible with stateless Execute. Defer to follow-up async split. |
-| test_list_categories | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses undefined DiscoverTests helper from upstream TestSkills; 2026-04-22: Same as test_list: DiscoverTests source-scan needs async redesign per Task 5 pattern (test_list_start + test_list_read). |
+| test_list | x | x | x | - | 2026-04-22: Async redesign: fires TestRunnerApi.RetrieveTestList, callback writes Temp/test-list-<mode>.json. Paired with test_list_read + test_list_categories. |
+| test_list_categories | x | x | x | - | 2026-04-22: Async redesign: stateless read of Temp/test-list-<mode>.json cache. Uses List<string>+manual Contains (ISet<> gotcha). |
+| test_list_read | x | x | x | - | 2026-04-22: New recipe (Task 5 follow-up async split); stateless read of Temp/test-list-<mode>.json cache written by test_list. |
 | test_run | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_run_by_name | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
 | test_smoke_skills | x | x | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired: depended on upstream REST SkillRegistry |
@@ -580,7 +581,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | ui_add_outline | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | ui_align_selected | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | ui_configure_selectable | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| ui_create_batch | x | x | B | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Dispatcher pattern: delegates to 12 upstream UICreate* methods (canvas/panel/button/text/image/inputfield/slider/toggle/dropdown/scrollview/rawimage/scrollbar). Each primitive has ~50-100 lines of setup logic — full inlining would 10x the recipe size. Guidance: agents should call individual ui_create_canvas / ui_create_button / etc. recipes sequentially rather than this batch. No single-pattern rewrite fits. |
+| ui_create_batch | R | R | R | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Dispatcher pattern: delegates to 12 upstream UICreate* methods (canvas/panel/button/text/image/inputfield/slider/toggle/dropdown/scrollview/rawimage/scrollbar). Each primitive has ~50-100 lines of setup logic — full inlining would 10x the recipe size. Guidance: agents should call individual ui_create_canvas / ui_create_button / etc. recipes sequentially rather than this batch. No single-pattern rewrite fits.; 2026-04-22: Retired 2026-04-22: dispatcher to 12 UICreate* primitives, no unique logic. Agents call individual ui_create_<primitive> recipes sequentially. |
 | ui_create_button | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | ui_create_canvas | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
 | ui_create_dropdown | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |

@@ -17,7 +17,7 @@ Use this module for Unity UGUI / Canvas workflows. It is separate from UI Toolki
 - For text updates after creation → use `ui_set_text`.
 - For layout and alignment → use `ui_layout_children`, `ui_align_selected`, `ui_distribute_selected`.
 
-> **Batch-first**: Prefer `ui_create_batch` when creating `2+` UI elements.
+> **Creating 2+ elements**: call the individual `ui_create_<primitive>` recipes in a single `Unity_RunCommand` — one `CommandScript.Execute` block can instantiate any number of UI elements by chaining the per-primitive setup inline.
 
 ## Common Mistakes
 
@@ -47,7 +47,6 @@ Use this module for Unity UGUI / Canvas workflows. It is separate from UI Toolki
 | `ui_create_scrollview` | Create ScrollRect hierarchy | `name?`, `parent?`, `width/height?`, `horizontal?`, `vertical?` |
 | `ui_create_rawimage` | Create RawImage | `name?`, `parent?`, `texturePath?`, `width/height?` |
 | `ui_create_scrollbar` | Create scrollbar | `name?`, `parent?`, `direction?`, `value?`, `size?` |
-| `ui_create_batch` | Create multiple UI elements | `items` (`JSON` string array) |
 
 ### Query and Layout Skills
 
