@@ -12,8 +12,6 @@ Get properties of a ScriptableObject asset.
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
-using System.Reflection;
-
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -28,11 +26,11 @@ internal class CommandScript : IRunCommand
         }
 
         var type = asset.GetType();
-        var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance)
+        var fields = type.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
             .Select(f => new { name = f.Name, type = f.FieldType.Name, value = f.GetValue(asset)?.ToString() })
             .ToArray();
 
-        var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+        var props = type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
             .Where(p => p.CanRead && !p.GetIndexParameters().Any())
             .Select(p =>
             {

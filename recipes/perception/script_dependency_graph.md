@@ -32,7 +32,6 @@ Returns `success`, `entryScript`, `totalScriptsReached`, `maxHops`, `scripts` ar
 using UnityEngine;
 using UnityEditor;
 using System;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -131,13 +130,13 @@ internal class CommandScript : IRunCommand
 
                 if (includeDetails)
                 {
-                    fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                    fields = type.GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly)
                         .Where(f => !f.Name.StartsWith("<"))
                         .Select(f => (object)new { name = f.Name, type = GetFriendlyTypeName(f.FieldType), serializable = f.IsPublic || f.GetCustomAttribute<SerializeField>() != null })
                         .ToList();
 
                     if (typeof(MonoBehaviour).IsAssignableFrom(type))
-                        callbacks = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                        callbacks = type.GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly)
                             .Where(m => UnityCallbacks.Contains(m.Name))
                             .Select(m => m.Name).ToList();
                 }

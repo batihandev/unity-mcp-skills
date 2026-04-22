@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **206** / 485
+- comp: **215** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -184,16 +184,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| event_add_listener | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| event_add_listener_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses Newtonsoft JsonConvert + undefined SkillResultHelper; body contains NotImplementedException; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
-| event_clear_listeners | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| event_copy_listeners | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| event_get_listener_count | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| event_get_listeners | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| event_invoke | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| event_list_events | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| event_remove_listener | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| event_set_listener_state | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| event_add_listener | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
+| event_add_listener_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: uses Newtonsoft JsonConvert + undefined SkillResultHelper; body contains NotImplementedException; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
+| event_clear_listeners | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
+| event_copy_listeners | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
+| event_get_listener_count | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
+| event_get_listeners | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
+| event_invoke | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
+| event_list_events | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
+| event_remove_listener | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
+| event_set_listener_state | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live after System.Reflection directive removal + BindingFlags→no-arg walk |
 
 ## gameobject (18 recipes)
 

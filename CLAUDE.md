@@ -99,11 +99,15 @@ everywhere. Listed here so a fresh session knows the shape.
   `type.GetMethods()` + a `foreach` filter on `Name` / `IsStatic` /
   `GetParameters()` instead. The 2-arg `GetMethod(name, Type[])` overload
   (no BindingFlags) is also safe.
-- A static field typed as `PropertyInfo` / `FieldInfo` / `MethodInfo`
-  (imported via `using System.Reflection;`) also triggers the reformatter
-  NRE. Fully-qualify instead: `private static System.Reflection.PropertyInfo
-  _cached;`. The `using System.Reflection;` directive itself is fine; only
-  field-typed-via-short-name breaks.
+- **The `using System.Reflection;` directive itself triggers the
+  Unity_RunCommand reformatter NRE** (empirically: just declaring the
+  directive with NO reflection usage in the body still fails with
+  `UNEXPECTED_ERROR: Object reference not set to an instance of an object`
+  and no compile log). Do not declare it. Fully-qualify every reflection
+  type instead: `System.Reflection.MethodInfo`, `System.Reflection.FieldInfo`,
+  `System.Reflection.PropertyInfo`, `System.Reflection.BindingFlags.X`.
+  Earlier notes that said "the directive itself is fine" were wrong —
+  confirmed 2026-04-22 across event/* and scriptableobject/* recipes.
 - Same NRE hits a `catch (ReflectionTypeLoadException ex)` clause when
   `using System.Reflection;` is in scope. Fully-qualify the exception
   type: `catch (System.Reflection.ReflectionTypeLoadException ex)`.

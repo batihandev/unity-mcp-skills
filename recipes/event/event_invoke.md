@@ -12,8 +12,6 @@ Invoke a UnityEvent explicitly via reflection. This fires all persistent and run
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
-using System.Reflection;
-
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -31,8 +29,10 @@ internal class CommandScript : IRunCommand
         if (component == null) { result.SetResult(new { error = $"Component not found: {componentName}" }); return; }
 
         var type = component.GetType();
-        var field = type.GetField(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        var property = type.GetProperty(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        System.Reflection.FieldInfo field = null;
+        foreach (var _f in type.GetFields()) if (_f.Name == eventName) { field = _f; break; }
+        System.Reflection.PropertyInfo property = null;
+        foreach (var _p in type.GetProperties()) if (_p.Name == eventName) { property = _p; break; }
 
         UnityEventBase unityEvent = null;
         if (field != null) unityEvent = field.GetValue(component) as UnityEventBase;
@@ -40,7 +40,10 @@ internal class CommandScript : IRunCommand
 
         if (unityEvent == null) { result.SetResult(new { error = "UnityEvent not found" }); return; }
 
-        var invokeMethod = unityEvent.GetType().GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
+        // No-arg GetMethods + filter — BindingFlags-arg overloads trip the reformatter NRE.
+        System.Reflection.MethodInfo invokeMethod = null;
+        foreach (var _m in unityEvent.GetType().GetMethods())
+            if (_m.Name == "Invoke" && !_m.IsStatic && _m.GetParameters().Length == 0) { invokeMethod = _m; break; }
         if (invokeMethod == null) { result.SetResult(new { error = "Could not find Invoke method on event" }); return; }
 
         try

@@ -13,8 +13,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
 using System.Linq;
-using System.Reflection;
-
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -31,16 +29,22 @@ internal class CommandScript : IRunCommand
         if (component == null) { result.SetResult(new { error = $"Component not found: {componentName}" }); return; }
 
         var type = component.GetType();
-        var events = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Where(f => typeof(UnityEventBase).IsAssignableFrom(f.FieldType))
-            .Select(f =>
+        // BindingFlags-overload of GetFields trips reformatter NRE — walk inheritance chain
+        // manually over no-arg GetFields() to cover inherited + NonPublic fields.
+        var seen = new System.Collections.Generic.HashSet<string>();
+        var events = new System.Collections.Generic.List<object>();
+        for (var scan = type; scan != null; scan = scan.BaseType)
+        {
+            foreach (var f in scan.GetFields())
             {
+                if (!seen.Add(f.Name)) continue;
+                if (!typeof(UnityEventBase).IsAssignableFrom(f.FieldType)) continue;
                 var e = f.GetValue(component) as UnityEventBase;
-                return new { name = f.Name, type = f.FieldType.Name, listenerCount = e?.GetPersistentEventCount() ?? 0 };
-            })
-            .ToArray();
+                events.Add(new { name = f.Name, type = f.FieldType.Name, listenerCount = e?.GetPersistentEventCount() ?? 0 });
+            }
+        }
 
-        result.SetResult(new { success = true, component = componentName, count = events.Length, events });
+        result.SetResult(new { success = true, component = componentName, count = events.Count, events });
     }
 }
 ```

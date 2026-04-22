@@ -17,8 +17,6 @@ Set a field or property on a ScriptableObject asset.
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using System.Reflection;
-
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -35,8 +33,8 @@ internal class CommandScript : IRunCommand
         }
 
         var type = asset.GetType();
-        var field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
-        var prop = type.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+        var field = type.GetField(fieldName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        var prop = type.GetProperty(fieldName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
         if (field == null && prop == null)
         {

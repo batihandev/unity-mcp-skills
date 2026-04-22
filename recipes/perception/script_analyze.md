@@ -27,7 +27,6 @@ Returns `success`, `script`, `fullName`, `kind` (`MonoBehaviour` / `ScriptableOb
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -51,8 +50,8 @@ internal class CommandScript : IRunCommand
             return;
         }
 
-        var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly;
-        if (includePrivate) flags |= BindingFlags.NonPublic;
+        var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly;
+        if (includePrivate) flags |= System.Reflection.BindingFlags.NonPublic;
 
         var fields = type.GetFields(flags)
             .Where(f => !f.Name.StartsWith("<"))
@@ -87,7 +86,7 @@ internal class CommandScript : IRunCommand
         List<string> unityEvents = null;
         if (typeof(MonoBehaviour).IsAssignableFrom(type))
         {
-            unityEvents = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+            unityEvents = type.GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly)
                 .Where(m => UnityCallbacks.Contains(m.Name))
                 .Select(m => m.Name)
                 .ToList();
