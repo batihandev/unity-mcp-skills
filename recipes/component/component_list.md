@@ -59,11 +59,16 @@ With `includeProperties: true`, components that have key properties (Transform, 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
+using System.Collections.Generic;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
+        string name = null; int instanceId = 0; string path = null;
+        bool includeProperties = false;
+
         var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
         if (error != null) { result.SetResult(error); return; }
 
@@ -74,27 +79,44 @@ internal class CommandScript : IRunCommand
                 {
                     { "type", c.GetType().Name },
                     { "fullType", c.GetType().FullName },
-                    { "enabled", (c as Behaviour)?.enabled ?? true }
+                    { "enabled", (object)((c as Behaviour)?.enabled ?? true) }
                 };
-        
+
                 if (includeProperties)
                 {
-                    var props = GetComponentPropertiesSummary(c);
-                    if (props.Any())
+                    var props = GetKeyProperties(c);
+                    if (props.Count > 0)
                         info["keyProperties"] = props;
                 }
-        
-                return info;
+
+                return (object)info;
             })
             .ToArray();
 
-        { result.SetResult(new { 
-            gameObject = go.name, 
-            instanceId = go.GetInstanceID(), 
-            path = GameObjectFinder.GetPath(go), 
+        result.SetResult(new {
+            gameObject = go.name,
+            instanceId = go.GetInstanceID(),
+            path = GameObjectFinder.GetPath(go),
             componentCount = components.Length,
-            components 
-        }); return; }
+            components
+        });
+    }
+
+    private static Dictionary<string, string> GetKeyProperties(Component c)
+    {
+        var d = new Dictionary<string, string>();
+        if (c is Transform t)
+        {
+            d["position"] = $"({t.position.x}, {t.position.y}, {t.position.z})";
+            d["rotation"] = $"({t.eulerAngles.x}, {t.eulerAngles.y}, {t.eulerAngles.z})";
+            d["scale"] = $"({t.localScale.x}, {t.localScale.y}, {t.localScale.z})";
+        }
+        else if (c is Camera cam)
+        {
+            d["fieldOfView"] = cam.fieldOfView.ToString();
+            d["orthographic"] = cam.orthographic.ToString();
+        }
+        return d;
     }
 }
 ```

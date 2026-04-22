@@ -38,28 +38,32 @@ On failure:
 - Use `componentIndex` only when the same component type appears multiple times on an object.
 - Snapshots the object state for workflow undo before removing.
 
-**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ## C# Template
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
+        string name = null; int instanceId = 0; string path = null;
+        string componentType = "Rigidbody";
+        int componentIndex = 0;
+
         if (Validate.Required(componentType, "componentType") is object err) { result.SetResult(err); return; }
 
         var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
         if (error != null) { result.SetResult(error); return; }
 
-        var type = FindComponentType(componentType);
+        var type = ComponentSkills.FindComponentType(componentType);
         if (type == null)
             { result.SetResult(new { error = $"Component type not found: {componentType}" }); return; }
 
-        // Support removing specific component instance by index
         var components = go.GetComponents(type);
         if (components.Length == 0)
             { result.SetResult(new { error = $"Component not found on {go.name}: {componentType}" }); return; }
@@ -69,7 +73,6 @@ internal class CommandScript : IRunCommand
 
         var comp = components[componentIndex];
 
-        // Check if it's a required component
         var requiredBy = GetRequiredByComponents(go, type);
         if (requiredBy.Any())
             { result.SetResult(new {
@@ -81,7 +84,23 @@ internal class CommandScript : IRunCommand
         Undo.DestroyObjectImmediate(comp);
         EditorUtility.SetDirty(go);
 
-        { result.SetResult(new { success = true, gameObject = go.name, removed = componentType }); return; }
+        result.SetResult(new { success = true, gameObject = go.name, removed = componentType });
+    }
+
+    private static string[] GetRequiredByComponents(UnityEngine.GameObject go, System.Type typeToRemove)
+    {
+        var required = new System.Collections.Generic.List<string>();
+        foreach (var comp in go.GetComponents<Component>())
+        {
+            if (comp == null) continue;
+            foreach (var attr in comp.GetType().GetCustomAttributes(typeof(RequireComponent), true))
+            {
+                var rc = (RequireComponent)attr;
+                if (rc.m_Type0 == typeToRemove || rc.m_Type1 == typeToRemove || rc.m_Type2 == typeToRemove)
+                    required.Add(comp.GetType().Name);
+            }
+        }
+        return required.ToArray();
     }
 }
 ```

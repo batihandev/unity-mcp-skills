@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **225** / 485
+- comp: **247** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -43,38 +43,38 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| asset_create_folder | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_delete | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
-| asset_delete_batch | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15 rewrite applied (BatchExecutor → foreach) but cannot smoke-verify: Unity_RunCommand MCP analyzer rejects any module containing AssetDatabase.DeleteAsset even inside if(false) — 'User interactions are not supported'. Same guard that blocked shader_delete. Recipe code is structurally correct.; 2026-04-22: Task 15 complete: switched DeleteAsset → MoveAssetToTrash (analyzer-safe, restorable). Run-verified: deleted throwaway Assets/_ThrowawayTest/ToDelete_B.mat; 2026-04-22: Run-verified 2026-04-22 via throwaway materials |
-| asset_duplicate | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
-| asset_find | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_get_labels | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| asset_import | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
-| asset_import_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; ServerAvailabilityHelper dropped (REST-era) |
-| asset_move | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
-| asset_move_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; ServerAvailabilityHelper dropped (REST-era) |
-| asset_refresh | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash. |
-| asset_reimport | x | x | x | - | 2026-04-22: dropped ServerAvailabilityHelper (REST-era) |
-| asset_reimport_batch | x | x | x | - | 2026-04-22: dropped ServerAvailabilityHelper (REST-era) |
-| asset_set_labels | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| asset_create_folder | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| asset_delete | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash.; 2026-04-22: already uses MoveAssetToTrash |
+| asset_delete_batch | x | x | x | x | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15 rewrite applied (BatchExecutor → foreach) but cannot smoke-verify: Unity_RunCommand MCP analyzer rejects any module containing AssetDatabase.DeleteAsset even inside if(false) — 'User interactions are not supported'. Same guard that blocked shader_delete. Recipe code is structurally correct.; 2026-04-22: Task 15 complete: switched DeleteAsset → MoveAssetToTrash (analyzer-safe, restorable). Run-verified: deleted throwaway Assets/_ThrowawayTest/ToDelete_B.mat; 2026-04-22: Run-verified 2026-04-22 via throwaway materials; 2026-04-22: already uses MoveAssetToTrash |
+| asset_duplicate | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash.; 2026-04-22: clean |
+| asset_find | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| asset_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| asset_get_labels | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| asset_import | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash.; 2026-04-22: clean |
+| asset_import_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; ServerAvailabilityHelper dropped (REST-era); 2026-04-22: clean |
+| asset_move | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash.; 2026-04-22: clean |
+| asset_move_batch | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach; ServerAvailabilityHelper dropped (REST-era); 2026-04-22: clean |
+| asset_refresh | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Pre-Task-20: dropped ServerAvailabilityHelper (REST-era). asset_delete: DeleteAsset → MoveAssetToTrash.; 2026-04-22: clean |
+| asset_reimport | x | x | x | - | 2026-04-22: dropped ServerAvailabilityHelper (REST-era); 2026-04-22: clean |
+| asset_reimport_batch | x | x | x | - | 2026-04-22: dropped ServerAvailabilityHelper (REST-era); 2026-04-22: clean |
+| asset_set_labels | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
 | batch_query_assets | R | R | R | R | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: recipe body is top-level REPL script, not CommandScript; uses Newtonsoft.Json which is unavailable in Unity_RunCommand; 2026-04-21: retired → native MCP |
 
 ## camera (11 recipes)
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| camera_align_view_to_object | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| camera_create | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| camera_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| camera_get_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| camera_list | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| camera_look_at | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
-| camera_screenshot | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP; 2026-04-21: restored from retirement (Unity_Camera_Capture has different surface: in-memory only, no width/height, instanceID-only) |
-| camera_set_culling_mask | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| camera_set_orthographic | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| camera_set_properties | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| camera_set_transform | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| camera_align_view_to_object | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| camera_create | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| camera_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| camera_get_properties | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| camera_list | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| camera_look_at | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-22: clean |
+| camera_screenshot | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: retired → native MCP; 2026-04-21: restored from retirement (Unity_Camera_Capture has different surface: in-memory only, no width/height, instanceID-only); 2026-04-22: clean |
+| camera_set_culling_mask | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| camera_set_orthographic | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| camera_set_properties | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
+| camera_set_transform | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: clean |
 
 ## cinemachine (34 recipes)
 
@@ -135,14 +135,14 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
 | component_add | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 16: restored param locals; routed FindComponentType via _shared/component_type_finder; inlined GetSimilarTypes/AllowMultiple |
-| component_add_batch | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| component_copy | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| component_get_properties | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| component_list | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| component_remove | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| component_add_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke green |
+| component_copy | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke green |
+| component_get_properties | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke green; no BindingFlags |
+| component_list | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke green |
+| component_remove | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke green |
 | component_remove_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
-| component_set_enabled | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
-| component_set_property | x | x | - | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py |
+| component_set_enabled | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke green |
+| component_set_property | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-23: smoke green; prereqs need merged ComponentSkills (both FindComponentType+ConvertValue) |
 | component_set_property_batch | x | x | x | - | 2026-04-21: re-extracted from upstream 55b03ef3; 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 15: BatchExecutor → typed _BatchFooItem foreach |
 
 ## console (13 recipes)
