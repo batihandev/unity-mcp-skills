@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **173** / 485
+- comp: **182** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -28,16 +28,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| animator_add_parameter | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| animator_add_state | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
-| animator_add_transition | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| animator_assign_controller | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| animator_create_controller | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| animator_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| animator_get_parameters | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| animator_list_states | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| animator_play | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| animator_set_parameter | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| animator_add_parameter | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| animator_add_state | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-22: Task 20: comp-smoke live |
+| animator_add_transition | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| animator_assign_controller | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| animator_create_controller | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| animator_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| animator_get_parameters | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| animator_list_states | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| animator_play | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| animator_set_parameter | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
 
 ## asset (16 recipes)
 

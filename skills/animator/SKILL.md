@@ -113,7 +113,7 @@ Get Animator component information.
 |-----------|------|----------|-------------|
 | `name` | string | Yes | GameObject name |
 
-**Returns**: `{success, hasController, controllerName, parameters, currentState}`
+**Returns**: `{gameObject, instanceId, hasController, controllerPath, speed, applyRootMotion, updateMode, cullingMode, layerCount, parameterCount}`
 
 ### animator_assign_controller
 Assign a controller to a GameObject.
