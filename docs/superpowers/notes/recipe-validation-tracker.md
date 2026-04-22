@@ -16,7 +16,7 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 - Total recipes: **485**
 - ext: **457** / 485
 - pre: **457** / 485
-- comp: **197** / 485
+- comp: **206** / 485
 - run: **33** / 485
 - retired: **22** / 485
 
@@ -465,16 +465,16 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 
 | recipe | ext | pre | comp | run | notes |
 |---|---|---|---|---|---|
-| scene_create | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_find_objects | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_get_hierarchy | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_get_info | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_get_loaded | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_load | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green |
-| scene_save | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_screenshot | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_set_active | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
-| scene_unload | x | x | - | - | 2026-04-21: scripted via inject_prerequisites.py |
+| scene_create | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| scene_find_objects | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| scene_get_hierarchy | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| scene_get_info | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| scene_get_loaded | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| scene_load | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: comp smoke green; 2026-04-22: Task 20: comp-smoke live |
+| scene_save | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| scene_screenshot | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| scene_set_active | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
+| scene_unload | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-22: Task 20: comp-smoke live |
 
 ## scriptableobject (10 recipes)
 
