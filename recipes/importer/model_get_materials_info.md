@@ -2,9 +2,6 @@
 
 Inspect sub-asset materials and meshes embedded in a model file.
 
-**Skill ID:** `model_get_materials_info`
-**Source:** `ModelSkills.cs` — `ModelGetMaterialsInfo`
-
 ## Signature
 
 ```
@@ -13,13 +10,7 @@ model_get_materials_info(assetPath: string)
       meshCount, meshes[{ name, vertices, triangles }] }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
@@ -32,9 +23,9 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Models/hero.fbx"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
-        if (importer == null) return new { error = $"Not a model: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a model: {assetPath}" }); return; }
 
         var allAssets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
 
@@ -42,11 +33,11 @@ internal class CommandScript : IRunCommand
             .Select(m => new { name = m.name, shader = m.shader != null ? m.shader.name : "null" })
             .ToArray();
 
-        var meshes = allAssets.OfType<Mesh>()
+        var meshes = allAssets.OfType<UnityEngine.Mesh>()
             .Select(m => new { name = m.name, vertices = m.vertexCount, triangles = SkillsCommon.GetTriangleCount(m) })
             .ToArray();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             path = assetPath,
@@ -54,7 +45,7 @@ internal class CommandScript : IRunCommand
             materials,
             meshCount = meshes.Length,
             meshes
-        };
+        }); return; }
     }
 }
 ```

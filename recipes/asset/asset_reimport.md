@@ -4,42 +4,32 @@ Force reimport of a single asset using `ImportAssetOptions.ForceUpdate`.
 
 **Signature:** `AssetReimport(string assetPath)`
 
-**Returns:** `{ success, reimported }` — plus a `serverAvailability` notice if the asset touches the script domain.
+**Returns:** `{ success, reimported }`
 
-**Note:** Accepts both project-relative paths (e.g. `Assets/foo.cs`) and absolute paths — the implementation resolves the full path when the project-relative form is not found on disk.
+**Note:** Accepts project-relative paths (e.g. `Assets/foo.cs`) and absolute paths — falls back to resolving under the project root.
+
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
 using System.IO;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string assetPath = "Assets/Scripts/MyScript.cs"; // Project-relative or absolute path
+        string assetPath = "Assets/Scripts/MyScript.cs";
 
-        if (string.IsNullOrEmpty(assetPath))
-        {
-            result.SetResult(new { success = false, error = "assetPath is required" });
-            return;
-        }
-        if (Validate.SafePath(assetPath, "assetPath") is object pathErr)
-        {
-            result.SetResult(pathErr);
-            return;
-        }
+        if (string.IsNullOrEmpty(assetPath)) { result.SetResult(new { success = false, error = "assetPath is required" }); return; }
+        if (Validate.SafePath(assetPath, "assetPath") is object pathErr) { result.SetResult(pathErr); return; }
 
         if (!File.Exists(assetPath) && !Directory.Exists(assetPath))
         {
             var projectRoot = Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
-            var fullPath = System.IO.Path.Combine(projectRoot, assetPath);
+            var fullPath = Path.Combine(projectRoot, assetPath);
             if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
-            {
-                result.SetResult(new { success = false, error = $"Asset not found: {assetPath}" });
-                return;
-            }
+            { result.SetResult(new { success = false, error = $"Asset not found: {assetPath}" }); return; }
         }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
@@ -47,28 +37,7 @@ internal class CommandScript : IRunCommand
 
         AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
 
-        var res = new Dictionary<string, object>
-        {
-            ["success"] = true,
-            ["reimported"] = assetPath
-        };
-
-        if (ServerAvailabilityHelper.AffectsScriptDomain(assetPath))
-        {
-            ServerAvailabilityHelper.AttachTransientUnavailableNotice(
-                res,
-                $"Reimported script-domain asset: {assetPath}. Unity may briefly reload the script domain.",
-                alwaysInclude: true);
-        }
-        else
-        {
-            ServerAvailabilityHelper.AttachTransientUnavailableNotice(
-                res,
-                $"Asset reimport completed: {assetPath}. Unity may still be refreshing assets.",
-                alwaysInclude: false);
-        }
-
-        result.SetResult(res);
+        result.SetResult(new { success = true, reimported = assetPath });
     }
 }
 ```

@@ -7,8 +7,6 @@ Enable or disable a shader keyword on a material.
 **Returns:** `{ success, target, keyword, enabled, allKeywords }`
 
 ## Notes
-
-- `keyword` is required.
 - `enable` defaults to `true`; pass `false` to disable the keyword.
 - `allKeywords` in the response lists every currently-enabled keyword on the material after the change.
 
@@ -23,7 +21,7 @@ Enable or disable a shader keyword on a material.
 | `_ALPHABLEND_ON` | Enable alpha blending |
 | `_ALPHAPREMULTIPLY_ON` | Enable premultiplied alpha |
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -39,25 +37,45 @@ internal class CommandScript : IRunCommand
         string keyword    = "_EMISSION";  // required
         bool   enable     = true;         // false to disable
 
-        /* Original Logic:
+        if (Validate.Required(keyword, "keyword") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(keyword, "keyword") is object err) return err;
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Material Keyword");
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Material Keyword");
+        if (enable)
+            material.EnableKeyword(keyword);
+        else
+            material.DisableKeyword(keyword);
 
-            if (enable)
-                material.EnableKeyword(keyword);
-            else
-                material.DisableKeyword(keyword);
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
+        { result.SetResult(new { 
+            success = true, 
+            target = go != null ? go.name : path, 
+            keyword, 
+            enabled = enable,
+            allKeywords = material.shaderKeywords
+        }); return; }
+    }
 
-            return new { success = true, target = go != null ? go.name : path, keyword, enabled = enable, allKeywords = material.shaderKeywords };
-        */
+    private static (Material mat, GameObject go, object error) FindMaterial(string name, int instanceId, string path)
+    {
+        if (!string.IsNullOrEmpty(path) && path.EndsWith(".mat"))
+        {
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) return (null, null, new { error = "Material asset not found: " + path });
+            return (m, null, null);
+        }
+        var (go, err) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (err != null) return (null, null, err);
+        var rdr = go.GetComponent<Renderer>();
+        if (rdr == null) return (null, go, new { error = "No Renderer on " + go.name });
+        var mat = rdr.sharedMaterial;
+        if (mat == null) return (null, go, new { error = "No material on " + go.name });
+        return (mat, go, null);
     }
 }
 ```

@@ -11,6 +11,8 @@ Find null/missing object references on components in the active scene.
 - Only scans scene objects; does not scan prefab assets on disk
 - At most one issue per component per GameObject is reported (breaks after first missing field found on each component)
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

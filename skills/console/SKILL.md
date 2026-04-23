@@ -15,16 +15,15 @@ Recipe path rule: `../../recipes/console/<command>.md`
 
 
 **DO NOT** (common hallucinations):
-- `console_filter` does not exist → use `console_get_logs` with `filter` parameter
-- `console_read` does not exist → use `console_get_logs`
 - `console_write` does not exist → use `console_log`
-- Do not confuse with `debug_get_logs` — `console_get_logs` reads the captured buffer (with timestamps), `debug_get_logs` always reads console history filtered to errors/warnings
+- For reading, filtering, or clearing console logs, use the native `Unity_GetConsoleLogs` or `Unity_ReadConsole` — not a custom recipe.
 
 **Routing**:
-- For compilation errors specifically → use `editor_get_state` (`isCompiling` field)
-- For error stack traces → use native `Unity_ReadConsole` or `Unity_GetConsoleLogs`
-- For console settings (collapse, clear-on-play) → `console_set_collapse` / `console_set_clear_on_play` (this module)
-- For scripting defines or forced recompile → use `debug_get_defines`, `debug_set_defines`, `debug_force_recompile` — these are hosted **in this module** (see below)
+- Read console entries / stack traces / errors → `Unity_GetConsoleLogs` or `Unity_ReadConsole` (native MCP)
+- Clear the console → `Unity_ReadConsole` (clear action)
+- Compilation-status check → `editor_get_state` (`isCompiling` field)
+- Console settings (collapse, clear-on-play) → `console_set_collapse` / `console_set_clear_on_play` (this module)
+- Scripting defines or forced recompile → `debug_get_defines`, `debug_set_defines`, `debug_force_recompile` (this module)
 
 ## Retained Debug Commands
 
@@ -44,8 +43,6 @@ Recipes: see `../../recipes/console/debug_force_recompile.md`, `debug_get_define
 |-------|-------------|
 | `console_start_capture` | Start capturing logs |
 | `console_stop_capture` | Stop capturing logs |
-| `console_get_logs` | Get captured logs |
-| `console_clear` | Clear console |
 | `console_log` | Write log message |
 | `console_set_pause_on_error` | Enable or disable Error Pause in Play mode |
 | `console_export` | Export console logs to a file |
@@ -67,21 +64,6 @@ No parameters.
 
 ### console_stop_capture
 Stop capturing logs.
-
-No parameters.
-
-### console_get_logs
-Get captured logs with optional filtering.
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `filter` | string | No | null | Log/Warning/Error |
-| `limit` | int | No | 100 | Max results |
-
-**Returns**: `{success, totalLogs, logs: [{type, message, timestamp}]}`
-
-### console_clear
-Clear the Unity console.
 
 No parameters.
 
@@ -149,4 +131,3 @@ Set clear on play mode.
 3. Use custom logs to mark AI agent actions
 4. Clear console before starting new capture session
 5. Stop capture when done to free resources
-

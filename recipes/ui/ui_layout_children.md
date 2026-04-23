@@ -12,6 +12,8 @@ Arrange child UI elements using Vertical, Horizontal, or Grid layout groups.
 - For `Grid` layout, cell size is auto-calculated from the first child's `sizeDelta`.
 - Returns an error for unknown `layoutType` values.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

@@ -8,6 +8,8 @@ Get metadata about the currently active scene.
 
 No parameters. Use this to verify which scene is loaded and whether it has unsaved changes before performing destructive operations.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

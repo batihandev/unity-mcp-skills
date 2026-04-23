@@ -10,6 +10,8 @@ Get an overview of the project folder structure and asset counts by type.
 - `structure` is a recursive tree of `{ name, fileCount, children }` objects up to `maxDepth` levels deep
 - Asset counts cover only assets under `rootPath`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

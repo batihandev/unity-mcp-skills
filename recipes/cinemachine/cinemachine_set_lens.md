@@ -11,9 +11,12 @@ Quickly configure Lens settings on a Virtual Camera: Field of View, Near/Far Cli
 - `mode` is accepted but currently unused by the upstream implementation; it is reserved for future lens mode switching.
 - At least one of `fov`, `nearClip`, `farClip`, or `orthoSize` must be supplied.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -32,10 +35,10 @@ internal class CommandScript : IRunCommand
 
         WorkflowManager.SnapshotObject(go);
 
-        var vcam = CinemachineAdapter.GetVCam(go);
-        if (CinemachineAdapter.VCamOrError(vcam) is object vcamErr) { result.SetResult(vcamErr); return; }
+        var vcam = go.GetComponent<CinemachineCamera>();
+        if (vcam == null) { result.SetResult(new { error = "Not a CinemachineCamera" }); return; }
 
-        var lens = CinemachineAdapter.GetLens(vcam);
+        var lens = vcam.Lens;
         bool changed = false;
 
         if (fov.HasValue) { lens.FieldOfView = fov.Value; changed = true; }
@@ -45,7 +48,7 @@ internal class CommandScript : IRunCommand
 
         if (changed)
         {
-            CinemachineAdapter.SetLens(vcam, lens);
+            vcam.Lens = lens;
             EditorUtility.SetDirty(go);
             result.SetResult(new { success = true, message = "Updated Lens settings" });
         }

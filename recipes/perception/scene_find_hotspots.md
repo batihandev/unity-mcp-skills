@@ -1,31 +1,21 @@
 # scene_find_hotspots
 
-**Skill:** `scene_find_hotspots`
-**C# method:** `PerceptionSkills.SceneFindHotspots`
-
 ## Signature
 
 ```
 SceneFindHotspots(int deepHierarchyThreshold = 8, int largeChildCountThreshold = 25, int maxResults = 20)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `deepHierarchyThreshold` | `int` | `8` | Depth at which a node is considered deeply nested |
-| `largeChildCountThreshold` | `int` | `25` | Number of direct children that triggers a large-group finding |
-| `maxResults` | `int` | `20` | Maximum hotspots returned |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `thresholds`, `hotspotCount`, and `hotspots` array with `type`, `severity`, `name`, `path`, `count`, `depth`, `message`.
 
-## RunCommand Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`perception_helpers`](../_shared/perception_helpers.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -35,18 +25,14 @@ internal class CommandScript : IRunCommand
         int largeChildCountThreshold = 25;
         int maxResults = 20;
 
-        var metrics = CollectSceneMetrics(includeComponentStats: false);
-        var hotspots = CollectHotspots(metrics.Objects, deepHierarchyThreshold, largeChildCountThreshold, maxResults);
+        var metrics = PerceptionHelpers.CollectSceneMetrics(includeComponentStats: false);
+        var hotspots = PerceptionHelpers.CollectHotspots(metrics.Objects, deepHierarchyThreshold, largeChildCountThreshold, maxResults);
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = metrics.Scene.name,
-            thresholds = new
-            {
-                deepHierarchyThreshold,
-                largeChildCountThreshold
-            },
+            thresholds = new { deepHierarchyThreshold, largeChildCountThreshold },
             hotspotCount = hotspots.Count,
             hotspots = hotspots.Select(h => new
             {

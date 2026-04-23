@@ -2,9 +2,6 @@
 
 Read the full importer settings for a texture asset.
 
-**Skill ID:** `texture_get_settings`
-**Source:** `TextureSkills.cs` — `TextureGetSettings`
-
 ## Signature
 
 ```
@@ -14,13 +11,7 @@ texture_get_settings(assetPath: string)
       spriteMode, spritePixelsPerUnit, npotScale }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture asset |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
@@ -32,15 +23,15 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Textures/hero.png"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
         if (importer == null)
-            return new { error = $"Not a texture or asset not found: {assetPath}" };
+            { result.SetResult(new { error = $"Not a texture or asset not found: {assetPath}" }); return; }
 
         var platformSettings = importer.GetDefaultPlatformTextureSettings();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             path = assetPath,
@@ -58,7 +49,7 @@ internal class CommandScript : IRunCommand
             spriteMode = importer.spriteImportMode.ToString(),
             spritePixelsPerUnit = importer.spritePixelsPerUnit,
             npotScale = importer.npotScale.ToString()
-        };
+        }); return; }
     }
 }
 ```

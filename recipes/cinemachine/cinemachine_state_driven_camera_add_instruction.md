@@ -12,9 +12,13 @@ Add a state-to-camera mapping instruction to a `CinemachineStateDrivenCamera`. W
 - `activateAfter` — delay in seconds before the camera activates.
 - The child camera must be a direct child of the StateDrivenCamera in the hierarchy.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -46,7 +50,17 @@ internal class CommandScript : IRunCommand
 
         WorkflowManager.SnapshotObject(go);
         Undo.RecordObject(stateCam, "Add Instruction");
-        CinemachineAdapter.AddStateDrivenInstruction(stateCam, hash, childVcam, minDuration, activateAfter);
+
+        var list = new List<CinemachineStateDrivenCamera.Instruction>();
+        if (stateCam.Instructions != null) list.AddRange(stateCam.Instructions);
+        list.Add(new CinemachineStateDrivenCamera.Instruction
+        {
+            FullHash = hash,
+            Camera = childVcam,
+            MinDuration = minDuration,
+            ActivateAfter = activateAfter
+        });
+        stateCam.Instructions = list.ToArray();
         EditorUtility.SetDirty(stateCam);
 
         result.SetResult(new { success = true, message = "Added instruction: " + stateName + " -> " + childGo.name });

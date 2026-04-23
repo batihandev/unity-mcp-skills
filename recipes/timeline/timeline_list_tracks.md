@@ -10,6 +10,8 @@ List all tracks in a Timeline.
 - Read-only operation; does not modify or save any assets
 - `type` is the C# class name (e.g. `AudioTrack`, `AnimationTrack`)
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

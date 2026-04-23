@@ -11,11 +11,12 @@ Find potentially unused assets of a given type by checking whether any other ass
 - `assetType` accepts any Unity asset type string: `"Material"`, `"Texture2D"`, `"Prefab"`, `"AudioClip"`, etc.
 - The dependency scan covers all assets under `Assets/`; large projects may be slow
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -26,19 +27,22 @@ internal class CommandScript : IRunCommand
 
         var filter = $"t:{assetType}";
         var guids = AssetDatabase.FindAssets(filter);
-        var candidatePaths = new HashSet<string>(
-            guids.Select(AssetDatabase.GUIDToAssetPath).Where(p => !string.IsNullOrEmpty(p)),
-            System.StringComparer.OrdinalIgnoreCase);
+        var candidatePaths = new List<string>();
+        foreach (var g in guids)
+        {
+            var p = AssetDatabase.GUIDToAssetPath(g);
+            if (!string.IsNullOrEmpty(p) && !candidatePaths.Contains(p)) candidatePaths.Add(p);
+        }
 
         var allGuids = AssetDatabase.FindAssets("t:Object", new[] { "Assets" });
-        var referencedPaths = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+        var referencedPaths = new List<string>();
         foreach (var g in allGuids)
         {
             var assetPath = AssetDatabase.GUIDToAssetPath(g);
             if (string.IsNullOrEmpty(assetPath)) continue;
             foreach (var dep in AssetDatabase.GetDependencies(assetPath, true))
             {
-                if (dep != assetPath && candidatePaths.Contains(dep))
+                if (dep != assetPath && candidatePaths.Contains(dep) && !referencedPaths.Contains(dep))
                     referencedPaths.Add(dep);
             }
         }

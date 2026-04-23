@@ -6,6 +6,8 @@ Get the NavMesh build settings for the default agent (index 0). Returns agent ra
 
 **Returns:** `{ success, agentRadius, agentHeight, agentSlope, agentClimb }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.AI;

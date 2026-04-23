@@ -6,6 +6,8 @@ Set a parameter value on an Animator component at runtime. Resolves the GameObje
 
 **Returns:** `{ success, gameObject, parameter, value }` — trigger returns `{ success, gameObject, parameter, triggered: true }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

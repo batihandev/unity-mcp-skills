@@ -6,6 +6,8 @@ Focus the Scene View camera on a world-space point. Preserves the current rotati
 
 **Returns:** `{ success }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

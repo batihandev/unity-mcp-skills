@@ -10,6 +10,8 @@ Create a Panel UI element (full-stretch Image container) under a Canvas.
 - If `parent` is not found, the skill auto-creates or reuses the first Canvas in the scene.
 - The panel stretches to fill its parent by default (`anchorMin = 0,0` / `anchorMax = 1,1`).
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,13 +40,32 @@ internal class CommandScript : IRunCommand
         rectTransform.anchorMax = Vector2.one;
         rectTransform.sizeDelta = Vector2.zero;
 
-        var image = go.AddComponent<Image>();
+        var image = go.AddComponent<UnityEngine.UI.Image>();
         image.color = new Color(r, g, b, a);
 
         Undo.RegisterCreatedObjectUndo(go, "Create Panel");
         WorkflowManager.SnapshotObject(go, SnapshotType.Created);
 
         result.SetResult(new { success = true, name = go.name, instanceId = go.GetInstanceID(), parent = parentGo.name });
+    }
+
+    private static GameObject FindOrCreateCanvas(string parentName)
+    {
+        if (!string.IsNullOrEmpty(parentName))
+        {
+            var p = GameObject.Find(parentName);
+            if (p != null) return p;
+        }
+        var canvas = Object.FindFirstObjectByType<Canvas>();
+        if (canvas != null) return canvas.gameObject;
+        var go = new GameObject("Canvas");
+        var canvasComp = go.AddComponent<Canvas>();
+        canvasComp.renderMode = RenderMode.ScreenSpaceOverlay;
+        go.AddComponent<CanvasScaler>();
+        go.AddComponent<GraphicRaycaster>();
+        Undo.RegisterCreatedObjectUndo(go, "Create Canvas");
+        WorkflowManager.SnapshotObject(go, SnapshotType.Created);
+        return go;
     }
 }
 ```

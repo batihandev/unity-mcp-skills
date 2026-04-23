@@ -6,13 +6,13 @@ Remove a persistent listener from a UnityEvent by its zero-based index. The inde
 
 **Returns:** `{ success, remainingCount }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
 using UnityEditor.Events;
-using System.Reflection;
-
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -31,8 +31,10 @@ internal class CommandScript : IRunCommand
         if (component == null) { result.SetResult(new { error = $"Component not found: {componentName}" }); return; }
 
         var type = component.GetType();
-        var field = type.GetField(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        var property = type.GetProperty(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        System.Reflection.FieldInfo field = null;
+        foreach (var _f in type.GetFields()) if (_f.Name == eventName) { field = _f; break; }
+        System.Reflection.PropertyInfo property = null;
+        foreach (var _p in type.GetProperties()) if (_p.Name == eventName) { property = _p; break; }
 
         UnityEventBase unityEvent = null;
         if (field != null) unityEvent = field.GetValue(component) as UnityEventBase;

@@ -2,9 +2,6 @@
 
 Read a minimal set of model importer settings (bridge getter).
 
-**Skill ID:** `model_get_import_settings`
-**Source:** `AssetImportSkills.cs` — `ModelGetImportSettings`
-
 ## Signature
 
 ```
@@ -13,13 +10,7 @@ model_get_import_settings(assetPath: string)
       meshCompression, readable, generateColliders }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
@@ -32,9 +23,9 @@ internal class CommandScript : IRunCommand
         string assetPath = "Assets/Models/hero.fbx"; // Replace with target path
 
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
-        if (importer == null) return new { error = $"Not a model: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a model: {assetPath}" }); return; }
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
@@ -44,13 +35,11 @@ internal class CommandScript : IRunCommand
             meshCompression = importer.meshCompression.ToString(),
             readable = importer.isReadable,
             generateColliders = importer.addCollider
-        };
+        }); return; }
     }
 }
 ```
 
 ## Notes
-
-- `importMaterials` is a simplified bool (`true` when `materialImportMode != None`).
 - For the full importer settings including normals, tangents, blend shapes, etc., use `model_get_settings`.
-- Read-only; no reimport triggered.
+

@@ -2,9 +2,6 @@
 
 Update fields on an AudioSource component attached to a scene GameObject.
 
-**Skill ID:** `audio_set_source_properties`
-**Source:** `AudioSkills.cs` — `AudioSetSourceProperties`
-
 ## Signature
 
 ```
@@ -23,25 +20,7 @@ audio_set_source_properties(
 ) → { success, gameObject }
 ```
 
-## Parameters
-
-Target resolution — provide at least one of `name`, `instanceId`, or `path`:
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | no | GameObject name |
-| `instanceId` | int | no | GameObject instance ID |
-| `path` | string | no | Hierarchy path |
-| `clipPath` | string | no | Asset path to new AudioClip |
-| `volume` | float | no | 0.0–1.0 |
-| `pitch` | float | no | Pitch multiplier |
-| `loop` | bool | no | Loop the clip |
-| `playOnAwake` | bool | no | Auto-play on scene start |
-| `mute` | bool | no | Mute the source |
-| `spatialBlend` | float | no | 0 = 2D, 1 = 3D |
-| `priority` | int | no | 0–256 (0 = highest) |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;
@@ -64,7 +43,7 @@ internal class CommandScript : IRunCommand
         int? priority = null;
 
         var (source, error) = GameObjectFinder.FindComponentOrError<AudioSource>(name, instanceId, path);
-        if (error != null) return error;
+        if (error != null) { result.SetResult(error); return; }
 
         Undo.RecordObject(source, "Set AudioSource Properties");
 
@@ -82,7 +61,7 @@ internal class CommandScript : IRunCommand
         if (spatialBlend.HasValue)source.spatialBlend = spatialBlend.Value;
         if (priority.HasValue)    source.priority    = priority.Value;
 
-        return new { success = true, gameObject = source.gameObject.name };
+        { result.SetResult(new { success = true, gameObject = source.gameObject.name }); return; }
     }
 }
 ```

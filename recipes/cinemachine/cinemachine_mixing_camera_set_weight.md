@@ -11,9 +11,12 @@ Set the blend weight of a child VCam within a `CinemachineMixingCamera`.
 - A weight of `0` effectively disables that child's contribution.
 - The child must be a direct child of the MixingCamera in the hierarchy and must have a `CinemachineVirtualCameraBase` component.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {

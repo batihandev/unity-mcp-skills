@@ -11,9 +11,12 @@ Add or update a member in a `CinemachineTargetGroup`. If the member already exis
 - `radius` is the bounding sphere radius used for framing calculations.
 - Provide at least one of `groupName`/`groupInstanceId`/`groupPath` and one of `targetName`/`targetInstanceId`/`targetPath`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {

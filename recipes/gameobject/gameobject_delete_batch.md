@@ -13,50 +13,48 @@ Delete multiple GameObjects in one call.
 - Accepts a plain string array (`["Cube", "Sphere"]`) for convenience, in addition to the full object form.
 - Each item is normalized internally; a missing object causes that item to fail without stopping the rest.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchDeleteItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        // Simple form: array of names
-        string items = @"[""Cube"", ""Sphere"", ""EmptyObj""]";
+        var items = new[]
+        {
+            new _BatchDeleteItem { name = "Cube" },
+            new _BatchDeleteItem { instanceId = 12345 },
+            new _BatchDeleteItem { path = "Parent/Child" },
+        };
 
-        // Full form: array of objects (can also use instanceId or path)
-        // string items = @"[
-        //     { ""name"": ""Cube"" },
-        //     { ""instanceId"": 12345 },
-        //     { ""path"": ""Parent/Child"" }
-        // ]";
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
 
-        /* Original Logic:
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
-            if (Validate.RequiredJsonArray(items, "items") is object err) return err;
+            var deletedName = go.name;
+            WorkflowManager.SnapshotObject(go);
+            Undo.DestroyObjectImmediate(go);
+            results.Add(new { target = deletedName, success = true });
+            successCount++;
+        }
 
-            try
-            {
-                var normalizedItems = NormalizeDeleteBatchItems(items);
-                return BatchExecutor.Execute<BatchDeleteItem>(normalizedItems, item =>
-                {
-                    var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                    if (error != null)
-                        throw new System.Exception("Object not found");
-
-                    var deletedName = go.name;
-                    WorkflowManager.SnapshotObject(go);
-                    Undo.DestroyObjectImmediate(go);
-                    return new { target = deletedName, success = true };
-                }, item => item.name ?? item.path ?? item.instanceId.ToString());
-            }
-            catch (System.Exception ex)
-            {
-                return new { error = $"Failed to parse items JSON: {ex.Message}" };
-            }
-        */
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

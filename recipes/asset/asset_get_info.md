@@ -6,6 +6,8 @@ Get metadata about an asset: name, type, GUID, and labels.
 
 **Returns:** `{ path, name, type, guid, labels }` — or `{ error }` if the asset is not found.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -12,7 +12,7 @@ Get project information including Unity version, product name, company name, pla
 - `recommendedShaders` provides pipeline-aware shader and property names; use these before hardcoding `"Standard"` or `"_Color"`.
 - `isPlaying` reflects `Application.isPlaying` — most edits should only run when `false`.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

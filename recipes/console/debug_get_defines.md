@@ -11,7 +11,7 @@ Get the scripting define symbols (preprocessor symbols) configured for the curre
 - Uses `EditorUserBuildSettings.selectedBuildTargetGroup` to resolve the target.
 - Use `debug_set_defines` to modify the symbols.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
@@ -23,7 +23,7 @@ internal class CommandScript : IRunCommand
     {
         var group = EditorUserBuildSettings.selectedBuildTargetGroup;
         var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
-        result.Return(new { success = true, buildTargetGroup = group.ToString(), defines });
+        result.SetResult(new { success = true, buildTargetGroup = group.ToString(), defines });
     }
 }
 ```

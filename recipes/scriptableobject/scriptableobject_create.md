@@ -6,6 +6,8 @@ Create a new ScriptableObject asset.
 
 **Returns:** `{ success, type, path }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -20,7 +22,16 @@ internal class CommandScript : IRunCommand
 
         if (Validate.SafePath(savePath, "savePath") is object pathErr) { result.SetResult(pathErr); return; }
 
-        var type = FindScriptableObjectType(typeName);
+        System.Type type = null;
+        foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (asm.IsDynamic) continue;
+            System.Type[] asmTypes;
+            try { asmTypes = asm.GetTypes(); } catch { continue; }
+            foreach (var t in asmTypes)
+                if (t.Name == typeName && t.IsSubclassOf(typeof(ScriptableObject)) && !t.IsAbstract) { type = t; break; }
+            if (type != null) break;
+        }
         if (type == null)
         {
             result.SetResult(new { error = $"ScriptableObject type not found: {typeName}" });

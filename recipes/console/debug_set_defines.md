@@ -8,16 +8,15 @@ Set the scripting define symbols (preprocessor symbols) for the currently select
 |-----------|------|----------|---------|-------------|
 | `defines` | string | Yes | — | Semicolon-separated list of define symbols, e.g. `"MY_DEFINE;ANOTHER_DEFINE"` |
 
-**Returns:** `{ success, buildTargetGroup, defines, serverAvailability }`
+**Returns:** `{ success, buildTargetGroup, defines }`
 
 ## Notes
 
-- Changing defines triggers immediate recompilation; the REST server will be transiently unavailable.
-- `serverAvailability` contains a structured notice; always surface it to the user.
+- Changing defines triggers immediate recompilation; subsequent `Unity_RunCommand` calls queue during the reload window.
 - To read current defines first, call `debug_get_defines`.
 - Replaces all existing defines — pass the full desired set, not a diff.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
@@ -27,19 +26,12 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string defines = "MY_DEFINE;ANOTHER_DEFINE";  // full semicolon-separated list
+        string defines = "MY_DEFINE;ANOTHER_DEFINE";
 
         var group = EditorUserBuildSettings.selectedBuildTargetGroup;
         PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
-        result.Return(new
-        {
-            success = true,
-            buildTargetGroup = group.ToString(),
-            defines,
-            serverAvailability = ServerAvailabilityHelper.CreateTransientUnavailableNotice(
-                "Scripting define symbols changed. Unity may recompile assemblies immediately.",
-                alwaysInclude: true)
-        });
+
+        result.SetResult(new { success = true, buildTargetGroup = group.ToString(), defines });
     }
 }
 ```

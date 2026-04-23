@@ -8,6 +8,8 @@ Set one or more Game Camera properties. Pass only the parameters you want to cha
 
 Valid `clearFlags` values: `Skybox`, `SolidColor`, `Depth`, `Nothing`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

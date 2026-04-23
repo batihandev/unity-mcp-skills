@@ -2,9 +2,6 @@
 
 Create a new AudioMixer asset in the project.
 
-**Skill ID:** `audio_create_mixer`
-**Source:** `AudioSkills.cs` — `AudioCreateMixer`
-
 ## Signature
 
 ```
@@ -12,14 +9,7 @@ audio_create_mixer(mixerName?: string = "NewAudioMixer", folder?: string = "Asse
   → { success, path, name }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `mixerName` | string | no | `"NewAudioMixer"` | Name of the mixer asset (no path separators) |
-| `folder` | string | no | `"Assets"` | Destination folder in the project |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
@@ -33,14 +23,14 @@ internal class CommandScript : IRunCommand
         string mixerName = "MusicMixer"; // Replace with desired name
         string folder = "Assets/Audio";  // Replace with destination folder
 
-        if (Validate.Required(mixerName, "mixerName") is object nameErr) return nameErr;
+        if (Validate.Required(mixerName, "mixerName") is object nameErr) { result.SetResult(nameErr); return; }
         if (mixerName.Contains("/") || mixerName.Contains("\\") || mixerName.Contains(".."))
-            return new { error = "mixerName must not contain path separators" };
-        if (Validate.SafePath(folder, "folder") is object pathErr) return pathErr;
+            { result.SetResult(new { error = "mixerName must not contain path separators" }); return; }
+        if (Validate.SafePath(folder, "folder") is object pathErr) { result.SetResult(pathErr); return; }
         if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
         var savePath = Path.Combine(folder, mixerName + ".mixer").Replace("\\", "/");
-        if (File.Exists(savePath)) return new { error = $"Mixer already exists: {savePath}" };
+        if (File.Exists(savePath)) { result.SetResult(new { error = $"Mixer already exists: {savePath}" }); return; }
 
         // Find AudioMixerController type (location varies by Unity version)
         System.Type mixerType = null;
@@ -49,12 +39,14 @@ internal class CommandScript : IRunCommand
             mixerType = asm.GetType("UnityEditor.Audio.AudioMixerController");
             if (mixerType != null) break;
         }
-        if (mixerType == null) return new { error = "AudioMixerController type not found" };
+        if (mixerType == null) { result.SetResult(new { error = "AudioMixerController type not found" }); return; }
 
-        var createMethod = mixerType.GetMethod("CreateMixerControllerAtPath",
-            System.Reflection.BindingFlags.Static |
-            System.Reflection.BindingFlags.Public |
-            System.Reflection.BindingFlags.NonPublic);
+        // BindingFlags unavailable in Unity_RunCommand context; GetMethods() returns public members only
+        System.Reflection.MethodInfo createMethod = null;
+        foreach (var m in mixerType.GetMethods())
+        {
+            if (m.IsStatic && m.Name == "CreateMixerControllerAtPath") { createMethod = m; break; }
+        }
 
         if (createMethod != null)
         {
@@ -62,7 +54,7 @@ internal class CommandScript : IRunCommand
             if (output != null)
             {
                 AssetDatabase.SaveAssets();
-                return new { success = true, path = savePath, name = mixerName };
+                { result.SetResult(new { success = true, path = savePath, name = mixerName }); return; }
             }
         }
 
@@ -73,10 +65,10 @@ internal class CommandScript : IRunCommand
             mixer.name = mixerName;
             AssetDatabase.CreateAsset(mixer, savePath);
             AssetDatabase.SaveAssets();
-            return new { success = true, path = savePath, name = mixerName };
+            { result.SetResult(new { success = true, path = savePath, name = mixerName }); return; }
         }
 
-        return new { error = "Failed to create AudioMixer. Use Assets > Create > Audio > Audio Mixer manually." };
+        { result.SetResult(new { error = "Failed to create AudioMixer. Use Assets > Create > Audio > Audio Mixer manually." }); return; }
     }
 }
 ```

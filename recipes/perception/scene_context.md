@@ -1,8 +1,5 @@
 # scene_context
 
-**Skill:** `scene_context`
-**C# method:** `PerceptionSkills.SceneContext`
-
 ## Signature
 
 ```
@@ -15,28 +12,19 @@ SceneContext(
     bool includeCodeDeps = false)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `maxDepth` | `int` | `10` | Maximum hierarchy depth to traverse |
-| `maxObjects` | `int` | `200` | Maximum number of objects to export |
-| `rootPath` | `string` | `null` | Limit export to one subtree by object path |
-| `includeValues` | `bool` | `false` | Include serialized field values |
-| `includeReferences` | `bool` | `true` | Include cross-object serialized reference edges |
-| `includeCodeDeps` | `bool` | `false` | Include C# code-level dependency edges |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `totalObjects`, `scopeObjects`, `exportedObjects`, `truncated`, `objects` array, `references` array (when `includeReferences`), `codeDependencies` array (when `includeCodeDeps`).
 
-## RunCommand Recipe
+**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
+
+internal struct _CodeDepEdge_sc { public string fromScript, toObject, fieldType, fieldName; }
 
 internal class CommandScript : IRunCommand
 {
@@ -59,7 +47,7 @@ internal class CommandScript : IRunCommand
             var rootGo = GameObjectFinder.FindByPath(rootPath);
             if (rootGo == null)
             {
-                result.SetValue(new { success = false, error = $"Root path '{rootPath}' not found" });
+                result.SetResult(new { success = false, error = $"Root path '{rootPath}' not found" });
                 return;
             }
             roots = new[] { rootGo.transform };
@@ -102,7 +90,7 @@ internal class CommandScript : IRunCommand
             }).ToList();
         }
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = scene.name,
@@ -114,6 +102,24 @@ internal class CommandScript : IRunCommand
             references = includeReferences ? references : null,
             codeDependencies = codeDeps
         });
+    }
+
+    private static object BuildObjectInfo(GameObject go, bool includeValues, bool includeReferences, List<object> references, List<Component> buf, HashSet<string> scripts)
+    {
+        buf.Clear(); go.GetComponents(buf);
+        return new { name = go.name, path = GameObjectFinder.GetCachedPath(go), components = buf.ConvertAll(c => c != null ? c.GetType().Name : null) };
+    }
+
+    private static int CountSubtreeObjects(Transform t)
+    {
+        int count = 1;
+        foreach (Transform child in t) count += CountSubtreeObjects(child);
+        return count;
+    }
+
+    private static System.Collections.Generic.IEnumerable<_CodeDepEdge_sc> CollectCodeDependencies(HashSet<string> scripts)
+    {
+        yield break;
     }
 }
 ```

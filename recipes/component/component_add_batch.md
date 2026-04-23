@@ -4,12 +4,6 @@ Add components to multiple GameObjects in a single call. Use instead of repeated
 
 **Signature:** `ComponentAddBatch(string items)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `items` | string | Yes | JSON array of batch items |
-
 ### Batch Item Schema
 
 ```json
@@ -46,42 +40,73 @@ If a component already exists (and disallows multiple), the item returns with a 
 - Each item is processed independently; failures in one item do not block others.
 - Records created components in the workflow snapshot if a workflow is recording.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _AddComponentItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public string componentType;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        var items = new[]
+        {
+            new _AddComponentItem { name = "Enemy1", componentType = "Rigidbody" },
+            new _AddComponentItem { path = "Level/Obstacles/Rock", componentType = "MeshCollider" },
+        };
 
-            return BatchExecutor.Execute<BatchAddComponentItem>(items, item =>
-            {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
 
-                if (string.IsNullOrEmpty(item.componentType))
-                    throw new System.Exception("componentType required");
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
 
-                var type = FindComponentType(item.componentType);
-                if (type == null)
-                    throw new System.Exception($"Component type not found: {item.componentType}");
+            var (go, findErr) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (findErr != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
-                if (go.GetComponent(type) != null && !AllowMultiple(type))
-                    return new { target = go.name, success = true, warning = "Component already exists", component = type.Name };
+            if (string.IsNullOrEmpty(item.componentType))
+            { results.Add(new { target, success = false, error = "componentType required" }); failCount++; continue; }
 
-                var comp = Undo.AddComponent(go, type);
+            var type = ComponentSkills.FindComponentType(item.componentType);
+            if (type == null)
+            { results.Add(new { target, success = false, error = "Component type not found: " + item.componentType }); failCount++; continue; }
 
-                if (WorkflowManager.IsRecording)
-                    WorkflowManager.SnapshotCreatedComponent(comp);
+            if (go.GetComponent(type) != null && !AllowMultiple(type))
+            { results.Add(new { target = go.name, success = true, warning = "Component already exists", component = type.Name }); successCount++; continue; }
 
-                EditorUtility.SetDirty(go);
-                return new { target = go.name, success = true, component = type.Name };
-            }, item => item.name ?? item.path);
-        */
+            var comp = Undo.AddComponent(go, type);
+            if (WorkflowManager.IsRecording) WorkflowManager.SnapshotCreatedComponent(comp);
+            EditorUtility.SetDirty(go);
+
+            results.Add(new { target = go.name, success = true, component = type.Name });
+            successCount++;
+        }
+
+        result.SetResult(new
+        {
+            success = failCount == 0,
+            totalItems = items.Length,
+            successCount,
+            failCount,
+            results
+        });
+    }
+
+    private static bool AllowMultiple(System.Type type)
+    {
+        try { return type.GetCustomAttributes(typeof(DisallowMultipleComponent), true).Length == 0; }
+        catch { return true; }
     }
 }
 ```

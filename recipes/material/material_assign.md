@@ -7,12 +7,9 @@ Assign a material asset to a renderer on a GameObject.
 **Returns:** `{ success, gameObject, material }`
 
 ## Notes
-
 - Exactly one of `name`, `instanceId`, or `path` must identify the target GameObject.
-- `materialPath` is the asset path of the material to assign (e.g. `Assets/Materials/MyMat.mat`). Required.
-- Fails if the GameObject has no `Renderer` component.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -27,27 +24,24 @@ internal class CommandScript : IRunCommand
         string path = null;                              // or use hierarchy path
         string materialPath = "Assets/Materials/Red.mat"; // required
 
-        /* Original Logic:
+        if (Validate.Required(materialPath, "materialPath") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(materialPath, "materialPath") is object err) return err;
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        var renderer = go.GetComponent<Renderer>();
+        if (renderer == null)
+            { result.SetResult(new { error = "No Renderer component found" }); return; }
 
-            var renderer = go.GetComponent<Renderer>();
-            if (renderer == null)
-                return new { error = "No Renderer component found" };
+        var material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+        if (material == null)
+            { result.SetResult(new { error = $"Material not found: {materialPath}" }); return; }
 
-            var material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
-            if (material == null)
-                return new { error = $"Material not found: {materialPath}" };
+        WorkflowManager.SnapshotObject(renderer);
+        Undo.RecordObject(renderer, "Assign Material");
+        renderer.sharedMaterial = material;
 
-            WorkflowManager.SnapshotObject(renderer);
-            Undo.RecordObject(renderer, "Assign Material");
-            renderer.sharedMaterial = material;
-
-            return new { success = true, gameObject = go.name, material = materialPath };
-        */
+        { result.SetResult(new { success = true, gameObject = go.name, material = materialPath }); return; }
     }
 }
 ```

@@ -12,7 +12,7 @@ Get the current quality level and all quality level definitions, plus key render
 - `allLevels` contains all levels defined in Project Settings > Quality, ordered by index.
 - `shadows`, `shadowResolution` are string representations of the corresponding `ShadowQuality` and `ShadowResolution` enums.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

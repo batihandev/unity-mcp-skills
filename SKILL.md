@@ -42,7 +42,7 @@ Do not attempt to work around missing files by fabricating recipe content.
 | asset | `skills/asset/SKILL.md` | `Unity_RunCommand` |
 | ui | `skills/ui/SKILL.md` | `Unity_RunCommand` |
 | uitoolkit | `skills/uitoolkit/SKILL.md` | `Unity_RunCommand` |
-| script | `skills/script/SKILL.md` | `Unity_ScriptApplyEdits` |
+| script | `skills/script/SKILL.md` | Native MCP only (`Unity_CreateScript` / `Unity_ScriptApplyEdits` / `Unity_ValidateScript` / …) — no recipes |
 | scene | `skills/scene/SKILL.md` | `Unity_RunCommand` |
 | editor | `skills/editor/SKILL.md` | `Unity_RunCommand` |
 | animator | `skills/animator/SKILL.md` | `Unity_RunCommand` |
@@ -62,10 +62,9 @@ Do not attempt to work around missing files by fabricating recipe content.
 | perception | `skills/perception/SKILL.md` | `Unity_RunCommand` |
 | camera | `skills/camera/SKILL.md` | `Unity_Camera_Capture` |
 | event | `skills/event/SKILL.md` | `Unity_RunCommand` |
-| package | `skills/package/SKILL.md` | `Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData` |
+| package | `skills/package/SKILL.md` | Native MCP only (`Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData`) |
 | project | `skills/project/SKILL.md` | `Unity_GetProjectData` |
 | optimization | `skills/optimization/SKILL.md` | `Unity_RunCommand` |
-| sample | `skills/sample/SKILL.md` | `Unity_RunCommand` |
 | test | `skills/test/SKILL.md` | `Unity_RunCommand` |
 | scriptableobject | `skills/scriptableobject/SKILL.md` | `Unity_RunCommand` |
 

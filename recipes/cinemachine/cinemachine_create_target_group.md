@@ -10,9 +10,12 @@ Create a new `CinemachineTargetGroup` GameObject in the scene. A target group le
 - After creation, add members with `cinemachine_target_group_add_member`.
 - Assign the resulting GameObject as a VCam's Follow or LookAt target via `cinemachine_set_targets`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {

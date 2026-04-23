@@ -8,6 +8,8 @@ Set PhysicMaterial on a collider. Supports lookup by name, instanceId, or hierar
 
 > Unity 6+: loads `PhysicsMaterial`; older versions: `PhysicMaterial`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -31,11 +33,7 @@ internal class CommandScript : IRunCommand
             return;
         }
 
-#if UNITY_6000_0_OR_NEWER
         var mat = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(materialPath);
-#else
-        var mat = AssetDatabase.LoadAssetAtPath<PhysicMaterial>(materialPath);
-#endif
         if (mat == null)
         {
             result.SetResult(new { error = $"PhysicMaterial not found: {materialPath}" });

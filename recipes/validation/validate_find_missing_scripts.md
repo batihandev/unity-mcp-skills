@@ -10,6 +10,8 @@ Find all GameObjects in the scene (and optionally prefab assets) that have missi
 - `source` is either `"Scene"` or `"Prefab"`
 - Prefab objects include a `prefabPath` field instead of `path`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

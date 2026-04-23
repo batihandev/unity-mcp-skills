@@ -7,15 +7,18 @@ Configure ClearShot, StateDriven, or Sequencer camera-manager properties in one 
 **Returns:** `{ success, message }` or `{ error }`
 
 **Parameter applicability:**
-- `activateAfter`, `minDuration`, `randomizeChoice` — ClearShot only (CM3: `ActivateAfter`/`MinDuration`/`RandomizeChoice`; CM2: `m_ActivateAfter`/`m_MinDuration`/`m_RandomizeChoice`)
+- `activateAfter`, `minDuration`, `randomizeChoice` — ClearShot only
 - `animatorName`, `layerIndex` — StateDriven only
 - `defaultBlendStyle`, `defaultBlendTime` — ClearShot and StateDriven
 - `loop` — Sequencer only
+
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -44,22 +47,20 @@ internal class CommandScript : IRunCommand
         if (clearShot != null)
         {
             Undo.RecordObject(clearShot, "Configure ClearShot");
-#if CINEMACHINE_3
             if (activateAfter.HasValue) { clearShot.ActivateAfter = activateAfter.Value; changes.Add("activateAfter=" + activateAfter.Value); }
             if (minDuration.HasValue) { clearShot.MinDuration = minDuration.Value; changes.Add("minDuration=" + minDuration.Value); }
             if (randomizeChoice.HasValue) { clearShot.RandomizeChoice = randomizeChoice.Value; changes.Add("randomize=" + randomizeChoice.Value); }
             if (defaultBlendStyle != null || defaultBlendTime.HasValue)
             {
-                string style = defaultBlendStyle ?? CinemachineAdapter.GetBlendStyle(clearShot.DefaultBlend);
-                float t = defaultBlendTime ?? CinemachineAdapter.GetBlendTime(clearShot.DefaultBlend);
-                clearShot.DefaultBlend = CinemachineAdapter.CreateBlendDefinition(style, t);
+                var current = clearShot.DefaultBlend;
+                string style = defaultBlendStyle ?? current.Style.ToString();
+                float t = defaultBlendTime ?? current.Time;
+                var blend = new CinemachineBlendDefinition { Time = t };
+                if (System.Enum.TryParse<CinemachineBlendDefinition.Styles>(style, true, out var parsed))
+                    blend.Style = parsed;
+                clearShot.DefaultBlend = blend;
                 changes.Add("blend=" + style + " " + t + "s");
             }
-#else
-            if (activateAfter.HasValue) { clearShot.m_ActivateAfter = activateAfter.Value; changes.Add("activateAfter=" + activateAfter.Value); }
-            if (minDuration.HasValue) { clearShot.m_MinDuration = minDuration.Value; changes.Add("minDuration=" + minDuration.Value); }
-            if (randomizeChoice.HasValue) { clearShot.m_RandomizeChoice = randomizeChoice.Value; changes.Add("randomize=" + randomizeChoice.Value); }
-#endif
             EditorUtility.SetDirty(clearShot);
         }
 
@@ -76,11 +77,7 @@ internal class CommandScript : IRunCommand
                     var animator = animGo.GetComponent<Animator>();
                     if (animator != null)
                     {
-#if CINEMACHINE_3
                         stateDriven.AnimatedTarget = animator;
-#else
-                        stateDriven.m_AnimatedTarget = animator;
-#endif
                         changes.Add("animator=" + animatorName);
                     }
                 }
@@ -89,11 +86,11 @@ internal class CommandScript : IRunCommand
         }
 
         // Sequencer
-        var seq = CinemachineAdapter.GetSequencer(go);
+        var seq = go.GetComponent<CinemachineSequencerCamera>();
         if (seq != null && loop.HasValue)
         {
             Undo.RecordObject(seq, "Configure Sequencer");
-            CinemachineAdapter.SetSequencerLoop(seq, loop.Value);
+            seq.Loop = loop.Value;
             changes.Add("loop=" + loop.Value);
             EditorUtility.SetDirty(seq);
         }

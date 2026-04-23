@@ -6,6 +6,8 @@ List all UIDocument components present in the active scene.
 
 **Returns:** `{ count, documents[] { name, instanceId, visualTreeAsset, panelSettings, sortingOrder, active } }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -11,20 +11,24 @@ List all available Cinemachine component type names from the installed Cinemachi
 - Read-only — does not modify anything.
 - Useful for discovering valid values for `componentType` in `cinemachine_set_component`, `cinemachine_add_component`, and `cinemachine_add_extension`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
-using System.Reflection;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        var cmAssembly = CinemachineAdapter.CmAssembly;
+        var cmAssembly = typeof(CinemachineCamera).Assembly;
         System.Type[] assemblyTypes;
+        // Fully-qualify the catch type — short-name `ReflectionTypeLoadException` imported
+        // via `using System.Reflection;` trips the Unity_RunCommand reformatter NRE.
         try { assemblyTypes = cmAssembly.GetTypes(); }
-        catch (ReflectionTypeLoadException ex) { assemblyTypes = ex.Types.Where(t => t != null).ToArray(); }
+        catch (System.Reflection.ReflectionTypeLoadException ex) { assemblyTypes = ex.Types.Where(t => t != null).ToArray(); }
 
         var componentTypes = assemblyTypes
             .Where(t => t.IsSubclassOf(typeof(MonoBehaviour)) && !t.IsAbstract && t.IsPublic)

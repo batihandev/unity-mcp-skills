@@ -1,47 +1,45 @@
 ---
 name: unity-script
-description: "Use when creating, reading, replacing, or analyzing C# scripts in a Unity project."
+description: "Use when creating, reading, editing, searching, validating, or deleting C# scripts in a Unity project."
 ---
 
-# Unity Script Skills
+# Script Management
 
-## Native Tool First
+**Do not use `Unity_RunCommand` for script operations.** The Unity MCP server exposes dedicated tools for every common script operation. Use them directly — they handle Domain Reload coordination and diagnostics natively.
 
-Use the dedicated MCP script tools (`Unity_CreateScript`, `Unity_ScriptApplyEdits`, `script_create`, `script_replace`, `script_append`, `script_get_compile_feedback`, etc.) directly. Do NOT route script operations through `Unity_RunCommand` unless no dedicated script tool covers the need.
+## Routing
 
-Use `script_create_batch` when creating 2 or more scripts in one task to minimize Domain Reloads.
+| Operation | Tool | Typical use |
+|---|---|---|
+| Create a new C# script | `Unity_CreateScript` | Writes a new file under `Assets/`; sets up the MonoBehaviour/ScriptableObject/Editor template. |
+| Delete a C# script | `Unity_DeleteScript` | By URI (`unity://path/...`) or by `Assets/...` path. |
+| List script files | `Unity_ListResources` | Commonly filtered to `*.cs` under `Assets/`. |
+| Search inside a script | `Unity_FindInFile` | Regex-level matches with line numbers. |
+| Structured edits | `Unity_ScriptApplyEdits` | Method-level replace / insert / remove. Prefer this over raw text edits. |
+| Syntax + diagnostics check | `Unity_ValidateScript` | Call before and after edits; surfaces compile errors before they trigger a Domain Reload. |
+| Hash for concurrency | `Unity_GetSha` | Compare against your expected hash to detect conflicting edits before writing. |
 
-## Filename Must Match Class Name
+## Filename must match class name
 
-The script filename (without `.cs`) must exactly match the C# class name. Unity's asset database relies on this 1:1 mapping — mismatches silently break MonoBehaviour attachment and asset references.
+The `.cs` filename (without extension) must exactly match the top-level class name. Unity's asset database relies on the 1:1 mapping — mismatches silently break MonoBehaviour attachment and asset references.
 
-- `scriptName` parameter must NOT include the `.cs` extension.
-- When renaming a class, always rename the file with `script_rename` at the same time.
+- When creating a script, pass the `scriptName` **without** `.cs`.
+- When renaming a class, rename the file in the same operation.
 
-## Common Tool Mistakes to Avoid
+## Domain Reload coordination
 
-- `script_edit` and `script_update` do not exist — use `script_replace` for find-and-replace edits.
-- `script_write` does not exist — use `script_create` (new file) or `script_replace` (modify existing).
-- Templates only accept: `MonoBehaviour`, `ScriptableObject`, `Editor`, `EditorWindow`.
+After any script create / edit / delete, Unity triggers a Domain Reload (compilation + assembly swap). Tools return a `compilation` block where applicable — check it before issuing the next operation.
 
-## Domain Reload and Compile Warning
+1. If the response reports `isCompiling: true`, wait for it to settle before the next script edit.
+2. Once compilation completes, call `Unity_ValidateScript` on the affected file to surface any errors.
+3. Group related edits in a single task where possible — fewer edits = fewer Domain Reloads.
 
-After creating or editing any script, Unity triggers a Domain Reload (recompilation).
+## Style guardrails
 
-1. Check the `compilation` field returned by `script_create` / `script_replace` / `script_append`.
-2. If `compilation.isCompiling` is `true`, wait for Unity to finish before proceeding.
-3. After compilation completes, call `script_get_compile_feedback` for the affected script and fix any reported errors before continuing.
-4. Use batch creation (`script_create_batch`) to group related scripts and minimize the number of Domain Reloads in a single task.
-
-## Best-Practice Guardrails
-
-1. Use meaningful script names that match the class name exactly.
-2. Organize scripts in logical folders (e.g. `Assets/Scripts/<Feature>/`).
-3. Before creating gameplay code, decide the class role first: `MonoBehaviour`, `ScriptableObject`, or a plain C# helper/service class.
-4. Reduce coupling: prefer explicit dependencies, small responsibilities, and event-driven notifications over hidden globals.
-5. Consider performance: avoid unnecessary `Update` loops, repeated `Find` calls, reflection in hot paths, and avoidable allocations.
-6. Consider maintainability: clear naming, explicit ownership, Inspector-friendly fields, and simple module boundaries.
-7. Start from the smallest structure that solves the current need — avoid giant boilerplate dumps.
-8. Do not default to UniTask or a global event bus unless the project context justifies them.
-9. Avoid cryptic abbreviations in class, field, and method names unless they are already a project convention.
-10. After any script edit, call `script_get_compile_feedback` and fix all reported errors before marking the task done.
+- Meaningful, domain-specific class names.
+- Group scripts by feature under `Assets/Scripts/<Feature>/`.
+- Decide the class role first: `MonoBehaviour`, `ScriptableObject`, or plain C# helper.
+- Prefer explicit dependencies + small responsibilities + event-driven notifications over hidden globals.
+- Avoid `Update`-loop polling, repeated `GameObject.Find` calls, reflection in hot paths, avoidable allocations.
+- Start from the minimum structure that solves the need — don't dump boilerplate.
+- After any edit, run `Unity_ValidateScript` and fix reported errors before marking a task done.

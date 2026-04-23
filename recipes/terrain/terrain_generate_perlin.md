@@ -8,6 +8,8 @@ Generate natural-looking terrain using multi-octave Perlin noise.
 
 > **Parameters:** `scale` — lower values produce larger landscape features. `seed = 0` means random each time.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -93,7 +95,7 @@ internal class CommandScript : IRunCommand
             var go = GameObject.Find(name);
             return go?.GetComponent<Terrain>();
         }
-        return Object.FindObjectOfType<Terrain>();
+        return Object.FindFirstObjectByType<Terrain>();
     }
 }
 ```

@@ -6,6 +6,8 @@ Check for colliders in a sphere.
 
 **Returns:** `{ count, colliders: [{ collider, objectName, path, isTrigger }] }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

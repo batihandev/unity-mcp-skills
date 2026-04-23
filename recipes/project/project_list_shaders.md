@@ -4,13 +4,6 @@ List all available shaders in the project, combining asset-database shaders with
 
 **Signature:** `ProjectListShaders(string filter = null, int limit = 50)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `filter` | string | No | null | Case-insensitive substring filter on shader name |
-| `limit` | int | No | 50 | Maximum number of results returned |
-
 ## Returns
 
 ```json
@@ -28,7 +21,7 @@ List all available shaders in the project, combining asset-database shaders with
 - Results are deduplicated and sorted before the `limit` cap is applied.
 - To find all shaders, omit `filter` and raise `limit`.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

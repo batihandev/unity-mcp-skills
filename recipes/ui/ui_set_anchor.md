@@ -11,6 +11,8 @@ Apply an anchor preset to a UI element's RectTransform.
 - Spaces in preset names are stripped before matching.
 - Returns an error for unknown preset names.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

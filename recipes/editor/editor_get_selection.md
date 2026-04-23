@@ -8,6 +8,8 @@ Get all currently selected GameObjects.
 
 Note: no top-level `success` key — check that `count >= 0` to confirm a valid response.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

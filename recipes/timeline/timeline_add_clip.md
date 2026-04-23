@@ -11,6 +11,8 @@ Add a clip to a track by track name.
 - Uses `track.CreateDefaultClip()` so the clip type matches the track type
 - Timeline uses clips (not keyframes); `start` and `duration` are in seconds
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

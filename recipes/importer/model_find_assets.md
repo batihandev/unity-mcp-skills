@@ -2,9 +2,6 @@
 
 Search for model assets in the project using an AssetDatabase filter.
 
-**Skill ID:** `model_find_assets`
-**Source:** `ModelSkills.cs` — `ModelFindAssets`
-
 ## Signature
 
 ```
@@ -12,14 +9,7 @@ model_find_assets(filter?: string = "", limit?: int = 50)
   → { success, totalFound, showing, models[{ path, name }] }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `filter` | string | no | `""` | Additional AssetDatabase search terms appended to `t:Model` |
-| `limit` | int | no | `50` | Max results returned |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
@@ -40,7 +30,7 @@ internal class CommandScript : IRunCommand
             return new { path, name = System.IO.Path.GetFileNameWithoutExtension(path) };
         }).ToArray();
 
-        return new { success = true, totalFound = guids.Length, showing = models.Length, models };
+        { result.SetResult(new { success = true, totalFound = guids.Length, showing = models.Length, models }); return; }
     }
 }
 ```

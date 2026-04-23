@@ -12,7 +12,7 @@ Create a new GameObject (primitive or empty).
 - Parent is resolved before the object is created — fails fast if the parent does not exist.
 - Position is set as `localPosition` relative to the parent (or world origin if no parent).
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -29,53 +29,51 @@ internal class CommandScript : IRunCommand
         int parentInstanceId = 0; // optional: parent instance ID (preferred)
         string parentPath = null; // optional: parent hierarchy path
 
-        /* Original Logic:
+        // Resolve parent first so we fail fast before creating the object
+        GameObject parentGo = null;
+        if (!string.IsNullOrEmpty(parentName) || parentInstanceId != 0 || !string.IsNullOrEmpty(parentPath))
+        {
+            var (found, parentErr) = GameObjectFinder.FindOrError(parentName, parentInstanceId, parentPath);
+            if (parentErr != null) { result.SetResult(parentErr); return; }
+            parentGo = found;
+        }
 
-            // Resolve parent first so we fail fast before creating the object
-            GameObject parentGo = null;
-            if (!string.IsNullOrEmpty(parentName) || parentInstanceId != 0 || !string.IsNullOrEmpty(parentPath))
-            {
-                var (found, parentErr) = GameObjectFinder.FindOrError(parentName, parentInstanceId, parentPath);
-                if (parentErr != null) return parentErr;
-                parentGo = found;
-            }
+        GameObject go;
 
-            GameObject go;
+        if (string.IsNullOrEmpty(primitiveType) ||
+            primitiveType.Equals("Empty", System.StringComparison.OrdinalIgnoreCase) ||
+            primitiveType.Equals("None", System.StringComparison.OrdinalIgnoreCase))
+        {
+            go = new GameObject(name);
+            primitiveType = null;
+        }
+        else if (System.Enum.TryParse<PrimitiveType>(primitiveType, true, out var pt))
+        {
+            go = GameObject.CreatePrimitive(pt);
+            go.name = name;
+        }
+        else
+        {
+            result.SetResult(new { error = $"Unknown primitive type: {primitiveType}. Use: Cube, Sphere, Capsule, Cylinder, Plane, Quad, or Empty/None for empty object" });
+            return;
+        }
 
-            if (string.IsNullOrEmpty(primitiveType) ||
-                primitiveType.Equals("Empty", System.StringComparison.OrdinalIgnoreCase) ||
-                primitiveType.Equals("None", System.StringComparison.OrdinalIgnoreCase))
-            {
-                go = new GameObject(name);
-                primitiveType = null;
-            }
-            else if (System.Enum.TryParse<PrimitiveType>(primitiveType, true, out var pt))
-            {
-                go = GameObject.CreatePrimitive(pt);
-                go.name = name;
-            }
-            else
-            {
-                return new { error = $"Unknown primitive type: {primitiveType}. Use: Cube, Sphere, Capsule, Cylinder, Plane, Quad, or Empty/None for empty object" };
-            }
+        if (parentGo != null)
+            go.transform.SetParent(parentGo.transform, false);
 
-            if (parentGo != null)
-                go.transform.SetParent(parentGo.transform, false);
+        go.transform.localPosition = new Vector3(x, y, z);
+        Undo.RegisterCreatedObjectUndo(go, "Create " + name);
+        WorkflowManager.SnapshotCreatedGameObject(go, primitiveType);
 
-            go.transform.localPosition = new Vector3(x, y, z);
-            Undo.RegisterCreatedObjectUndo(go, "Create " + name);
-            WorkflowManager.SnapshotCreatedGameObject(go, primitiveType);
-
-            return new
-            {
-                success = true,
-                name = go.name,
-                instanceId = go.GetInstanceID(),
-                path = GameObjectFinder.GetPath(go),
-                parent = parentGo != null ? parentGo.name : "(root)",
-                position = new { x, y, z }
-            };
-        */
+        result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            path = GameObjectFinder.GetPath(go),
+            parent = parentGo != null ? parentGo.name : "(root)",
+            position = new { x, y, z }
+        });
     }
 }
 ```

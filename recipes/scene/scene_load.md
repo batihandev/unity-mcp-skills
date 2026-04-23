@@ -8,6 +8,8 @@ Load an existing scene from disk.
 
 Set `additive = true` to load the scene alongside the current one (multi-scene editing). The default `false` replaces the current scene. Save unsaved work before loading in single mode.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -6,6 +6,8 @@ Get the Scene View camera's current position, rotation, pivot, size, and project
 
 **Returns:** `{ position: {x,y,z}, rotation: {x,y,z}, pivot: {x,y,z}, size, orthographic }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -6,12 +6,7 @@ Set multiple fields on a ScriptableObject in a single operation.
 
 **Returns:** `{ success, fieldsSet }`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | Yes | Asset path of the ScriptableObject |
-| `fields` | string | Yes | JSON object with field-value pairs, e.g. `{"fieldName": "value", ...}` |
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md), [`value_converter`](../_shared/value_converter.md)
 
 ## Notes
 
@@ -19,38 +14,56 @@ Set multiple fields on a ScriptableObject in a single operation.
 - Uses `ComponentSkills.ConvertValue` to coerce each string value to the field's type.
 - All changes are recorded as a single Undo operation and auto-saved.
 
+## Parameters (typed-array shape)
+
+The upstream JSON-string form is replaced by a typed `_SOFieldItem[]` — `{ name, value }` per item. Agents pass a native C# array, not JSON.
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using System.Reflection;
+using System.Linq;
+using System.Collections.Generic;
+
+internal sealed class _SOFieldItem
+{
+    public string name;
+    public string value;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string assetPath = "Assets/Data/MyAsset.asset"; // Asset path of the ScriptableObject
-        string fields = "{\"health\": \"100\", \"speed\": \"5.5\"}"; // JSON field-value pairs
+        string assetPath = "Assets/Data/MyAsset.asset";
+        var fields = new[]
+        {
+            new _SOFieldItem { name = "health", value = "100" },
+            new _SOFieldItem { name = "speed", value = "5.5" },
+        };
 
         var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
         if (asset == null) { result.SetResult(new { error = $"ScriptableObject not found: {assetPath}" }); return; }
-
-        var dict = Newtonsoft.Json.JsonConvert.DeserializeObject<System.Collections.Generic.Dictionary<string, string>>(fields);
-        if (dict == null || dict.Count == 0) { result.SetResult(new { error = "No fields provided" }); return; }
+        if (fields == null || fields.Length == 0) { result.SetResult(new { error = "No fields provided" }); return; }
 
         WorkflowManager.SnapshotObject(asset);
         Undo.RecordObject(asset, "Set SO Batch");
 
         var type = asset.GetType();
+        var allFields = type.GetFields();
         int set = 0;
-        foreach (var kv in dict)
+        var notFound = new List<string>();
+        foreach (var item in fields)
         {
-            var field = type.GetField(kv.Key, BindingFlags.Public | BindingFlags.Instance);
-            if (field != null) { field.SetValue(asset, ComponentSkills.ConvertValue(kv.Value, field.FieldType)); set++; }
+            // GetFields() + FirstOrDefault keeps us off the BindingFlags reformatter NRE.
+            var field = allFields.FirstOrDefault(f => !f.IsStatic && f.Name == item.name);
+            if (field == null) { notFound.Add(item.name); continue; }
+            field.SetValue(asset, ComponentSkills.ConvertValue(item.value, field.FieldType));
+            set++;
         }
 
         EditorUtility.SetDirty(asset);
         AssetDatabase.SaveAssets();
-        result.SetResult(new { success = true, fieldsSet = set });
+        result.SetResult(new { success = true, fieldsSet = set, notFound });
     }
 }
 ```

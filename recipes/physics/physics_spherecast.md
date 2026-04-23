@@ -6,6 +6,8 @@ Cast a sphere along a direction and get hit info.
 
 **Returns:** `{ hit, objectName, instanceId, point, distance }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

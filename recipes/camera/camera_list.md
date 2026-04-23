@@ -6,6 +6,8 @@ List all Camera components in the current scene, ordered by rendering depth. Rea
 
 **Returns:** `{ count, cameras: [{ name, instanceId, path, depth, orthographic, enabled }] }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -10,6 +10,8 @@ Get detailed information about a single light component.
 - Read-only; no undo entry is created.
 - Returns `cullingMask` and `bounceIntensity` in addition to the basic properties.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

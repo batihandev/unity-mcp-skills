@@ -6,6 +6,8 @@ List all states in a specific layer of an Animator Controller. Returns name, tag
 
 **Returns:** `{ controller, layer, layerName, stateCount, states: [{ name, tag, speed, hasMotion }] }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

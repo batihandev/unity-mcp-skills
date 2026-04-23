@@ -8,6 +8,8 @@ Find renderers in the active scene whose materials use a render queue of 2500 or
 
 - `objects` — array of `{ gameObject, path, material, renderQueue, shader }`, one entry per renderer (the first transparent material on the renderer triggers the entry).
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

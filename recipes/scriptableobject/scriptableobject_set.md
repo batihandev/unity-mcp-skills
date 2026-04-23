@@ -6,6 +6,8 @@ Set a field or property on a ScriptableObject asset.
 
 **Returns:** `{ success, field, value }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md), [`value_converter`](../_shared/value_converter.md)
+
 ## Notes
 
 - Supports both public fields and writable properties.
@@ -15,8 +17,6 @@ Set a field or property on a ScriptableObject asset.
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using System.Reflection;
-
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -33,8 +33,10 @@ internal class CommandScript : IRunCommand
         }
 
         var type = asset.GetType();
-        var field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
-        var prop = type.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+        System.Reflection.FieldInfo field = null;
+        foreach (var _f in type.GetFields()) if (_f.Name == fieldName) { field = _f; break; }
+        System.Reflection.PropertyInfo prop = null;
+        foreach (var _p in type.GetProperties()) if (_p.Name == fieldName) { prop = _p; break; }
 
         if (field == null && prop == null)
         {

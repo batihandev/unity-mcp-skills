@@ -7,13 +7,18 @@ Set an explicit priority value on a Virtual Camera. Higher priority wins activat
 **Returns:** `{ success, name, priority }` or `{ error }`
 
 **Notes:**
-- CM3 uses `Priority.Value` internally; the adapter wraps this transparently.
+- Priority is exposed as `CinemachineCamera.Priority.Value` in CM3.
 - Default priority is `10`. Use `cinemachine_set_active` when you just want to force a specific camera active immediately.
 - Lower-priority cameras remain as fallbacks; the Brain switches automatically.
+
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
+**Requires:** `com.unity.cinemachine` (≥ 3.1).
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -27,12 +32,12 @@ internal class CommandScript : IRunCommand
         var (go, err) = GameObjectFinder.FindOrError(vcamName, instanceId, path);
         if (err != null) { result.SetResult(err); return; }
 
-        var vcam = CinemachineAdapter.GetVCam(go);
-        if (CinemachineAdapter.VCamOrError(vcam) is object vcamErr) { result.SetResult(vcamErr); return; }
+        var vcam = go.GetComponent<CinemachineCamera>();
+        if (vcam == null) { result.SetResult(new { error = "Not a CinemachineCamera" }); return; }
 
         WorkflowManager.SnapshotObject(go);
         Undo.RecordObject(vcam, "Set Priority");
-        CinemachineAdapter.SetPriority(vcam, priority);
+        vcam.Priority.Value = priority;
         EditorUtility.SetDirty(vcam);
 
         result.SetResult(new { success = true, name = go.name, priority });

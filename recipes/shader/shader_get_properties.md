@@ -13,11 +13,12 @@ Get all property definitions exposed by a shader (name, type, description).
 - For material instance property values, use `material_get_properties` from the material module.
 - `type` reflects `ShaderUtil.ShaderPropertyType` (e.g., `Color`, `Float`, `Range`, `TexEnv`, `Vector`).
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -25,29 +26,31 @@ internal class CommandScript : IRunCommand
     {
         string shaderNameOrPath = "Standard"; // or "Assets/Shaders/MyShader.shader"
 
-        /* Original Logic:
+        var shader = FindShaderByNameOrPath(shaderNameOrPath);
+        if (shader == null) { result.SetResult(new { error = $"Shader not found: {shaderNameOrPath}" }); return; }
 
-            var shader = FindShaderByNameOrPath(shaderNameOrPath);
-            if (shader == null)
-                return new { error = $"Shader not found: {shaderNameOrPath}" };
-
-            var propCount = ShaderUtil.GetPropertyCount(shader);
-            var properties = Enumerable.Range(0, propCount)
-                .Select(i => new
-                {
-                    name = ShaderUtil.GetPropertyName(shader, i),
-                    type = ShaderUtil.GetPropertyType(shader, i).ToString(),
-                    description = ShaderUtil.GetPropertyDescription(shader, i)
-                })
-                .ToArray();
-
-            return new
+        var propCount = ShaderUtil.GetPropertyCount(shader);
+        var properties = Enumerable.Range(0, propCount)
+            .Select(i => new
             {
-                shaderName = shader.name,
-                propertyCount = propCount,
-                properties
-            };
-        */
+                name = ShaderUtil.GetPropertyName(shader, i),
+                type = ShaderUtil.GetPropertyType(shader, i).ToString(),
+                description = ShaderUtil.GetPropertyDescription(shader, i)
+            })
+            .ToArray();
+
+        result.SetResult(new { shaderName = shader.name, propertyCount = propCount, properties });
+    }
+
+    private static Shader FindShaderByNameOrPath(string shaderNameOrPath)
+    {
+        if (string.IsNullOrEmpty(shaderNameOrPath)) return null;
+        Shader shader = null;
+        if (shaderNameOrPath.EndsWith(".shader"))
+            shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderNameOrPath);
+        if (shader == null)
+            shader = Shader.Find(shaderNameOrPath);
+        return shader;
     }
 }
 ```

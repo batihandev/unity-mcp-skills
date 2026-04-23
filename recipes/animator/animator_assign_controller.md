@@ -6,6 +6,8 @@ Assign an Animator Controller to a GameObject. If the GameObject has no Animator
 
 **Returns:** `{ success, gameObject, controller }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -1,10 +1,8 @@
 # gameobject_set_active_batch
 
-Enable or disable multiple GameObjects in one call.
+Enable or disable multiple GameObjects in one call via a typed item array.
 
-**Signature:** `GameObjectSetActiveBatch(string items)`
-
-`items`: JSON array of objects `{ name, instanceId, path, active }`. `active` defaults to `true`.
+**Signature:** `GameObjectSetActiveBatch(_BatchSetActiveItem[] items)`
 
 **Returns:** `{ success, totalItems, successCount, failCount, results: [{ success, target, active }] }`
 
@@ -13,35 +11,49 @@ Enable or disable multiple GameObjects in one call.
 - `active` defaults to `true` per item if omitted.
 - A missing object causes that item to fail without stopping the rest.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchSetActiveItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public bool active = true;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Enemy1"", ""active"": false },
-            { ""name"": ""Enemy2"", ""active"": false },
-            { ""instanceId"": 12345, ""active"": true }
-        ]";
+        var items = new[]
+        {
+            new _BatchSetActiveItem { name = "Enemy1", active = false },
+            new _BatchSetActiveItem { name = "Enemy2", active = false },
+            new _BatchSetActiveItem { instanceId = 12345, active = true },
+        };
 
-        /* Original Logic:
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
 
-            return BatchExecutor.Execute<BatchSetActiveItem>(items, item =>
-            {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
+        foreach (var item in items)
+        {
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { success = false, target = item.name ?? item.path, error = err }); failCount++; continue; }
 
-                WorkflowManager.SnapshotObject(go);
-                Undo.RecordObject(go, "Batch Set Active");
-                go.SetActive(item.active);
-                return new { target = go.name, success = true, active = item.active };
-            }, item => item.name ?? item.path);
-        */
+            WorkflowManager.SnapshotObject(go);
+            Undo.RecordObject(go, "Batch Set Active");
+            go.SetActive(item.active);
+
+            results.Add(new { success = true, target = go.name, active = item.active });
+            successCount++;
+        }
+
+        result.SetResult(new { success = true, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

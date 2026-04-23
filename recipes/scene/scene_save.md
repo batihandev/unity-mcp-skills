@@ -8,6 +8,8 @@ Save the active scene.
 
 Omit `scenePath` to save to the scene's existing path. Provide a path to save-as (e.g. when saving a new unsaved scene for the first time).
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

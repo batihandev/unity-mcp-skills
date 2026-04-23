@@ -6,6 +6,8 @@ Get all properties of a Game Camera component. Resolves by name, instanceId, or 
 
 **Returns:** `{ success, name, fieldOfView, nearClipPlane, farClipPlane, orthographic, orthographicSize, depth, cullingMask, clearFlags, backgroundColor: {r,g,b,a}, rect: {x,y,w,h} }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

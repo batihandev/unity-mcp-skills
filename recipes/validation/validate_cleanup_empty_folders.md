@@ -11,6 +11,8 @@ Find (and optionally delete) empty folders under a given root path in the projec
 - When `dryRun = false`, folders are deleted deepest-first to handle nested empty hierarchies
 - Always preview with `dryRun = true` before committing deletions
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -41,7 +43,7 @@ internal class CommandScript : IRunCommand
             {
                 if (Directory.Exists(folder))
                 {
-                    AssetDatabase.DeleteAsset(folder);
+                    AssetDatabase.MoveAssetToTrash(folder);
                 }
             }
             AssetDatabase.Refresh();
@@ -53,7 +55,7 @@ internal class CommandScript : IRunCommand
             dryRun,
             emptyFolderCount = emptyFolders.Count,
             folders = emptyFolders,
-            message = dryRun ? "Dry run - no folders deleted" : $"Deleted {emptyFolders.Count} empty folders"
+            message = dryRun ? "Dry run - no folders deleted" : $"Moved {emptyFolders.Count} empty folders to trash"
         });
     }
 

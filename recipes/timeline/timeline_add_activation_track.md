@@ -10,6 +10,8 @@ Add an Activation track to control object visibility in a Timeline.
 - Locate the Director GameObject via `name`, `instanceId`, or `path` (at least one required)
 - Uses the internal `GetTimeline` helper which requires a `PlayableDirector` with a `TimelineAsset`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

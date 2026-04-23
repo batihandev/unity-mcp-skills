@@ -6,6 +6,8 @@ Add a transition between two existing states in an Animator Controller layer. Bo
 
 **Returns:** `{ success, from, to, layer, hasExitTime, duration }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

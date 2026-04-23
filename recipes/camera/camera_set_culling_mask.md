@@ -6,6 +6,8 @@ Set a Game Camera's culling mask using comma-separated layer names. Replaces the
 
 **Returns:** `{ success, cullingMask }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

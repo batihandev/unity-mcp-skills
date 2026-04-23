@@ -6,6 +6,8 @@ Set the traversal cost for a NavMesh area. Higher costs make agents prefer cheap
 
 **Returns:** `{ success, areaIndex, cost }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.AI;

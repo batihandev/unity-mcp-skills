@@ -12,7 +12,7 @@ Set the texture scale (UV tiling) for a texture property.
 - Scale defaults are `x = 1, y = 1` (one tile). A value of `2` tiles the texture twice.
 - Use `material_set_texture_offset` to control the starting UV position independently.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -22,29 +22,54 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name         = "Floor";   // target GameObject name
+        string name         = "Floor";
         int    instanceId   = 0;
-        string path         = null;      // or material asset path
-        string propertyName = null;      // null → auto-detect main texture property
-        float  x            = 4f;       // tile 4x horizontally
-        float  y            = 4f;       // tile 4x vertically
+        string path         = null;
+        string propertyName = null;
+        float  x            = 4f;
+        float  y            = 4f;
 
-        /* Original Logic:
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        if (string.IsNullOrEmpty(propertyName)) propertyName = GetMainTexProp();
 
-            if (string.IsNullOrEmpty(propertyName))
-                propertyName = ProjectSkills.GetMainTexturePropertyName();
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Texture Scale");
+        material.SetTextureScale(propertyName, new Vector2(x, y));
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Texture Scale");
-            material.SetTextureScale(propertyName, new Vector2(x, y));
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
+        result.SetResult(new { success = true, target = go != null ? go.name : path, property = propertyName, scale = new { x, y } });
+    }
 
-            return new { success = true, target = go != null ? go.name : path, property = propertyName, scale = new { x, y } };
-        */
+    private static string GetMainTexProp()
+    {
+        var rp = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline;
+        if (rp != null)
+        {
+            var t = rp.GetType().FullName ?? "";
+            if (t.Contains("Universal")) return "_BaseMap";
+            if (t.Contains("HDRP") || t.Contains("HDRenderPipeline")) return "_BaseColorMap";
+        }
+        return "_MainTex";
+    }
+
+    private static (Material mat, GameObject go, object error) FindMaterial(string name, int instanceId, string path)
+    {
+        if (!string.IsNullOrEmpty(path) && path.EndsWith(".mat"))
+        {
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) return (null, null, new { error = "Material asset not found: " + path });
+            return (m, null, null);
+        }
+        var (go, err) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (err != null) return (null, null, err);
+        var rdr = go.GetComponent<Renderer>();
+        if (rdr == null) return (null, go, new { error = "No Renderer on " + go.name });
+        var mat = rdr.sharedMaterial;
+        if (mat == null) return (null, go, new { error = "No material on " + go.name });
+        return (mat, go, null);
     }
 }
 ```

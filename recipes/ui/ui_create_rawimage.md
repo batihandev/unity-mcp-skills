@@ -11,6 +11,8 @@ Create a RawImage UI element for displaying a Texture2D or RenderTexture.
 - Unlike `Image`, `RawImage` accepts any `Texture` (not just `Sprite`), including `RenderTexture`.
 - `hasTexture` in the response indicates whether the texture was successfully loaded.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;
@@ -51,6 +53,25 @@ internal class CommandScript : IRunCommand
         WorkflowManager.SnapshotObject(go, SnapshotType.Created);
 
         result.SetResult(new { success = true, name = go.name, instanceId = go.GetInstanceID(), parent = parentGo.name, hasTexture = rawImage.texture != null });
+    }
+
+    private static GameObject FindOrCreateCanvas(string parentName)
+    {
+        if (!string.IsNullOrEmpty(parentName))
+        {
+            var p = GameObject.Find(parentName);
+            if (p != null) return p;
+        }
+        var canvas = Object.FindFirstObjectByType<Canvas>();
+        if (canvas != null) return canvas.gameObject;
+        var go = new GameObject("Canvas");
+        var canvasComp = go.AddComponent<Canvas>();
+        canvasComp.renderMode = RenderMode.ScreenSpaceOverlay;
+        go.AddComponent<CanvasScaler>();
+        go.AddComponent<GraphicRaycaster>();
+        Undo.RegisterCreatedObjectUndo(go, "Create Canvas");
+        WorkflowManager.SnapshotObject(go, SnapshotType.Created);
+        return go;
     }
 }
 ```

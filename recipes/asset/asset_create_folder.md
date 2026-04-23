@@ -6,6 +6,8 @@ Create a new folder in the project. Errors if the folder already exists.
 
 **Returns:** `{ success, path, guid }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

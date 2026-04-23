@@ -13,44 +13,57 @@ Duplicate multiple GameObjects in one call.
 - Each copy is placed under the same parent as its original and named `<originalName>_Copy`.
 - A missing source object causes that item to fail without stopping the rest.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchDuplicateItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Cube"" },
-            { ""instanceId"": 12345 },
-            { ""path"": ""Parent/ChildObject"" }
-        ]";
+        var items = new[]
+        {
+            new _BatchDuplicateItem { name = "Cube" },
+            new _BatchDuplicateItem { instanceId = 12345 },
+            new _BatchDuplicateItem { path = "Parent/ChildObject" },
+        };
 
-        /* Original Logic:
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
 
-            return BatchExecutor.Execute<BatchDuplicateItem>(items, item =>
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
+
+            var copy = Object.Instantiate(go, go.transform.parent);
+            copy.name = go.name + "_Copy";
+            Undo.RegisterCreatedObjectUndo(copy, "Batch Duplicate " + go.name);
+            WorkflowManager.SnapshotObject(copy, SnapshotType.Created);
+
+            results.Add(new
             {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
+                success = true,
+                originalName = go.name,
+                copyName = copy.name,
+                copyInstanceId = copy.GetInstanceID(),
+                copyPath = GameObjectFinder.GetPath(copy)
+            });
+            successCount++;
+        }
 
-                var copy = Object.Instantiate(go, go.transform.parent);
-                copy.name = go.name + "_Copy";
-                Undo.RegisterCreatedObjectUndo(copy, "Batch Duplicate " + go.name);
-                WorkflowManager.SnapshotObject(copy, SnapshotType.Created);
-
-                return new
-                {
-                    success = true,
-                    originalName = go.name,
-                    copyName = copy.name,
-                    copyInstanceId = copy.GetInstanceID(),
-                    copyPath = GameObjectFinder.GetPath(copy)
-                };
-            }, item => item.name ?? item.path ?? item.instanceId.ToString());
-        */
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

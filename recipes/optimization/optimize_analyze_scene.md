@@ -8,6 +8,8 @@ Analyze the active scene for common performance bottlenecks: high-polygon meshes
 
 - Each entry in `issues` has `type` (`"HighPoly"` or `"ExcessiveMaterials"`), `gameObject`, `path`, and either `triangles` or `materialCount`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

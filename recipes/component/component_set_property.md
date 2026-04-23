@@ -4,22 +4,6 @@ Set a property or field on a component. Supports scalar values, Unity math types
 
 **Signature:** `ComponentSetProperty(string name = null, int instanceId = 0, string path = null, string componentType = null, string propertyName = null, string value = null, string referencePath = null, string referenceName = null, string assetPath = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | GameObject name |
-| `instanceId` | int | No* | Instance ID |
-| `path` | string | No* | Hierarchy path |
-| `componentType` | string | Yes | Component type |
-| `propertyName` | string | Yes | Property or field name |
-| `value` | string | Cond. | Value for basic types, vectors, colors |
-| `referencePath` | string | No | Hierarchy path of a scene object reference |
-| `referenceName` | string | No | Name of a scene object reference |
-| `assetPath` | string | No | Project asset path (Material, Texture, AudioClip, Prefab, ScriptableObject, etc.) |
-
-*At least one object identifier required. Provide exactly one of `value`, `referencePath`/`referenceName`, or `assetPath`.
-
 ## Returns
 
 ```json
@@ -53,95 +37,102 @@ Set a property or field on a component. Supports scalar values, Unity math types
 | AnimationCurve | `"linear"` / `"easein"` / `"easeout"` / `"easeinout"` / `"constant"` |
 
 ## Notes
-
 - Property name lookup is case-insensitive as a fallback.
 - Uses reflection — both C# properties (`CanWrite`) and public fields are supported.
-- Read-only properties return an error with a list of available writable properties.
 - Uses `Undo.RecordObject` — operation is undoable.
 - Snapshots the component state for workflow undo before modifying.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`value_converter`](../_shared/value_converter.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        string name = null; int instanceId = 0; string path = null;
+        string componentType = "Rigidbody";
+        string propertyName = "mass";
+        string value = "2";
+        string referencePath = null;
+        string referenceName = null;
+        string assetPath = null;
 
-            if (string.IsNullOrEmpty(componentType) || string.IsNullOrEmpty(propertyName))
-                return new { error = "componentType and propertyName are required" };
+        if (string.IsNullOrEmpty(componentType) || string.IsNullOrEmpty(propertyName))
+            { result.SetResult(new { error = "componentType and propertyName are required" }); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var type = FindComponentType(componentType);
-            if (type == null)
-                return new { error = $"Component type not found: {componentType}" };
+        var type = ComponentSkills.FindComponentType(componentType);
+        if (type == null)
+            { result.SetResult(new { error = $"Component type not found: {componentType}" }); return; }
 
-            var comp = go.GetComponent(type);
-            if (comp == null)
-                return new { error = $"Component not found: {componentType}" };
+        var comp = go.GetComponent(type);
+        if (comp == null)
+            { result.SetResult(new { error = $"Component not found: {componentType}" }); return; }
 
-            var (prop, field) = FindMember(type, propertyName);
+        var prop = type.GetProperties().FirstOrDefault(p => string.Equals(p.Name, propertyName, System.StringComparison.OrdinalIgnoreCase) && p.CanWrite);
+        var field = prop == null ? type.GetFields().FirstOrDefault(f => string.Equals(f.Name, propertyName, System.StringComparison.OrdinalIgnoreCase)) : null;
 
-            if (prop == null && field == null)
-                return new {
-                    error = $"Property/field not found: {propertyName}",
-                    availableProperties = GetAvailableProperties(type)
-                };
+        if (prop == null && field == null)
+            { result.SetResult(new {
+                error = $"Property/field not found: {propertyName}",
+                availableProperties = type.GetProperties().Where(p => p.CanWrite).Select(p => p.Name).ToArray()
+            }); return; }
 
-            WorkflowManager.SnapshotObject(comp);
-            Undo.RecordObject(comp, "Set Property");
+        WorkflowManager.SnapshotObject(comp);
+        Undo.RecordObject(comp, "Set Property");
 
-            try
+        try
+        {
+            var targetType = prop?.PropertyType ?? field.FieldType;
+            object converted;
+
+            if (!string.IsNullOrEmpty(assetPath))
             {
-                var targetType = prop?.PropertyType ?? field.FieldType;
-                object converted;
-
-                if (!string.IsNullOrEmpty(assetPath))
-                {
-                    converted = ResolveAssetReference(targetType, assetPath);
-                    if (converted == null)
-                        return new { error = $"Asset not found or type mismatch: '{assetPath}' (expected {targetType.Name})" };
-                }
-                else if (!string.IsNullOrEmpty(referencePath) || !string.IsNullOrEmpty(referenceName))
-                {
-                    converted = ResolveReference(targetType, referencePath, referenceName);
-                    if (converted == null)
-                        return new { error = $"Could not resolve reference for {propertyName}. Target: path='{referencePath}', name='{referenceName}'" };
-                }
-                else
-                {
-                    converted = ConvertValue(value, targetType);
-                }
-
-                if (prop != null && prop.CanWrite)
-                    prop.SetValue(comp, converted);
-                else if (field != null)
-                    field.SetValue(comp, converted);
-                else
-                    return new { error = $"Property {propertyName} is read-only" };
-
-                EditorUtility.SetDirty(comp);
-
-                return new {
-                    success = true,
-                    gameObject = go.name,
-                    component = componentType,
-                    property = propertyName,
-                    valueSet = converted?.ToString() ?? "null",
-                    valueType = targetType.Name
-                };
+                converted = AssetDatabase.LoadAssetAtPath(assetPath, targetType);
+                if (converted == null)
+                    { result.SetResult(new { error = $"Asset not found or type mismatch: '{assetPath}' (expected {targetType.Name})" }); return; }
             }
-            catch (System.Exception ex)
+            else if (!string.IsNullOrEmpty(referencePath) || !string.IsNullOrEmpty(referenceName))
             {
-                return new { error = ex.Message };
+                var (refGo, refErr) = GameObjectFinder.FindOrError(name: referenceName, path: referencePath);
+                if (refErr != null) { result.SetResult(new { error = $"Could not resolve reference for {propertyName}" }); return; }
+                converted = typeof(UnityEngine.Component).IsAssignableFrom(targetType)
+                    ? (object)refGo.GetComponent(targetType)
+                    : refGo;
             }
-        */
+            else
+            {
+                converted = ComponentSkills.ConvertValue(value, targetType);
+            }
+
+            if (prop != null && prop.CanWrite)
+                prop.SetValue(comp, converted);
+            else if (field != null)
+                field.SetValue(comp, converted);
+            else
+                { result.SetResult(new { error = $"Property {propertyName} is read-only" }); return; }
+
+            EditorUtility.SetDirty(comp);
+
+            result.SetResult(new {
+                success = true,
+                gameObject = go.name,
+                component = componentType,
+                property = propertyName,
+                valueSet = converted?.ToString() ?? "null",
+                valueType = targetType.Name
+            });
+        }
+        catch (System.Exception ex)
+        {
+            result.SetResult(new { error = ex.Message });
+        }
     }
 }
 ```

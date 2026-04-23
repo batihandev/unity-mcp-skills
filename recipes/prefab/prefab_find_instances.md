@@ -4,13 +4,6 @@ Find all instances of a prefab asset currently present in the active scene.
 
 **Signature:** `PrefabFindInstances(string prefabPath, int limit = 50)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `prefabPath` | string | Yes | - | Prefab asset path to search for |
-| `limit` | int | No | 50 | Maximum number of instances to return |
-
 ## Returns
 
 ```json
@@ -26,37 +19,36 @@ Find all instances of a prefab asset currently present in the active scene.
 ```
 
 ## Notes
-
-- Read-only — does not modify the scene.
 - Matches on exact `prefabPath` string; ensure the path matches the actual asset path.
 - `limit` defaults to 50 to avoid large result payloads in busy scenes.
 - Searches all GameObjects in the active scene regardless of hierarchy depth.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        string prefabPath = null;
+        int limit = 50;
 
-            if (Validate.Required(prefabPath, "prefabPath") is object err) return err;
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-            if (prefab == null) return new { error = $"Prefab not found: {prefabPath}" };
+        if (Validate.Required(prefabPath, "prefabPath") is object err) { result.SetResult(err); return; }
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+        if (prefab == null) { result.SetResult(new { error = $"Prefab not found: {prefabPath}" }); return; }
 
-            var allObjects = FindHelper.FindAll<GameObject>();
-            var instances = allObjects
-                .Where(go => PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go) == prefabPath)
-                .Take(limit)
-                .Select(go => new { name = go.name, path = GameObjectFinder.GetPath(go), instanceId = go.GetInstanceID() })
-                .ToArray();
+        var allObjects = FindHelper.FindAll<GameObject>();
+        var instances = allObjects
+            .Where(go => PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go) == prefabPath)
+            .Take(limit)
+            .Select(go => new { name = go.name, path = GameObjectFinder.GetPath(go), instanceId = go.GetInstanceID() })
+            .ToArray();
 
-            return new { success = true, prefabPath, count = instances.Length, instances };
-        */
+        { result.SetResult(new { success = true, prefabPath, count = instances.Length, instances }); return; }
     }
 }
 ```

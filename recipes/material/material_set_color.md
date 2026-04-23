@@ -14,7 +14,7 @@ Set a color property on a material with optional HDR intensity.
 - `intensity > 1.0` creates HDR bloom (the stored color values exceed 1.0).
 - Target is resolved as a material asset path (if `path` ends in `.mat`) or via a GameObject renderer.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -24,63 +24,75 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name         = "Cube";  // target GameObject name
+        string name         = "Cube";
         int    instanceId   = 0;
         string path         = null;    // or material asset path like "Assets/Materials/M.mat"
-        float  r = 1f, g = 0f, b = 0f, a = 1f; // red; values 0-1
-        string propertyName = null;    // null → auto-detect
-        float  intensity    = 1.0f;   // >1 for HDR bloom
+        float  r = 1f, g = 0f, b = 0f, a = 1f;
+        string propertyName = null;    // null → probe _BaseColor/_Color/_TintColor/_EmissionColor
+        float  intensity    = 1.0f;
 
-        /* Original Logic:
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        var color = new Color(r, g, b, a);
+        if (intensity != 1.0f) color = new Color(r * intensity, g * intensity, b * intensity, a);
 
-            if (string.IsNullOrEmpty(propertyName))
-                propertyName = ProjectSkills.GetColorPropertyName();
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Material Color");
 
-            var color = new Color(r, g, b, a);
-            if (intensity != 1.0f)
-                color = new Color(r * intensity, g * intensity, b * intensity, a);
-
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Material Color");
-
-            bool colorSet = false;
-            var propertiesToTry = new[] { propertyName, "_BaseColor", "_Color", "_TintColor", "_EmissionColor" };
-            foreach (var prop in propertiesToTry)
+        bool colorSet = false;
+        var propertiesToTry = new[] { propertyName, "_BaseColor", "_Color", "_TintColor", "_EmissionColor" };
+        foreach (var prop in propertiesToTry)
+        {
+            if (string.IsNullOrEmpty(prop)) continue;
+            if (material.HasProperty(prop))
             {
-                if (material.HasProperty(prop))
+                material.SetColor(prop, color);
+                propertyName = prop;
+                colorSet = true;
+                if (prop == "_EmissionColor" && intensity > 0)
                 {
-                    material.SetColor(prop, color);
-                    propertyName = prop;
-                    colorSet = true;
-                    if (prop == "_EmissionColor" && intensity > 0)
-                    {
-                        material.EnableKeyword("_EMISSION");
-                        material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
-                    }
-                    break;
+                    material.EnableKeyword("_EMISSION");
+                    material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
                 }
+                break;
             }
+        }
 
-            if (!colorSet)
-                return new {
-                    error = $"Material does not have a color property. Tried: {string.Join(", ", propertiesToTry)}",
-                    shaderName = material.shader.name,
-                    suggestion = "Use material_get_properties to see available properties"
-                };
+        if (!colorSet)
+        {
+            result.SetResult(new { error = "Material does not have a color property.", shaderName = material.shader.name });
+            return;
+        }
 
-            if (go == null) EditorUtility.SetDirty(material);
+        if (go == null) EditorUtility.SetDirty(material);
 
-            return new {
-                success = true,
-                target = go != null ? go.name : path,
-                color = new { r, g, b, a }, intensity,
-                propertyUsed = propertyName,
-                hdrEnabled = (propertyName == "_EmissionColor" && intensity > 0)
-            };
-        */
+        result.SetResult(new
+        {
+            success = true,
+            target = go != null ? go.name : path,
+            color = new { r, g, b, a },
+            intensity,
+            propertyUsed = propertyName,
+            hdrEnabled = (propertyName == "_EmissionColor" && intensity > 0)
+        });
+    }
+
+    private static (Material mat, GameObject go, object error) FindMaterial(string name, int instanceId, string path)
+    {
+        if (!string.IsNullOrEmpty(path) && path.EndsWith(".mat"))
+        {
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) return (null, null, new { error = "Material asset not found: " + path });
+            return (m, null, null);
+        }
+        var (go, err) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (err != null) return (null, null, err);
+        var rdr = go.GetComponent<Renderer>();
+        if (rdr == null) return (null, go, new { error = "No Renderer on " + go.name });
+        var mat = rdr.sharedMaterial;
+        if (mat == null) return (null, go, new { error = "No material on " + go.name });
+        return (mat, go, null);
     }
 }
 ```

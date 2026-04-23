@@ -10,6 +10,8 @@ Add an Animation track to a Timeline, optionally binding an Animator to it.
 - If `bindingObjectName` is provided, the named GameObject's `Animator` (added if missing) is bound to the track
 - `boundObject` is `"None"` when no binding is requested
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

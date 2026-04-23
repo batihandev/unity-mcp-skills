@@ -10,8 +10,11 @@ Create a new Canvas with the specified render mode.
 - `renderMode` accepts `ScreenSpaceOverlay`, `ScreenSpaceCamera`, or `WorldSpace` (case-insensitive).
 - Automatically adds `CanvasScaler` and `GraphicRaycaster` components.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEditor;
 
 internal class CommandScript : IRunCommand

@@ -6,13 +6,13 @@ Copy all persistent listeners from one UnityEvent to another. Only void-argument
 
 **Returns:** `{ success, copied }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
 using UnityEditor.Events;
-using System.Reflection;
-
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -45,8 +45,10 @@ internal class CommandScript : IRunCommand
             var target = srcEvt.GetPersistentTarget(i);
             var method = srcEvt.GetPersistentMethodName(i);
             if (target == null) continue;
-            var mi = target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.Public,
-                null, System.Type.EmptyTypes, null);
+            // 5-arg GetMethod overload trips reformatter NRE; walk public instance methods instead.
+            System.Reflection.MethodInfo mi = null;
+            foreach (var _m in target.GetType().GetMethods())
+                if (_m.Name == method && !_m.IsStatic && _m.GetParameters().Length == 0) { mi = _m; break; }
             if (mi != null)
             {
                 var del = System.Delegate.CreateDelegate(typeof(UnityAction), target, mi) as UnityAction;
@@ -66,8 +68,10 @@ internal class CommandScript : IRunCommand
         var component = go.GetComponent(componentName);
         if (component == null) return (null, null, new { error = $"Component not found: {componentName}" });
         var type = component.GetType();
-        var field = type.GetField(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        var property = type.GetProperty(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        System.Reflection.FieldInfo field = null;
+        foreach (var _f in type.GetFields()) if (_f.Name == eventName) { field = _f; break; }
+        System.Reflection.PropertyInfo property = null;
+        foreach (var _p in type.GetProperties()) if (_p.Name == eventName) { property = _p; break; }
         UnityEventBase evt = null;
         if (field != null) evt = field.GetValue(component) as UnityEventBase;
         else if (property != null) evt = property.GetValue(component) as UnityEventBase;

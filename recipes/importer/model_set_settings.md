@@ -2,9 +2,6 @@
 
 Set one or more importer settings on a model asset and reimport.
 
-**Skill ID:** `model_set_settings`
-**Source:** `ModelSkills.cs` — `ModelSetSettings`
-
 ## Signature
 
 ```
@@ -31,31 +28,7 @@ model_set_settings(
 ) → { success, path, changesApplied, changes }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model |
-| `globalScale` | float | no | Import scale factor |
-| `useFileScale` | bool | no | Use the scale defined in the file |
-| `importBlendShapes` | bool | no | Import blend shapes |
-| `importVisibility` | bool | no | Import visibility state |
-| `importCameras` | bool | no | Import cameras embedded in the file |
-| `importLights` | bool | no | Import lights embedded in the file |
-| `meshCompression` | string | no | `Off`, `Low`, `Medium`, `High` |
-| `isReadable` | bool | no | CPU-readable mesh data |
-| `optimizeMeshPolygons` | bool | no | Polygon mesh optimisation |
-| `optimizeMeshVertices` | bool | no | Vertex mesh optimisation |
-| `generateSecondaryUV` | bool | no | Generate lightmap UV channel |
-| `keepQuads` | bool | no | Preserve quads instead of triangulating |
-| `weldVertices` | bool | no | Weld duplicate vertices |
-| `importNormals` | string | no | `Import`, `Calculate`, `None` |
-| `importTangents` | string | no | `Import`, `CalculateMikk`, `None`, etc. |
-| `animationType` | string | no | `None`, `Legacy`, `Generic`, `Humanoid` |
-| `importAnimation` | bool | no | Import animation clips |
-| `materialImportMode` | string | no | `None`, `ImportViaMaterialDescription`, `ImportStandard` |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -86,11 +59,11 @@ internal class CommandScript : IRunCommand
         bool? importAnimation = null;
         string materialImportMode = null;
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
         if (importer == null)
-            return new { error = $"Not a model file or asset not found: {assetPath}" };
+            { result.SetResult(new { error = $"Not a model file or asset not found: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -115,7 +88,7 @@ internal class CommandScript : IRunCommand
         {
             if (System.Enum.TryParse<ModelImporterMeshCompression>(meshCompression, true, out var mc))
             { importer.meshCompression = mc; changes.Add($"meshCompression={mc}"); }
-            else return new { error = $"Invalid meshCompression: {meshCompression}. Valid: Off, Low, Medium, High" };
+            else { result.SetResult(new { error = $"Invalid meshCompression: {meshCompression}. Valid: Off, Low, Medium, High" }); return; }
         }
 
         if (!string.IsNullOrEmpty(importNormals) &&
@@ -130,7 +103,7 @@ internal class CommandScript : IRunCommand
         {
             if (System.Enum.TryParse<ModelImporterAnimationType>(animationType, true, out var at))
             { importer.animationType = at; changes.Add($"animationType={at}"); }
-            else return new { error = $"Invalid animationType: {animationType}. Valid: None, Legacy, Generic, Humanoid" };
+            else { result.SetResult(new { error = $"Invalid animationType: {animationType}. Valid: None, Legacy, Generic, Humanoid" }); return; }
         }
 
         if (!string.IsNullOrEmpty(materialImportMode) &&
@@ -139,7 +112,7 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, changesApplied = changes.Count, changes };
+        { result.SetResult(new { success = true, path = assetPath, changesApplied = changes.Count, changes }); return; }
     }
 }
 ```

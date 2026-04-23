@@ -7,13 +7,16 @@ Create a `CinemachineStateDrivenCamera` that activates child VCams based on Anim
 **Returns:** `{ success, name }` or `{ error }`
 
 **Notes:**
-- In CM3 the `AnimatedTarget` property is used; in CM2 it is `m_AnimatedTarget`.
+- The `AnimatedTarget` field on `CinemachineStateDrivenCamera` binds the Animator whose states drive activation.
 - After creation, bind animation states to child cameras with `cinemachine_state_driven_camera_add_instruction`.
 - You can also configure the Animator binding later via `cinemachine_configure_camera_manager`.
+
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -42,11 +45,7 @@ internal class CommandScript : IRunCommand
                 if (animator != null)
                 {
                     Undo.RecordObject(cam, "Set Animated Target");
-#if CINEMACHINE_3
                     cam.AnimatedTarget = animator;
-#elif CINEMACHINE_2
-                    cam.m_AnimatedTarget = animator;
-#endif
                 }
             }
         }

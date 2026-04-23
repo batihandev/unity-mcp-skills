@@ -2,9 +2,6 @@
 
 Read the full importer settings for an audio asset.
 
-**Skill ID:** `audio_get_settings`
-**Source:** `AudioSkills.cs` — `AudioGetSettings`
-
 ## Signature
 
 ```
@@ -13,13 +10,7 @@ audio_get_settings(assetPath: string)
       loadType, compressionFormat, quality, sampleRateSetting }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the audio file |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
@@ -31,15 +22,15 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Audio/bgm.wav"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as AudioImporter;
         if (importer == null)
-            return new { error = $"Not an audio file or asset not found: {assetPath}" };
+            { result.SetResult(new { error = $"Not an audio file or asset not found: {assetPath}" }); return; }
 
         var defaultSettings = importer.defaultSampleSettings;
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             path = assetPath,
@@ -50,13 +41,12 @@ internal class CommandScript : IRunCommand
             compressionFormat = defaultSettings.compressionFormat.ToString(),
             quality = defaultSettings.quality,
             sampleRateSetting = defaultSettings.sampleRateSetting.ToString()
-        };
+        }); return; }
     }
 }
 ```
 
 ## Notes
-
 - `quality` is returned as a `float` in the `0.0`–`1.0` range.
-- Read-only; no reimport triggered.
 - For the lightweight bridge getter, use `audio_get_import_settings`.
+

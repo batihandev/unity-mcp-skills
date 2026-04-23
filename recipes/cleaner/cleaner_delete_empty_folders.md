@@ -4,12 +4,6 @@ Delete all empty folders under a search path. Processes deepest paths first to a
 
 **Signature:** `CleanerDeleteEmptyFolders(string searchPath = "Assets")`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `searchPath` | string | No | "Assets" | Root path to search within |
-
 ## Returns
 
 ```json
@@ -20,7 +14,7 @@ Delete all empty folders under a search path. Processes deepest paths first to a
 }
 ```
 
-`total` = total empty folders found; `deleted` = folders successfully deleted by `AssetDatabase.DeleteAsset`.
+`total` = total empty folders found; `deleted` = folders successfully deleted by `AssetDatabase.MoveAssetToTrash`.
 
 ## Notes
 
@@ -30,11 +24,14 @@ Delete all empty folders under a search path. Processes deepest paths first to a
 - To preview which folders will be deleted without removing them, use `cleaner_find_empty_folders` first.
 - This operation is tracked by the workflow manager (`TracksWorkflow = true`).
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -48,11 +45,11 @@ internal class CommandScript : IRunCommand
         int deleted = 0;
         foreach (var folder in empty.OrderByDescending(f => f.Length))
         {
-            if (AssetDatabase.DeleteAsset(folder)) deleted++;
+            if (AssetDatabase.MoveAssetToTrash(folder)) deleted++;
         }
         AssetDatabase.Refresh();
 
-        result.SetValue(new { success = true, deleted, total = empty.Count });
+        result.SetResult(new { success = true, deleted, total = empty.Count });
     }
 
     private bool FindEmptyFoldersRecursive(string path, List<string> results)

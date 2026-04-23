@@ -1,22 +1,27 @@
 # navmesh_clear
 
-Clear all NavMesh data from the scene. **This operation cannot be undone.**
+Clear baked NavMesh data from every `NavMeshSurface` in the active scene. **This operation cannot be undone.**
 
 **Signature:** `NavMeshClear()`
 
-**Returns:** `{ success, warning }`
+**Returns:** `{ success, surfaces, warning }`
+
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
+**Requires:** `com.unity.ai.navigation` package.
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.AI;
+using Unity.AI.Navigation;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        NavMeshBuilder.ClearAllNavMeshes();
-        result.SetResult(new { success = true, warning = "NavMesh cleared. This operation cannot be undone." });
+        var surfaces = Object.FindObjectsByType<NavMeshSurface>(FindObjectsSortMode.None);
+        foreach (var s in surfaces) s.RemoveData();
+        result.SetResult(new { success = true, surfaces = surfaces.Length, warning = "NavMesh cleared for " + surfaces.Length + " surface(s). This operation cannot be undone." });
     }
 }
 ```

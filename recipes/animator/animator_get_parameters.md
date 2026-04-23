@@ -6,6 +6,8 @@ List all parameters defined in an Animator Controller asset. Returns name, type 
 
 **Returns:** `{ controller, parameters: [{ name, type, defaultFloat, defaultInt, defaultBool }] }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

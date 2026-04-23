@@ -4,18 +4,6 @@ Enable or disable a component. Works on Behaviour (MonoBehaviour, Animator, etc.
 
 **Signature:** `ComponentSetEnabled(string name = null, int instanceId = 0, string path = null, string componentType = null, bool enabled = true)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `name` | string | No* | null | GameObject name |
-| `instanceId` | int | No* | 0 | Instance ID |
-| `path` | string | No* | null | Hierarchy path |
-| `componentType` | string | Yes | - | Component type to enable/disable |
-| `enabled` | bool | No | true | `true` to enable, `false` to disable |
-
-*At least one object identifier required.
-
 ## Returns
 
 ```json
@@ -38,7 +26,7 @@ If the component type does not support `enabled`:
 - Use this instead of `component_set_property` with `propertyName: "enabled"` — this path is safer and uses explicit type checks.
 - Uses `Undo.RecordObject` — operation is undoable.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
@@ -48,26 +36,27 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        string name = null; int instanceId = 0; string path = null;
+        string componentType = "AudioSource";
+        bool enabled = true;
 
-            if (Validate.Required(componentType, "componentType") is object err) return err;
-            var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (findErr != null) return findErr;
+        if (Validate.Required(componentType, "componentType") is object err) { result.SetResult(err); return; }
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-            var type = FindComponentType(componentType);
-            if (type == null) return new { error = $"Component type not found: {componentType}" };
+        var type = ComponentSkills.FindComponentType(componentType);
+        if (type == null) { result.SetResult(new { error = $"Component type not found: {componentType}" }); return; }
 
-            var comp = go.GetComponent(type);
-            if (comp == null) return new { error = $"No {componentType} on {go.name}" };
+        var comp = go.GetComponent(type);
+        if (comp == null) { result.SetResult(new { error = $"No {componentType} on {go.name}" }); return; }
 
-            Undo.RecordObject(comp, "Set Component Enabled");
-            if (comp is Behaviour behaviour) behaviour.enabled = enabled;
-            else if (comp is Renderer renderer) renderer.enabled = enabled;
-            else if (comp is Collider collider) collider.enabled = enabled;
-            else return new { error = $"{componentType} does not have an enabled property" };
+        Undo.RecordObject(comp, "Set Component Enabled");
+        if (comp is Behaviour behaviour) behaviour.enabled = enabled;
+        else if (comp is Renderer renderer) renderer.enabled = enabled;
+        else if (comp is Collider collider) collider.enabled = enabled;
+        else { result.SetResult(new { error = $"{componentType} does not have an enabled property" }); return; }
 
-            return new { success = true, gameObject = go.name, componentType, enabled };
-        */
+        result.SetResult(new { success = true, gameObject = go.name, componentType, enabled });
     }
 }
 ```

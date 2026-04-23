@@ -10,6 +10,8 @@ Set `StaticEditorFlags` on a GameObject, optionally including all of its childre
 - Valid `flags` values: `Everything` | `Nothing` | `BatchingStatic` | `OccludeeStatic` | `OccluderStatic` | `NavigationStatic` | `ReflectionProbeStatic` (case-insensitive, comma-separated combinations allowed).
 - `affectedCount` includes the root GameObject plus any children when `includeChildren = true`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -9,54 +9,66 @@ Set the layer for multiple GameObjects in one call.
 **Returns:** `{ success, totalItems, successCount, failCount, results: [{ success, target, layer }] }`
 
 ## Notes
-
-- `layer` is a layer name string (e.g., `"UI"`, `"Default"`, `"Ignore Raycast"`). Must match a layer defined in the project.
 - `recursive` (bool, default `false`): when `true`, the layer change is applied to the object and all of its children recursively.
 - A missing object or invalid layer name causes that item to fail without stopping the rest.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchSetLayerItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public string layer;
+    public bool recursive;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Player"", ""layer"": ""Player"" },
-            { ""name"": ""EnemyRoot"", ""layer"": ""Enemy"", ""recursive"": true },
-            { ""instanceId"": 12345, ""layer"": ""Default"" }
-        ]";
+        var items = new[]
+        {
+            new _BatchSetLayerItem { name = "Player", layer = "Player" },
+            new _BatchSetLayerItem { name = "EnemyRoot", layer = "Enemy", recursive = true },
+            new _BatchSetLayerItem { instanceId = 12345, layer = "Default" },
+        };
 
-        /* Original Logic:
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
 
-            return BatchExecutor.Execute<BatchSetLayerItem>(items, item =>
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
+
+            int layerId = LayerMask.NameToLayer(item.layer);
+            if (layerId == -1) { results.Add(new { target, success = false, error = "Layer not found: " + item.layer }); failCount++; continue; }
+
+            WorkflowManager.SnapshotObject(go);
+            Undo.RecordObject(go, "Batch Set Layer");
+            go.layer = layerId;
+
+            if (item.recursive)
             {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
-
-                int layerId = LayerMask.NameToLayer(item.layer);
-                if (layerId == -1)
-                    throw new System.Exception($"Layer not found: {item.layer}");
-
-                WorkflowManager.SnapshotObject(go);
-                Undo.RecordObject(go, "Batch Set Layer");
-                go.layer = layerId;
-
-                if (item.recursive)
+                foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
                 {
-                    foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
-                    {
-                        Undo.RecordObject(child.gameObject, "Batch Set Layer Recursive");
-                        child.gameObject.layer = layerId;
-                    }
+                    Undo.RecordObject(child.gameObject, "Batch Set Layer Recursive");
+                    child.gameObject.layer = layerId;
                 }
+            }
 
-                return new { target = go.name, success = true, layer = item.layer };
-            }, item => item.name ?? item.path);
-        */
+            results.Add(new { target = go.name, success = true, layer = item.layer });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

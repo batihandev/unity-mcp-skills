@@ -13,11 +13,12 @@ Get the list of keywords declared in a shader's keyword space.
 - To enable or disable a global keyword, use `shader_set_global_keyword`.
 - To control per-material keywords, use `material_set_keyword` from the material module.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -25,13 +26,21 @@ internal class CommandScript : IRunCommand
     {
         string shaderNameOrPath = "Universal Render Pipeline/Lit"; // or "Assets/Shaders/My.shader"
 
-        /* Original Logic:
+        var shader = FindShaderByNameOrPath(shaderNameOrPath);
+        if (shader == null) { result.SetResult(new { error = $"Shader not found: {shaderNameOrPath}" }); return; }
+        var keywords = shader.keywordSpace.keywords.Select(k => new { name = k.name, type = k.type.ToString() }).ToArray();
+        result.SetResult(new { shaderName = shader.name, keywordCount = keywords.Length, keywords });
+    }
 
-            var shader = FindShaderByNameOrPath(shaderNameOrPath);
-            if (shader == null) return new { error = $"Shader not found: {shaderNameOrPath}" };
-            var keywords = shader.keywordSpace.keywords.Select(k => new { name = k.name, type = k.type.ToString() }).ToArray();
-            return new { shaderName = shader.name, keywordCount = keywords.Length, keywords };
-        */
+    private static Shader FindShaderByNameOrPath(string shaderNameOrPath)
+    {
+        if (string.IsNullOrEmpty(shaderNameOrPath)) return null;
+        Shader shader = null;
+        if (shaderNameOrPath.EndsWith(".shader"))
+            shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderNameOrPath);
+        if (shader == null)
+            shader = Shader.Find(shaderNameOrPath);
+        return shader;
     }
 }
 ```

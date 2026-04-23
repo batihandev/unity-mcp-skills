@@ -4,17 +4,6 @@ Unpack a prefab instance, breaking its connection to the prefab asset.
 
 **Signature:** `PrefabUnpack(string name = null, int instanceId = 0, string path = null, bool completely = false)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `name` | string | No* | - | Prefab instance name |
-| `instanceId` | int | No* | - | Instance ID (preferred) |
-| `path` | string | No* | - | Hierarchy path |
-| `completely` | bool | No | false | `true` = unpack all nested prefabs recursively; `false` = unpack outermost root only |
-
-*At least one identifier required.
-
 ## Returns
 
 ```json
@@ -31,7 +20,7 @@ Unpack a prefab instance, breaking its connection to the prefab asset.
 - After unpacking, the GameObject is a plain scene object with no prefab connection.
 - Operation is undoable — the snapshot is recorded before unpacking.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -41,17 +30,19 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        bool completely = false;
 
-            var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
-            if (findErr != null) return findErr;
+        var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-            WorkflowManager.SnapshotObject(go);
-            var mode = completely ? PrefabUnpackMode.Completely : PrefabUnpackMode.OutermostRoot;
-            PrefabUtility.UnpackPrefabInstance(go, mode, InteractionMode.UserAction);
+        WorkflowManager.SnapshotObject(go);
+        var mode = completely ? PrefabUnpackMode.Completely : PrefabUnpackMode.OutermostRoot;
+        PrefabUtility.UnpackPrefabInstance(go, mode, InteractionMode.UserAction);
 
-            return new { success = true, unpacked = go.name };
-        */
+        { result.SetResult(new { success = true, unpacked = go.name }); return; }
     }
 }
 ```

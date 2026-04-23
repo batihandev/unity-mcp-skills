@@ -6,11 +6,12 @@ Get the persistent listeners of a UnityEvent on a component field or property. R
 
 **Returns:** `{ success, gameObject, component, eventName, listenerCount, listeners: [{ index, target, targetType, method, state }] }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
-using System.Reflection;
 using System.Collections.Generic;
 
 internal class CommandScript : IRunCommand
@@ -30,8 +31,10 @@ internal class CommandScript : IRunCommand
         if (component == null) { result.SetResult(new { error = $"Component not found: {componentName} on {go.name}" }); return; }
 
         var type = component.GetType();
-        var field = type.GetField(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        var property = type.GetProperty(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        System.Reflection.FieldInfo field = null;
+        foreach (var _f in type.GetFields()) if (_f.Name == eventName) { field = _f; break; }
+        System.Reflection.PropertyInfo property = null;
+        foreach (var _p in type.GetProperties()) if (_p.Name == eventName) { property = _p; break; }
 
         UnityEventBase unityEvent = null;
         if (field != null) unityEvent = field.GetValue(component) as UnityEventBase;

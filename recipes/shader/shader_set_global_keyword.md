@@ -10,6 +10,8 @@ Enable or disable a global shader keyword.
 - Calls `Shader.EnableKeyword` or `Shader.DisableKeyword` globally
 - Affects all shaders that reference the keyword
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -4,13 +4,6 @@ Create a prefab variant from an existing prefab. The variant inherits the source
 
 **Signature:** `PrefabCreateVariant(string sourcePrefabPath, string variantPath)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `sourcePrefabPath` | string | Yes | Path to the source prefab asset |
-| `variantPath` | string | Yes | Save path for the new variant (must end in `.prefab`) |
-
 ## Returns
 
 ```json
@@ -29,34 +22,35 @@ Create a prefab variant from an existing prefab. The variant inherits the source
 - The variant maintains a parent-child relationship with the source — changes to the source propagate unless overridden.
 - Workflow snapshot records the created variant asset.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        string sourcePrefabPath = "Assets/Prefabs/Enemy.prefab";
+        string variantPath = "Assets/Prefabs/EnemyElite.prefab";
 
-            if (Validate.Required(sourcePrefabPath, "sourcePrefabPath") is object err) return err;
-            if (Validate.SafePath(variantPath, "variantPath") is object pathErr) return pathErr;
+        if (Validate.Required(sourcePrefabPath, "sourcePrefabPath") is object err) { result.SetResult(err); return; }
+        if (Validate.SafePath(variantPath, "variantPath") is object pathErr) { result.SetResult(pathErr); return; }
 
-            var source = AssetDatabase.LoadAssetAtPath<GameObject>(sourcePrefabPath);
-            if (source == null) return new { error = $"Prefab not found: {sourcePrefabPath}" };
+        var source = AssetDatabase.LoadAssetAtPath<GameObject>(sourcePrefabPath);
+        if (source == null) { result.SetResult(new { error = $"Prefab not found: {sourcePrefabPath}" }); return; }
 
-            var dir = Path.GetDirectoryName(variantPath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
+        var dir = Path.GetDirectoryName(variantPath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-            var instance = PrefabUtility.InstantiatePrefab(source) as GameObject;
-            var variant = PrefabUtility.SaveAsPrefabAssetAndConnect(
-                instance, variantPath, InteractionMode.AutomatedAction);
-            Object.DestroyImmediate(instance);
+        var instance = PrefabUtility.InstantiatePrefab(source) as GameObject;
+        var variant = PrefabUtility.SaveAsPrefabAssetAndConnect(
+            instance, variantPath, InteractionMode.AutomatedAction);
+        Object.DestroyImmediate(instance);
 
-            return new { success = true, sourcePath = sourcePrefabPath, variantPath, name = variant.name };
-        */
+        result.SetResult(new { success = true, sourcePath = sourcePrefabPath, variantPath, name = variant.name });
     }
 }
 ```

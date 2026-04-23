@@ -10,6 +10,8 @@ Find materials that share the same shader, color, and render queue — likely ca
 - `groups` — array of `{ shader, count, paths[] }`, each group representing materials with identical key
 - Key is `shader|color|renderQueue`; texture identity is not compared.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

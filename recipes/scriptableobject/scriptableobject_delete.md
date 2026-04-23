@@ -6,6 +6,8 @@ Delete a ScriptableObject asset from the project.
 
 **Returns:** `{ success, deleted }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ## Notes
 
 - Path is validated with `isDelete: true` to enforce safe-delete rules.
@@ -31,7 +33,8 @@ internal class CommandScript : IRunCommand
         }
 
         WorkflowManager.SnapshotObject(asset);
-        AssetDatabase.DeleteAsset(assetPath);
+        bool moved = AssetDatabase.MoveAssetToTrash(assetPath);
+        if (!moved) { result.SetResult(new { error = $"Failed to delete: {assetPath}" }); return; }
         result.SetResult(new { success = true, deleted = assetPath });
     }
 }

@@ -8,6 +8,8 @@ Set labels on an asset. This overwrites all existing labels.
 
 **Returns:** `{ success, assetPath, labels: [string] }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

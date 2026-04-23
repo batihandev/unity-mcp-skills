@@ -6,6 +6,8 @@ Add a `NavMeshObstacle` component to an existing GameObject. Carving is enabled 
 
 **Returns:** `{ success, gameObject, carving }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.AI;

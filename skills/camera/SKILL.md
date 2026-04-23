@@ -7,7 +7,7 @@ description: "Use when users want to move, rotate, or align the editor camera vi
 
 > Recipe path rule: `../../recipes/camera/<command>.md`
 >
-> Native-tool overlap: `camera_screenshot` overlaps with the native `Unity_Camera_Capture` tool. Prefer the native tool for simple captures; use `camera_screenshot` for precise resolution control or a specific camera target.
+> Screenshots: `Unity_Camera_Capture` (native MCP) renders a camera in-memory by instance ID for quick inspection. `camera_screenshot` (this module) writes a PNG to a path under `Assets/` with custom resolution and looks the camera up by name / path / instanceId.
 
 ## Overview
 
@@ -25,7 +25,7 @@ Control the Scene View camera.
 **Routing**:
 - For Cinemachine virtual cameras → use `cinemachine` module
 - For Game Camera component properties → `camera_set_properties` / `camera_get_properties` (this module)
-- For scene screenshots → `scene_screenshot` (scene module) uses the Scene View; `camera_screenshot` uses a Game Camera
+- For scene screenshots → `scene_screenshot` (scene module) uses the Scene View; for in-memory Game Camera inspection use `Unity_Camera_Capture`; for persisted Game Camera PNGs at custom resolution use `camera_screenshot` (this module)
 
 ## Skills
 
@@ -109,16 +109,16 @@ Set Game Camera culling mask by layer names (comma-separated).
 **Returns:** `{ success, cullingMask }`
 
 ### `camera_screenshot`
-Capture a screenshot from a Game Camera to file.
+Capture a PNG from a Game Camera to a path under `Assets/` at a custom resolution. Writes the file and calls `AssetDatabase.ImportAsset` so it shows up as a project asset. For a quick in-memory capture without disk persistence, use the native `Unity_Camera_Capture` tool instead.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| savePath | string | No | "Assets/screenshot.png" | File path to save the screenshot |
-| width | int | No | 1920 | Screenshot width in pixels |
-| height | int | No | 1080 | Screenshot height in pixels |
-| name | string | No | null | Name of the camera GameObject |
-| instanceId | int | No | 0 | Instance ID of the camera GameObject |
-| path | string | No | null | Hierarchy path of the camera GameObject |
+| savePath | string | No | "Assets/screenshot.png" | PNG output path under `Assets/` |
+| width | int | No | 1920 | Render width in pixels |
+| height | int | No | 1080 | Render height in pixels |
+| name | string | No | null | Game Camera GameObject name |
+| instanceId | int | No | 0 | Game Camera GameObject instance ID |
+| path | string | No | null | Game Camera hierarchy path |
 
 **Returns:** `{ success, path, width, height }`
 
@@ -142,5 +142,3 @@ List all cameras in the scene.
 |-----------|------|----------|---------|-------------|
 
 **Returns:** `{ count, cameras: [{ name, instanceId, path, depth, orthographic, enabled }] }`
-
----

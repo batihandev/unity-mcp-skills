@@ -11,6 +11,8 @@ Distribute the currently selected UI elements evenly along a horizontal or verti
 - Elements are sorted by position along the chosen axis before distribution.
 - The first and last elements keep their positions; intermediate elements are evenly spaced.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

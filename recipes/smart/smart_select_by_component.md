@@ -11,6 +11,8 @@ Select all GameObjects in the scene that have a specific component.
 - After execution the selected objects appear in the Hierarchy
 - Works with any component type name (e.g. `Light`, `Camera`, `MeshRenderer`, custom scripts)
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

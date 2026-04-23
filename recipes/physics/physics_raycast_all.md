@@ -6,6 +6,8 @@ Cast a ray and return ALL hits (penetrating), ordered by distance.
 
 **Returns:** `{ count, hits: [{ objectName, instanceId, path, point, normal, distance }] }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

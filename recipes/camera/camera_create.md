@@ -6,6 +6,8 @@ Create a new Game Camera GameObject in the scene. Optionally adds an AudioListen
 
 **Returns:** `{ success, name, instanceId }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

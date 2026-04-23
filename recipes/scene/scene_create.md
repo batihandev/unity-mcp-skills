@@ -8,6 +8,8 @@ Create a new empty scene asset on disk.
 
 `scenePath` must be a project-relative path ending in `.unity` (e.g. `"Assets/Scenes/Level1.unity"`). The directory is created automatically if it does not exist.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

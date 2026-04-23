@@ -2,9 +2,6 @@
 
 List animation clips and frame rates embedded in a model file.
 
-**Skill ID:** `model_get_animations_info`
-**Source:** `ModelSkills.cs` — `ModelGetAnimationsInfo`
-
 ## Signature
 
 ```
@@ -14,13 +11,7 @@ model_get_animations_info(assetPath: string)
       clipDefinitions[{ name, firstFrame, lastFrame, loop }] }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
@@ -33,9 +24,9 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Models/hero.fbx"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
-        if (importer == null) return new { error = $"Not a model: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a model: {assetPath}" }); return; }
 
         var allAssets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
         var clips = allAssets.OfType<AnimationClip>()
@@ -60,7 +51,7 @@ internal class CommandScript : IRunCommand
               }).ToArray()
             : null;
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             path = assetPath,
@@ -68,7 +59,7 @@ internal class CommandScript : IRunCommand
             clipCount = clips.Length,
             clips,
             clipDefinitions = clipDefs
-        };
+        }); return; }
     }
 }
 ```

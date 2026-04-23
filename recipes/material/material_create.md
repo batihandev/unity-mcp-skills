@@ -15,86 +15,103 @@ Create a new material (auto-detects render pipeline if shader not specified). `s
 - Without `savePath` the material is created in memory only — it will be lost on editor restart. Specify `savePath` or call `asset_save` to persist it.
 - `savePath` is smart: a folder path or a path without `.mat` extension is resolved automatically.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
         string name = "MyMaterial";
-        string shaderName = null;          // null → auto-detect for active pipeline
+        string shaderName = null;          // null → try URP/Lit, HDRP/Lit, Standard, Mobile/Diffuse, Unlit/Color
         string savePath = "Assets/Materials"; // folder or full path; null → memory only
 
-        /* Original Logic:
+        if (!string.IsNullOrEmpty(savePath) && Validate.SafePath(savePath, "savePath") is object pathErr) { result.SetResult(pathErr); return; }
 
-            if (!string.IsNullOrEmpty(savePath) && Validate.SafePath(savePath, "savePath") is object pathErr) return pathErr;
+        Shader shader = null;
+        if (!string.IsNullOrEmpty(shaderName))
+            shader = Shader.Find(shaderName);
 
-            if (string.IsNullOrEmpty(shaderName))
+        if (shader == null)
+        {
+            foreach (var candidate in new[] { "Universal Render Pipeline/Lit", "HDRP/Lit", "Standard", "Mobile/Diffuse", "Unlit/Color" })
             {
-                shaderName = ProjectSkills.GetDefaultShaderName();
+                var s = Shader.Find(candidate);
+                if (s != null) { shader = s; shaderName = candidate; break; }
             }
+        }
+        if (shader == null)
+        {
+            result.SetResult(new { error = "No usable shader found. Ensure SRP package is installed." });
+            return;
+        }
 
-            var shader = Shader.Find(shaderName);
-            if (shader == null)
+        var pipeline = DetectPipeline();
+        var colorProperty = GetColorPropertyName(pipeline);
+        var textureProperty = GetMainTexturePropertyName(pipeline);
+
+        var material = new Material(shader) { name = name };
+
+        if (string.IsNullOrEmpty(savePath))
+        {
+            result.SetResult(new
             {
-                var pipeline = ProjectSkills.DetectRenderPipeline();
-                var fallbackShaders = pipeline switch
-                {
-                    ProjectSkills.RenderPipelineType.URP => new[] { "Universal Render Pipeline/Lit", "Universal Render Pipeline/Simple Lit", "Standard" },
-                    ProjectSkills.RenderPipelineType.HDRP => new[] { "HDRP/Lit", "Standard" },
-                    _ => new[] { "Standard", "Mobile/Diffuse", "Unlit/Color" }
-                };
-                foreach (var fallback in fallbackShaders)
-                {
-                    shader = Shader.Find(fallback);
-                    if (shader != null) { shaderName = fallback; break; }
-                }
-                if (shader == null)
-                {
-                    var pipelineInfo = ProjectSkills.DetectRenderPipeline();
-                    return new {
-                        error = $"Shader not found: {shaderName}. Detected pipeline: {pipelineInfo}. Try using project_get_render_pipeline to see available shaders.",
-                        detectedPipeline = pipelineInfo.ToString(),
-                        recommendedShader = ProjectSkills.GetDefaultShaderName()
-                    };
-                }
-            }
+                success = true,
+                name,
+                shader = shaderName,
+                path = (string)null,
+                instanceId = material.GetInstanceID(),
+                renderPipeline = pipeline,
+                colorProperty,
+                textureProperty,
+                warning = "Material created in memory only (no savePath). It will be lost on editor restart."
+            });
+            return;
+        }
 
-            var material = new Material(shader) { name = name };
+        // Smart path resolution: folder or full .mat
+        if (!savePath.EndsWith(".mat")) savePath = savePath.TrimEnd('/') + "/" + name + ".mat";
+        var dir = Path.GetDirectoryName(savePath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-            if (!string.IsNullOrEmpty(savePath))
-            {
-                savePath = ResolveSavePath(savePath, name);
-                EnsureDirectoryExists(savePath);
-                AssetDatabase.CreateAsset(material, savePath);
-                WorkflowManager.SnapshotObject(material, SnapshotType.Created);
-                AssetDatabase.SaveAssets();
-            }
-            else
-            {
-                var pipelineType2 = ProjectSkills.DetectRenderPipeline();
-                return new {
-                    success = true, name, shader = shaderName, path = (string)null,
-                    instanceId = material.GetInstanceID(),
-                    renderPipeline = pipelineType2.ToString(),
-                    colorProperty = ProjectSkills.GetColorPropertyName(),
-                    textureProperty = ProjectSkills.GetMainTexturePropertyName(),
-                    warning = "Material created in memory only (no savePath). It will be lost on editor restart. Use asset_save or specify savePath to persist."
-                };
-            }
+        AssetDatabase.CreateAsset(material, savePath);
+        WorkflowManager.SnapshotObject(material, SnapshotType.Created);
+        AssetDatabase.SaveAssets();
 
-            var pipelineType = ProjectSkills.DetectRenderPipeline();
-            return new {
-                success = true, name, shader = shaderName, path = savePath,
-                renderPipeline = pipelineType.ToString(),
-                colorProperty = ProjectSkills.GetColorPropertyName(),
-                textureProperty = ProjectSkills.GetMainTexturePropertyName()
-            };
-        */
+        result.SetResult(new
+        {
+            success = true,
+            name,
+            shader = shaderName,
+            path = savePath,
+            renderPipeline = pipeline,
+            colorProperty,
+            textureProperty
+        });
+    }
+
+    private static string DetectPipeline()
+    {
+        var rp = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline;
+        if (rp == null) return "BuiltIn";
+        var t = rp.GetType().FullName ?? "";
+        if (t.Contains("Universal")) return "URP";
+        if (t.Contains("HDRP") || t.Contains("HDRenderPipeline")) return "HDRP";
+        return "Custom";
+    }
+
+    private static string GetColorPropertyName(string pipeline)
+        => (pipeline == "URP" || pipeline == "HDRP") ? "_BaseColor" : "_Color";
+
+    private static string GetMainTexturePropertyName(string pipeline)
+    {
+        if (pipeline == "URP") return "_BaseMap";
+        if (pipeline == "HDRP") return "_BaseColorMap";
+        return "_MainTex";
     }
 }
 ```

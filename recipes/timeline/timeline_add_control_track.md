@@ -10,6 +10,8 @@ Add a Control track for nested Timelines or prefab spawning.
 - Locate the Director GameObject via `name`, `instanceId`, or `path` (at least one required)
 - Control tracks are used to drive nested `PlayableDirector` components or spawn prefabs at runtime
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

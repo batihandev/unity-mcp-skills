@@ -6,6 +6,8 @@ Exit play mode. Any scene changes made during play mode are lost.
 
 **Returns:** `{ success, mode }` on success; `{ error }` if not in play mode.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -10,6 +10,8 @@ Find non-convex MeshColliders in the active scene, which can cause physics perfo
 - Non-convex MeshColliders cannot be used on non-kinematic Rigidbodies and incur higher physics cost
 - `vertexCount` is 0 if `sharedMesh` is null
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

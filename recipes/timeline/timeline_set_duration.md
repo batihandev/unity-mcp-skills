@@ -11,6 +11,8 @@ Set the Timeline asset duration and the Director wrap mode.
 - `wrapMode` accepts `Hold`, `Loop`, or `None` (case-insensitive); invalid values are silently ignored
 - `wrapMode` in the result reflects `director.extrapolationMode` after the call
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -8,6 +8,8 @@ For multiple steps use `history_redo(steps=N)`.
 
 **Returns:** `{ success, message }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

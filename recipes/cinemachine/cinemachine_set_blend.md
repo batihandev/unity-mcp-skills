@@ -13,9 +13,12 @@ Set the default blend (or a per-camera-pair blend) on the `CinemachineBrain`.
 - Per-camera-pair blends (with `fromCamera`/`toCamera`) require a `CinemachineBlenderSettings` asset. The current implementation sets the default blend and returns a note about the limitation — for full per-pair control, create a CinemachineBlenderSettings asset manually or via `cinemachine_set_brain`.
 - For camera-specific blend control also see `cinemachine_set_brain`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -26,15 +29,20 @@ internal class CommandScript : IRunCommand
         string fromCamera = null;  // leave null for default blend
         string toCamera = null;    // leave null for default blend
 
-        var brain = CinemachineAdapter.FindBrain();
+        CinemachineBrain brain = null;
+        var mainCam = Camera.main;
+        if (mainCam != null) brain = mainCam.GetComponent<CinemachineBrain>();
+        if (brain == null) brain = Object.FindFirstObjectByType<CinemachineBrain>();
         if (brain == null) { result.SetResult(new { error = "No CinemachineBrain found." }); return; }
 
-        var blend = CinemachineAdapter.CreateBlendDefinition(style, time);
+        var blend = new CinemachineBlendDefinition { Time = time };
+        if (System.Enum.TryParse<CinemachineBlendDefinition.Styles>(style, true, out var parsed))
+            blend.Style = parsed;
 
         if (string.IsNullOrEmpty(fromCamera) && string.IsNullOrEmpty(toCamera))
         {
             Undo.RecordObject(brain, "Set Default Blend");
-            CinemachineAdapter.SetBrainDefaultBlend(brain, blend);
+            brain.DefaultBlend = blend;
             EditorUtility.SetDirty(brain);
             result.SetResult(new { success = true, message = "Set default blend: " + style + " " + time + "s" });
         }

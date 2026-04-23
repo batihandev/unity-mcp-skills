@@ -12,6 +12,8 @@ Evenly distribute selected objects between the first and last positions along an
 - `axis`: X, Y, Z, -X, -Y, -Z
 - Requires 3+ objects selected
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

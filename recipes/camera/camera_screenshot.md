@@ -6,6 +6,8 @@ Capture a PNG screenshot from a Game Camera to a file. For quick Scene View capt
 
 **Returns:** `{ success, path, width, height }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -6,6 +6,8 @@ Add a new state to an Animator Controller layer. Optionally assigns an Animation
 
 **Returns:** `{ success, controller, stateName, layer }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

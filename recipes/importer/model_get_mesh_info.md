@@ -2,9 +2,6 @@
 
 Get vertex, triangle, and submesh statistics for a mesh.
 
-**Skill ID:** `model_get_mesh_info`
-**Source:** `ModelSkills.cs` — `ModelGetMeshInfo`
-
 ## Signature
 
 ```
@@ -13,18 +10,7 @@ model_get_mesh_info(name?: string, instanceId?: int, path?: string, assetPath?: 
       hasNormals, hasTangents, hasUV, hasUV2, hasColors, blendShapeCount, isReadable }
 ```
 
-## Parameters
-
-Provide either `assetPath` (project asset) or a scene target (`name`/`instanceId`/`path`):
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | no | Project-relative path to the model asset |
-| `name` | string | no | Scene GameObject name |
-| `instanceId` | int | no | Scene GameObject instance ID |
-| `path` | string | no | Scene hierarchy path |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
@@ -57,15 +43,15 @@ internal class CommandScript : IRunCommand
         else
         {
             var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+            if (error != null) { result.SetResult(error); return; }
             var mf = go.GetComponent<MeshFilter>();
             var smr = go.GetComponent<SkinnedMeshRenderer>();
             mesh = mf != null ? mf.sharedMesh : smr != null ? smr.sharedMesh : null;
         }
 
-        if (mesh == null) return new { error = "No mesh found" };
+        if (mesh == null) { result.SetResult(new { error = "No mesh found" }); return; }
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             name = mesh.name,
@@ -80,7 +66,7 @@ internal class CommandScript : IRunCommand
             hasColors = mesh.colors.Length > 0,
             blendShapeCount = mesh.blendShapeCount,
             isReadable = mesh.isReadable
-        };
+        }); return; }
     }
 }
 ```

@@ -2,9 +2,6 @@
 
 Switch the rig/skeleton mode on a model and reimport.
 
-**Skill ID:** `model_set_rig`
-**Source:** `ModelSkills.cs` — `ModelSetRig`
-
 ## Signature
 
 ```
@@ -12,15 +9,7 @@ model_set_rig(assetPath: string, animationType: string, avatarSetup?: string)
   → { success, path, animationType }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-| `animationType` | string | yes | `None`, `Legacy`, `Generic`, `Humanoid` |
-| `avatarSetup` | string | no | `NoAvatar`, `CreateFromThisModel`, `CopyFromOther` |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -34,12 +23,12 @@ internal class CommandScript : IRunCommand
         string animationType = "Humanoid";            // None | Legacy | Generic | Humanoid
         string avatarSetup = null;                    // Optional: NoAvatar | CreateFromThisModel | CopyFromOther
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
-        if (importer == null) return new { error = $"Not a model: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a model: {assetPath}" }); return; }
 
         if (!System.Enum.TryParse<ModelImporterAnimationType>(animationType, true, out var at))
-            return new { error = $"Invalid animationType: {animationType}" };
+            { result.SetResult(new { error = $"Invalid animationType: {animationType}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -52,7 +41,7 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, animationType = at.ToString() };
+        { result.SetResult(new { success = true, path = assetPath, animationType = at.ToString() }); return; }
     }
 }
 ```

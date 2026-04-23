@@ -6,12 +6,12 @@ Get properties of a ScriptableObject asset.
 
 **Returns:** `{ path, typeName, fields, properties }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
-using System.Reflection;
-
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
@@ -26,11 +26,13 @@ internal class CommandScript : IRunCommand
         }
 
         var type = asset.GetType();
-        var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance)
+        // No-arg GetFields/GetProperties return public-instance members only — matches the
+        // (BindingFlags.Public | Instance) intent. BindingFlags overloads trip the reformatter NRE.
+        var fields = type.GetFields()
             .Select(f => new { name = f.Name, type = f.FieldType.Name, value = f.GetValue(asset)?.ToString() })
             .ToArray();
 
-        var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+        var props = type.GetProperties()
             .Where(p => p.CanRead && !p.GetIndexParameters().Any())
             .Select(p =>
             {

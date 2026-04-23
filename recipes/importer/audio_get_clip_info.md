@@ -2,9 +2,6 @@
 
 Inspect length, channels, frequency, samples, and load state of an audio clip.
 
-**Skill ID:** `audio_get_clip_info`
-**Source:** `AudioSkills.cs` — `AudioGetClipInfo`
-
 ## Signature
 
 ```
@@ -13,13 +10,7 @@ audio_get_clip_info(assetPath: string)
       loadType, loadState, ambisonic }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the audio asset |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
@@ -31,11 +22,11 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Audio/bgm.wav"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
         var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(assetPath);
-        if (clip == null) return new { error = $"AudioClip not found: {assetPath}" };
+        if (clip == null) { result.SetResult(new { error = $"AudioClip not found: {assetPath}" }); return; }
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             name = clip.name,
@@ -47,7 +38,7 @@ internal class CommandScript : IRunCommand
             loadType = clip.loadType.ToString(),
             loadState = clip.loadState.ToString(),
             ambisonic = clip.ambisonic
-        };
+        }); return; }
     }
 }
 ```

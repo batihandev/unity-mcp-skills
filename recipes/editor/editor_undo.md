@@ -8,6 +8,8 @@ For multiple steps use `history_undo(steps=N)`. For workflow-level rollback use 
 
 **Returns:** `{ success, message }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

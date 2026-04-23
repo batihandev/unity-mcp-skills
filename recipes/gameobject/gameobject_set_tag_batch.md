@@ -13,35 +13,49 @@ Set the tag for multiple GameObjects in one call.
 - `tag` must match a tag defined in the project (e.g., `"Player"`, `"Enemy"`, `"Untagged"`).
 - A missing object causes that item to fail without stopping the rest.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchSetTagItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public string tag;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Hero"", ""tag"": ""Player"" },
-            { ""name"": ""Goblin"", ""tag"": ""Enemy"" },
-            { ""instanceId"": 12345, ""tag"": ""Untagged"" }
-        ]";
+        var items = new[]
+        {
+            new _BatchSetTagItem { name = "Hero", tag = "Player" },
+            new _BatchSetTagItem { name = "Goblin", tag = "Enemy" },
+            new _BatchSetTagItem { instanceId = 12345, tag = "Untagged" },
+        };
 
-        /* Original Logic:
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
 
-            return BatchExecutor.Execute<BatchSetTagItem>(items, item =>
-            {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
 
-                WorkflowManager.SnapshotObject(go);
-                Undo.RecordObject(go, "Batch Set Tag");
-                go.tag = item.tag;
-                return new { target = go.name, success = true, tag = item.tag };
-            }, item => item.name ?? item.path);
-        */
+            WorkflowManager.SnapshotObject(go);
+            Undo.RecordObject(go, "Batch Set Tag");
+            go.tag = item.tag;
+            results.Add(new { target = go.name, success = true, tag = item.tag });
+            successCount++;
+        }
+
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

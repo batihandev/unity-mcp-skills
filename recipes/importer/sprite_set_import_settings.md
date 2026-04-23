@@ -2,9 +2,6 @@
 
 Sprite importer bridge — set sprite mode, pixels-per-unit, packing tag, and pivot.
 
-**Skill ID:** `sprite_set_import_settings`
-**Source:** `AssetImportSkills.cs` — `SpriteSetImportSettings`
-
 ## Signature
 
 ```
@@ -18,18 +15,7 @@ sprite_set_import_settings(
 ) → { success, assetPath, spriteMode, pixelsPerUnit }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `spriteMode` | string | no | `Single`, `Multiple`, `Polygon` |
-| `pixelsPerUnit` | float | no | Pixels per unit |
-| `packingTag` | string | no | Sprite atlas packing tag |
-| `pivotX` | string | no | Pivot X as float string (e.g. `"0.5"`) |
-| `pivotY` | string | no | Pivot Y as float string (e.g. `"0.5"`) |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -47,7 +33,7 @@ internal class CommandScript : IRunCommand
         string pivotY = "0.5";          // Pivot Y (0.0 – 1.0)
 
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-        if (importer == null) return new { error = $"Not a texture: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a texture: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -75,13 +61,13 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
             spriteMode = importer.spriteImportMode.ToString(),
             pixelsPerUnit = importer.spritePixelsPerUnit
-        };
+        }); return; }
     }
 }
 ```

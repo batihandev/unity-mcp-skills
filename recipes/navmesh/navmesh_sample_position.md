@@ -6,6 +6,8 @@ Find the nearest point on the NavMesh to a given world-space position. Useful fo
 
 **Returns:** `{ success, found, point: { x, y, z }, distance }` — `point` and `distance` are absent when `found` is `false`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.AI;

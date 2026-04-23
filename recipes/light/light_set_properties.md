@@ -12,6 +12,8 @@ Configure properties on an existing light. All property parameters are optional;
 - `spotAngle` is only applied for Spot lights.
 - Invalid `shadows` value returns `{ warning }` instead of an error.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

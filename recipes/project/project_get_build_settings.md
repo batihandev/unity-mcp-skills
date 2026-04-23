@@ -12,7 +12,7 @@ Get the active build target, build target group, and the list of scenes register
 - `scenes` lists only scenes added in Build Settings, not all scenes in the project.
 - `enabled` reflects whether a scene is checked on in the Build Settings panel.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

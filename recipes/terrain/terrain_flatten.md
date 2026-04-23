@@ -6,6 +6,8 @@ Flatten terrain to a specific height in a circular region with cosine falloff.
 
 **Returns:** `{ success, centerX, centerZ, targetHeight, radius, strength }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -91,7 +93,7 @@ internal class CommandScript : IRunCommand
             var go = GameObject.Find(name);
             return go?.GetComponent<Terrain>();
         }
-        return Object.FindObjectOfType<Terrain>();
+        return Object.FindFirstObjectByType<Terrain>();
     }
 }
 ```

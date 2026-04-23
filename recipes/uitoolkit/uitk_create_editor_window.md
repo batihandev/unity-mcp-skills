@@ -12,6 +12,8 @@ Generate a Unity EditorWindow C# script that uses UI Toolkit.
 - When `ussPath` is provided the stylesheet is loaded and added to the root.
 - `menuPath` defaults to `"Window/<className>"`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

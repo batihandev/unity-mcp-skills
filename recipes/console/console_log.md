@@ -16,7 +16,7 @@ Write a custom message to the Unity console.
 - `type` matching is case-insensitive: `"Log"`, `"log"`, and `"LOG"` all produce `Debug.Log`.
 - Any unrecognized type value defaults to `Debug.Log`.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
@@ -41,7 +41,7 @@ internal class CommandScript : IRunCommand
                 Debug.Log(message);
                 break;
         }
-        result.Return(new { success = true, logged = message });
+        result.SetResult(new { success = true, logged = message });
     }
 }
 ```

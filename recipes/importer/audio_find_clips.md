@@ -2,9 +2,6 @@
 
 Search for AudioClip assets in the project using an AssetDatabase filter.
 
-**Skill ID:** `audio_find_clips`
-**Source:** `AudioSkills.cs` — `AudioFindClips`
-
 ## Signature
 
 ```
@@ -12,14 +9,7 @@ audio_find_clips(filter?: string = "", limit?: int = 50)
   → { success, totalFound, showing, clips[{ path, name, length }] }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `filter` | string | no | `""` | Additional AssetDatabase search terms appended to `t:AudioClip` |
-| `limit` | int | no | `50` | Max results returned |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
@@ -46,7 +36,7 @@ internal class CommandScript : IRunCommand
             };
         }).ToArray();
 
-        return new { success = true, totalFound = guids.Length, showing = clips.Length, clips };
+        { result.SetResult(new { success = true, totalFound = guids.Length, showing = clips.Length, clips }); return; }
     }
 }
 ```

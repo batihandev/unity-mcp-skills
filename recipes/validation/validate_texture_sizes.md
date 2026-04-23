@@ -10,6 +10,8 @@ Find Texture2D assets that exceed a recommended size threshold.
 - Only checks assets with a valid `TextureImporter` (i.e., imported Texture2D assets)
 - `maxTextureSize` in results is the import setting cap, which may differ from actual texture dimensions
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

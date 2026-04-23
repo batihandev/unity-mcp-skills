@@ -11,6 +11,8 @@ Search for USS and/or UXML files in the project.
 - `folder` restricts the search root (defaults to `"Assets"`).
 - `filter` is a substring match against the asset path.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -31,14 +33,14 @@ internal class CommandScript : IRunCommand
         var ussGuids  = (typeLower == "uxml") ? new string[0] : AssetDatabase.FindAssets("t:StyleSheet",      new[] { searchFolder });
         var uxmlGuids = (typeLower == "uss")  ? new string[0] : AssetDatabase.FindAssets("t:VisualTreeAsset", new[] { searchFolder });
 
-        var seen = new System.Collections.Generic.HashSet<string>();
+        var seen = new System.Collections.Generic.List<string>();
         var filteredPaths = new System.Collections.Generic.List<string>();
 
         foreach (var g in ussGuids.Concat(uxmlGuids))
         {
             if (filteredPaths.Count >= limit) break;
             var p = AssetDatabase.GUIDToAssetPath(g);
-            if (!seen.Add(p)) continue;
+            if (seen.Contains(p)) continue; seen.Add(p);
             var ext = Path.GetExtension(p).TrimStart('.').ToLowerInvariant();
             if (typeLower == "uss"  && ext != "uss")  continue;
             if (typeLower == "uxml" && ext != "uxml") continue;

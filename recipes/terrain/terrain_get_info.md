@@ -6,6 +6,8 @@ Get terrain information including size, resolution, and texture layers.
 
 **Returns:** `{ success, name, instanceId, position, size, heightmapResolution, alphamapResolution, detailResolution, terrainLayerCount, layers }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -71,7 +73,7 @@ internal class CommandScript : IRunCommand
             var go = GameObject.Find(name);
             return go?.GetComponent<Terrain>();
         }
-        return Object.FindObjectOfType<Terrain>();
+        return Object.FindFirstObjectByType<Terrain>();
     }
 }
 ```

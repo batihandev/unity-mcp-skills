@@ -6,6 +6,8 @@ Read the content of a USS or UXML file.
 
 **Returns:** `{ path, type, lines, content }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

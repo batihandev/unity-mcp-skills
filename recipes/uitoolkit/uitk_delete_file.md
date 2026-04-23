@@ -10,6 +10,8 @@ Delete a USS or UXML file from the project.
 - Fails if the file does not exist.
 - Takes a workflow snapshot before deletion for undo support.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -27,7 +29,7 @@ internal class CommandScript : IRunCommand
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(filePath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
 
-        AssetDatabase.DeleteAsset(filePath);
+        AssetDatabase.MoveAssetToTrash(filePath);
         result.SetResult(new { success = true, deleted = filePath });
     }
 }

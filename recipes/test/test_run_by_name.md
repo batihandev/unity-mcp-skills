@@ -1,19 +1,24 @@
 # test_run_by_name
 
-Run specific Unity tests by class or method name, returning a job ID for polling.
+Kick off a specific test class or fully-qualified method via a
+`TestRunnerApi` filter. Fire-and-forget; read results via `test_get_result`
+after the run completes.
 
 **Signature:** `TestRunByName(testName string, testMode string = "EditMode")`
 
-**Returns:** `{ success, status, jobId, testName, testMode }`
+**Returns:** `{ success, started, testName, mode }`
 
 **Notes:**
-- `testName` is required; pass the exact test class name or fully qualified method name
-- Uses the same async job model as `test_run`; poll with `test_get_result(jobId)`
-- Only one active test job at a time is recommended
+- `testName` is required. Pass an exact class name (e.g. `MyTestClass`) or
+  a fully qualified method name (e.g. `MyNamespace.MyTestClass.MyTest`).
+- Only one active Test Runner run at a time is safe.
+
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.TestTools.TestRunner.Api;
 
 internal class CommandScript : IRunCommand
 {
@@ -28,19 +33,31 @@ internal class CommandScript : IRunCommand
             return;
         }
 
-        if (!AsyncJobService.TryStartTestJob(testMode, testName, out var job, out var error))
+        TestMode mode;
+        if (string.Equals(testMode, "EditMode", System.StringComparison.OrdinalIgnoreCase))
+            mode = TestMode.EditMode;
+        else if (string.Equals(testMode, "PlayMode", System.StringComparison.OrdinalIgnoreCase))
+            mode = TestMode.PlayMode;
+        else
         {
-            result.SetResult(new { success = false, error });
+            result.SetResult(new { error = $"testMode must be EditMode or PlayMode, got {testMode}" });
             return;
         }
+
+        var api = ScriptableObject.CreateInstance<TestRunnerApi>();
+        var runFilter = new Filter
+        {
+            testMode = mode,
+            testNames = new[] { testName }
+        };
+        api.Execute(new ExecutionSettings(runFilter));
 
         result.SetResult(new
         {
             success = true,
-            status = "accepted",
-            jobId = job.jobId,
+            started = true,
             testName,
-            testMode
+            mode = testMode
         });
     }
 }

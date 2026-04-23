@@ -7,16 +7,18 @@ Configure a `CinemachineImpulseSource` definition: amplitude gain, frequency gai
 **Returns:** `{ success, source, changes }` or `{ success, message }` (no changes) or `{ error }`
 
 **Notes:**
-- CM3 field paths: `ImpulseDefinition.AmplitudeGain`, `ImpulseDefinition.FrequencyGain`, `ImpulseDefinition.ImpactRadius`, `ImpulseDefinition.TimeEnvelope.Duration`, `ImpulseDefinition.DissipationRate`
-- CM2 field paths: `m_ImpulseDefinition.m_AmplitudeGain`, etc. (same structure with `m_` prefix)
+- CM3 field paths: `ImpulseDefinition.AmplitudeGain`, `ImpulseDefinition.FrequencyGain`, `ImpulseDefinition.ImpactRadius`, `ImpulseDefinition.TimeEnvelope.Duration`, `ImpulseDefinition.DissipationRate`.
 - To trigger the impulse at runtime, use `cinemachine_impulse_generate`.
 - Receiving cameras need a `CinemachineImpulseListener` extension (added via `cinemachine_add_extension`).
+
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -31,7 +33,7 @@ internal class CommandScript : IRunCommand
         float? duration = 0.5f;
         float? dissipationRate = 0.25f;
 
-        MonoBehaviour source = null;
+        CinemachineImpulseSource source = null;
         if (!string.IsNullOrEmpty(sourceName) || sourceInstanceId != 0 || !string.IsNullOrEmpty(sourcePath))
         {
             var (go, err) = GameObjectFinder.FindOrError(sourceName, sourceInstanceId, sourcePath);
@@ -49,6 +51,11 @@ internal class CommandScript : IRunCommand
         Undo.RecordObject(source, "Configure Impulse Source");
         var changes = new List<string>();
 
+        // NOTE: BindingFlags.Public|Instance trips the Unity_RunCommand reformatter NRE.
+        // Use parameterless GetFields()/GetField(name) instead.
+        System.Reflection.FieldInfo FindField(System.Type t, string name)
+            => t.GetFields().FirstOrDefault(f => f.Name == name);
+
         void TrySetNested(string propPath, object val, string label)
         {
             if (val == null) return;
@@ -56,26 +63,19 @@ internal class CommandScript : IRunCommand
             object obj = source;
             for (int i = 0; i < parts.Length - 1; i++)
             {
-                var f = obj.GetType().GetField(parts[i], BindingFlags.Public | BindingFlags.Instance);
+                var f = FindField(obj.GetType(), parts[i]);
                 if (f == null) return;
                 obj = f.GetValue(obj);
                 if (obj == null) return;
             }
-            var last = obj.GetType().GetField(parts[parts.Length - 1], BindingFlags.Public | BindingFlags.Instance);
+            var last = FindField(obj.GetType(), parts[parts.Length - 1]);
             if (last != null) { last.SetValue(obj, System.Convert.ChangeType(val, last.FieldType)); changes.Add(label + "=" + val); }
         }
 
-#if CINEMACHINE_3
         TrySetNested("ImpulseDefinition.AmplitudeGain", amplitudeGain, "amplitudeGain");
         TrySetNested("ImpulseDefinition.FrequencyGain", frequencyGain, "frequencyGain");
         TrySetNested("ImpulseDefinition.ImpactRadius", impactRadius, "impactRadius");
         TrySetNested("ImpulseDefinition.DissipationRate", dissipationRate, "dissipationRate");
-#else
-        TrySetNested("m_ImpulseDefinition.m_AmplitudeGain", amplitudeGain, "amplitudeGain");
-        TrySetNested("m_ImpulseDefinition.m_FrequencyGain", frequencyGain, "frequencyGain");
-        TrySetNested("m_ImpulseDefinition.m_ImpactRadius", impactRadius, "impactRadius");
-        TrySetNested("m_ImpulseDefinition.m_DissipationRate", dissipationRate, "dissipationRate");
-#endif
 
         EditorUtility.SetDirty(source);
         if (changes.Count == 0)

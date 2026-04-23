@@ -1,40 +1,32 @@
 # scene_component_stats
 
-**Skill:** `scene_component_stats`
-**C# method:** `PerceptionSkills.SceneComponentStats`
-
 ## Signature
 
 ```
 SceneComponentStats(int topComponentsLimit = 15)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `topComponentsLimit` | `int` | `15` | Maximum number of top component types to return |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `stats` (object counts, hierarchy depth, cameras, lights, canvases, EventSystems, AudioListeners, prefab instances, disabled ratio, empty leaf count), `keyFacilities` (bool flags for main camera, light, canvas, EventSystem, AudioListener, UGUI, UI Toolkit), and `topComponents` array.
 
-## RunCommand Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`perception_helpers`](../_shared/perception_helpers.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        int topComponentsLimit = 15; // adjust as needed
+        int topComponentsLimit = 15;
 
-        var metrics = CollectSceneMetrics(includeComponentStats: true);
+        var metrics = PerceptionHelpers.CollectSceneMetrics(includeComponentStats: true);
         var totalObjects = Math.Max(metrics.TotalObjects, 1);
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = metrics.Scene.name,
@@ -66,7 +58,7 @@ internal class CommandScript : IRunCommand
                 hasUgui = metrics.Canvases > 0 || metrics.HasUiGraphic,
                 hasUiToolkit = metrics.HasUiToolkitDocument
             },
-            topComponents = BuildTopComponents(metrics, topComponentsLimit)
+            topComponents = PerceptionHelpers.BuildTopComponents(metrics, topComponentsLimit)
         });
     }
 }

@@ -11,6 +11,8 @@ Remove missing script components from all GameObjects in the active scene, with 
 - Registers an Undo operation and snapshots each object before modification
 - Only searches scene objects; does not process prefab assets on disk
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

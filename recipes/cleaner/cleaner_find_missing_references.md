@@ -4,12 +4,6 @@ Find components with missing scripts or null serialized object references in the
 
 **Signature:** `CleanerFindMissingReferences(bool includeInactive = true)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `includeInactive` | bool | No | true | Include inactive GameObjects in the search |
-
 ## Returns
 
 ```json
@@ -50,11 +44,14 @@ Find components with missing scripts or null serialized object references in the
 - Use `cleaner_fix_missing_scripts` to automatically remove MissingScript components.
 - MissingReference issues must be fixed manually by reassigning the field in the Inspector.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -63,11 +60,13 @@ internal class CommandScript : IRunCommand
         bool includeInactive = true;
 
         var issues = new List<object>();
+        int missingScripts = 0;
+        int missingReferences = 0;
         var allObjects = includeInactive
             ? Resources.FindObjectsOfTypeAll<GameObject>()
                 .Where(go => !EditorUtility.IsPersistent(go) && go.hideFlags == HideFlags.None)
                 .ToArray()
-            : Object.FindObjectsOfType<GameObject>();
+            : Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
 
         foreach (var go in allObjects)
         {
@@ -76,6 +75,7 @@ internal class CommandScript : IRunCommand
             {
                 if (components[i] == null)
                 {
+                    missingScripts++;
                     issues.Add(new
                     {
                         type = "MissingScript",
@@ -96,6 +96,7 @@ internal class CommandScript : IRunCommand
                     {
                         if (prop.objectReferenceValue == null && prop.objectReferenceInstanceIDValue != 0)
                         {
+                            missingReferences++;
                             issues.Add(new
                             {
                                 type = "MissingReference",
@@ -110,12 +111,12 @@ internal class CommandScript : IRunCommand
             }
         }
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             issueCount = issues.Count,
-            missingScripts = issues.Count(i => ((dynamic)i).type == "MissingScript"),
-            missingReferences = issues.Count(i => ((dynamic)i).type == "MissingReference"),
+            missingScripts,
+            missingReferences,
             issues
         });
     }

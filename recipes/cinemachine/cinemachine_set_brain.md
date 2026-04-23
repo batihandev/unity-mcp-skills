@@ -16,9 +16,12 @@ Configure `CinemachineBrain` properties: update method, default blend, and debug
 - Only pass parameters you want to change; omitted parameters are left unchanged.
 - Returns the full resulting settings for confirmation.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -32,43 +35,51 @@ internal class CommandScript : IRunCommand
         bool? showCameraFrustum = true;
         bool? ignoreTimeScale = null;
 
-        var brain = CinemachineAdapter.FindBrain();
+        CinemachineBrain brain = null;
+        var mainCam = Camera.main;
+        if (mainCam != null) brain = mainCam.GetComponent<CinemachineBrain>();
+        if (brain == null) brain = Object.FindFirstObjectByType<CinemachineBrain>();
         if (brain == null) { result.SetResult(new { error = "No CinemachineBrain found. Add one to the Main Camera first." }); return; }
 
         Undo.RecordObject(brain, "Set Brain");
 
-        if (updateMethod != null)
-            CinemachineAdapter.SetBrainUpdateMethod(brain, updateMethod);
-        if (blendUpdateMethod != null)
-            CinemachineAdapter.SetBrainBlendUpdateMethod(brain, blendUpdateMethod);
+        if (updateMethod != null &&
+            System.Enum.TryParse<CinemachineBrain.UpdateMethods>(updateMethod, true, out var upd))
+            brain.UpdateMethod = upd;
+        if (blendUpdateMethod != null &&
+            System.Enum.TryParse<CinemachineBrain.BrainUpdateMethods>(blendUpdateMethod, true, out var blUpd))
+            brain.BlendUpdateMethod = blUpd;
 
         if (defaultBlendStyle != null || defaultBlendTime.HasValue)
         {
-            var current = CinemachineAdapter.GetBrainDefaultBlend(brain);
-            string style = defaultBlendStyle ?? CinemachineAdapter.GetBlendStyle(current);
-            float blendTime = defaultBlendTime ?? CinemachineAdapter.GetBlendTime(current);
-            CinemachineAdapter.SetBrainDefaultBlend(brain, CinemachineAdapter.CreateBlendDefinition(style, blendTime));
+            var current = brain.DefaultBlend;
+            string style = defaultBlendStyle ?? current.Style.ToString();
+            float blendTime = defaultBlendTime ?? current.Time;
+            var newBlend = new CinemachineBlendDefinition { Time = blendTime };
+            if (System.Enum.TryParse<CinemachineBlendDefinition.Styles>(style, true, out var parsed))
+                newBlend.Style = parsed;
+            brain.DefaultBlend = newBlend;
         }
 
-        if (showDebugText.HasValue) CinemachineAdapter.SetBrainBool(brain, "ShowDebugText", showDebugText.Value);
-        if (showCameraFrustum.HasValue) CinemachineAdapter.SetBrainBool(brain, "ShowCameraFrustum", showCameraFrustum.Value);
-        if (ignoreTimeScale.HasValue) CinemachineAdapter.SetBrainBool(brain, "IgnoreTimeScale", ignoreTimeScale.Value);
+        if (showDebugText.HasValue) brain.ShowDebugText = showDebugText.Value;
+        if (showCameraFrustum.HasValue) brain.ShowCameraFrustum = showCameraFrustum.Value;
+        if (ignoreTimeScale.HasValue) brain.IgnoreTimeScale = ignoreTimeScale.Value;
 
         EditorUtility.SetDirty(brain);
 
-        var blend = CinemachineAdapter.GetBrainDefaultBlend(brain);
+        var resBlend = brain.DefaultBlend;
         result.SetResult(new
         {
             success = true,
             settings = new
             {
-                updateMethod = CinemachineAdapter.GetBrainUpdateMethod(brain),
-                blendUpdateMethod = CinemachineAdapter.GetBrainBlendUpdateMethod(brain),
-                defaultBlendStyle = CinemachineAdapter.GetBlendStyle(blend),
-                defaultBlendTime = CinemachineAdapter.GetBlendTime(blend),
-                showDebugText = CinemachineAdapter.GetBrainBool(brain, "ShowDebugText"),
-                showCameraFrustum = CinemachineAdapter.GetBrainBool(brain, "ShowCameraFrustum"),
-                ignoreTimeScale = CinemachineAdapter.GetBrainBool(brain, "IgnoreTimeScale")
+                updateMethod = brain.UpdateMethod.ToString(),
+                blendUpdateMethod = brain.BlendUpdateMethod.ToString(),
+                defaultBlendStyle = resBlend.Style.ToString(),
+                defaultBlendTime = resBlend.Time,
+                showDebugText = brain.ShowDebugText,
+                showCameraFrustum = brain.ShowCameraFrustum,
+                ignoreTimeScale = brain.IgnoreTimeScale
             }
         });
     }

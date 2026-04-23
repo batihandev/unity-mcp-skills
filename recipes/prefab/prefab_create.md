@@ -4,17 +4,6 @@ Create a prefab asset from a scene GameObject. The source object remains in the 
 
 **Signature:** `PrefabCreate(string name = null, int instanceId = 0, string path = null, string savePath = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | Source GameObject name |
-| `instanceId` | int | No* | Instance ID (preferred) |
-| `path` | string | No* | Hierarchy path |
-| `savePath` | string | Yes | Asset save path (e.g. `Assets/Prefabs/Enemy.prefab`) |
-
-*At least one object identifier required alongside `savePath`.
-
 ## Returns
 
 ```json
@@ -33,34 +22,39 @@ Create a prefab asset from a scene GameObject. The source object remains in the 
 - The created prefab asset is recorded in the workflow snapshot.
 - Do NOT use `prefab_create_from_object` — that command does not exist.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        string name = null;
+        int instanceId = 0;
+        string path = null;
+        string savePath = null;
 
-            if (Validate.Required(savePath, "savePath") is object reqErr) return reqErr;
-            if (Validate.SafePath(savePath, "savePath") is object pathErr) return pathErr;
+        if (Validate.Required(savePath, "savePath") is object reqErr) { result.SetResult(reqErr); return; }
+        if (Validate.SafePath(savePath, "savePath") is object pathErr) { result.SetResult(pathErr); return; }
 
-            var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
-            if (findErr != null) return findErr;
+        var (go, findErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
+        if (findErr != null) { result.SetResult(findErr); return; }
 
-            var dir = Path.GetDirectoryName(savePath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
+        var dir = Path.GetDirectoryName(savePath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            Directory.CreateDirectory(dir);
 
-            var prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(go, savePath, InteractionMode.UserAction);
+        // 使用 SaveAsPrefabAssetAndConnect 将场景物体连接为预制体实例
+        var prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(go, savePath, InteractionMode.UserAction);
 
-            WorkflowManager.SnapshotCreatedAsset(prefab);
+        // 记录新创建的预制体资产
+        WorkflowManager.SnapshotCreatedAsset(prefab);
 
-            return new { success = true, prefabPath = savePath, name = prefab.name };
-        */
+        { result.SetResult(new { success = true, prefabPath = savePath, name = prefab.name }); return; }
     }
 }
 ```

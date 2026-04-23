@@ -11,6 +11,8 @@ Snap all selected objects to a grid.
 - Requires objects selected in Hierarchy first
 - Undoable
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -8,6 +8,8 @@ Create a PhysicMaterial asset.
 
 > Unity 6+: uses `PhysicsMaterial`; older versions: `PhysicMaterial`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -33,11 +35,7 @@ internal class CommandScript : IRunCommand
             return;
         }
 
-#if UNITY_6000_0_OR_NEWER
         var mat = new PhysicsMaterial(name)
-#else
-        var mat = new PhysicMaterial(name)
-#endif
         {
             dynamicFriction = dynamicFriction,
             staticFriction = staticFriction,

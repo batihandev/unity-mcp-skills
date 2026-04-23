@@ -8,6 +8,8 @@ Get all tags defined in the project's tag manager.
 
 Note: no top-level `success` key. `tags` is a string array from `InternalEditorUtility.tags`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

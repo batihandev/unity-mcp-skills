@@ -11,6 +11,8 @@ Find all UI elements in the scene, optionally filtered by UI type.
 - Each element entry contains `name`, `instanceId`, `path`, `uiType`, and `active`.
 - Search walks all Canvas trees in the scene including inactive children.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;
@@ -49,6 +51,42 @@ internal class CommandScript : IRunCommand
         }
 
         result.SetResult(new { count = results.Count, elements = results });
+    }
+
+    private static bool _tmpChecked;
+    private static bool _tmpAvailable;
+    private static System.Type _tmpTextType;
+    private static System.Type _tmpInputFieldType;
+
+    private static bool IsTMPAvailable()
+    {
+        if (!_tmpChecked)
+        {
+            _tmpChecked = true;
+            _tmpTextType = System.Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro");
+            _tmpInputFieldType = System.Type.GetType("TMPro.TMP_InputField, Unity.TextMeshPro");
+            _tmpAvailable = _tmpTextType != null;
+        }
+        return _tmpAvailable;
+    }
+
+    private static string GetUIType(GameObject go)
+    {
+        if (go.GetComponent<Canvas>()) return "Canvas";
+        if (go.GetComponent<Button>()) return "Button";
+        if (go.GetComponent<Slider>()) return "Slider";
+        if (go.GetComponent<Toggle>()) return "Toggle";
+        if (IsTMPAvailable())
+        {
+            if (_tmpInputFieldType != null && go.GetComponent(_tmpInputFieldType) != null) return "InputField";
+            if (_tmpTextType != null && go.GetComponent(_tmpTextType) != null) return "Text";
+        }
+        if (go.GetComponent<InputField>()) return "InputField";
+        if (go.GetComponent<Text>()) return "Text";
+        if (go.GetComponent<UnityEngine.UI.Image>()) return "Image";
+        if (go.GetComponent<RawImage>()) return "RawImage";
+        if (go.GetComponent<RectTransform>()) return "RectTransform";
+        return "Unknown";
     }
 }
 ```

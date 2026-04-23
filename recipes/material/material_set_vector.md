@@ -7,12 +7,10 @@ Set a Vector4 property on a material.
 **Returns:** `{ success, target, property, value: {x,y,z,w} }`
 
 ## Notes
-
-- `propertyName` is required. Returns an error (with `shaderName`) if the property does not exist on the shader.
 - Use `material_get_properties` to discover vector properties available on a material.
 - All four components `x`, `y`, `z`, `w` default to `0` if omitted.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -28,27 +26,43 @@ internal class CommandScript : IRunCommand
         string propertyName = "_Tiling";    // required
         float  x = 2f, y = 2f, z = 0f, w = 0f;
 
-        /* Original Logic:
+        if (Validate.Required(propertyName, "propertyName") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(propertyName, "propertyName") is object err) return err;
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        if (!material.HasProperty(propertyName))
+        {
+            { result.SetResult(new {
+                error = $"Property not found: {propertyName}",
+                shaderName = material.shader.name
+            }); return; }
+        }
 
-            if (!material.HasProperty(propertyName))
-                return new {
-                    error = $"Property not found: {propertyName}",
-                    shaderName = material.shader.name
-                };
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set Material Vector");
+        material.SetVector(propertyName, new Vector4(x, y, z, w));
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set Material Vector");
-            material.SetVector(propertyName, new Vector4(x, y, z, w));
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
+        { result.SetResult(new { success = true, target = go != null ? go.name : path, property = propertyName, value = new { x, y, z, w } }); return; }
+    }
 
-            return new { success = true, target = go != null ? go.name : path, property = propertyName, value = new { x, y, z, w } };
-        */
+    private static (Material mat, GameObject go, object error) FindMaterial(string name, int instanceId, string path)
+    {
+        if (!string.IsNullOrEmpty(path) && path.EndsWith(".mat"))
+        {
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) return (null, null, new { error = "Material asset not found: " + path });
+            return (m, null, null);
+        }
+        var (go, err) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (err != null) return (null, null, err);
+        var rdr = go.GetComponent<Renderer>();
+        if (rdr == null) return (null, go, new { error = "No Renderer on " + go.name });
+        var mat = rdr.sharedMaterial;
+        if (mat == null) return (null, go, new { error = "No material on " + go.name });
+        return (mat, go, null);
     }
 }
 ```

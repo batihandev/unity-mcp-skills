@@ -11,7 +11,7 @@ Get all tag definitions from the project's TagManager. Read-only; no parameters 
 - Tags are read-only via this command. To add a tag programmatically use `project_add_tag`.
 - Built-in Unity tags (`Untagged`, `Respawn`, `Finish`, `EditorOnly`, `MainCamera`, `Player`, `GameController`) are included in the result.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

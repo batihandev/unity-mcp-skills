@@ -4,14 +4,6 @@ Find potentially unused assets of a specific type by scanning dependencies acros
 
 **Signature:** `CleanerFindUnusedAssets(string assetType = "Material", string searchPath = "Assets", int limit = 100)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `assetType` | string | No | "Material" | Asset type filter (e.g. Texture2D, AudioClip) |
-| `searchPath` | string | No | "Assets" | Root path to search within |
-| `limit` | int | No | 100 | Max number of results to return |
-
 ## Returns
 
 ```json
@@ -34,11 +26,14 @@ Find potentially unused assets of a specific type by scanning dependencies acros
 - Use `cleaner_get_asset_usage` to confirm an individual asset before deletion.
 - To delete found assets, use `cleaner_delete_assets` (two-step confirmation required).
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -48,7 +43,7 @@ internal class CommandScript : IRunCommand
         string searchPath = "Assets";
         int limit = 100;
 
-        if (Validate.SafePath(searchPath, "searchPath") is object pathErr) return;
+        if (Validate.SafePath(searchPath, "searchPath") is object pathErr) { result.SetResult(pathErr); return; }
 
         var filter = $"t:{assetType}";
         var guids = AssetDatabase.FindAssets(filter, new[] { searchPath });
@@ -92,7 +87,7 @@ internal class CommandScript : IRunCommand
             });
         }
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             assetType,

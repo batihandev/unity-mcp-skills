@@ -1,16 +1,21 @@
 # test_create_editmode
 
-Create an EditMode test script template and return a compile-monitor job.
+Write an EditMode test script template and import it. Synchronous — returns
+after `AssetDatabase.ImportAsset`. Unity may still domain-reload after the
+call, so the next MCP call can see a brief unavailability.
 
 **Signature:** `TestCreateEditMode(testName string, folder string = "Assets/Tests/Editor")`
 
-**Returns:** `{ success, status, path, testName, jobId, serverAvailability }`
+**Returns:** `{ success, path, testName }` — or `{ error }` on validation or
+file-exists failure.
 
 **Notes:**
-- `testName` must not contain path separators (`/`, `\`, or `..`)
-- Creates the folder if it does not exist; returns an error if the file already exists
-- Triggers a script mutation job (`jobId`) to monitor compile status after file creation
-- `serverAvailability` always includes a transient unavailability notice due to domain reload
+- `testName` must not contain `/`, `\`, or `..`.
+- Creates `folder` if it doesn't exist; fails if the target `.cs` already
+  exists.
+- No job ID — domain reload is Unity's business, not this recipe's.
+
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
@@ -39,7 +44,7 @@ internal class CommandScript : IRunCommand
             return;
         }
         if (!System.IO.Directory.Exists(folder)) System.IO.Directory.CreateDirectory(folder);
-        var path = System.IO.Path.Combine(folder, testName + ".cs");
+        var path = System.IO.Path.Combine(folder, testName + ".cs").Replace('\\', '/');
         if (System.IO.File.Exists(path))
         {
             result.SetResult(new { error = $"File already exists: {path}" });
@@ -60,18 +65,8 @@ public class {testName}
 ";
         System.IO.File.WriteAllText(path, content, SkillsCommon.Utf8NoBom);
         AssetDatabase.ImportAsset(path);
-        var job = AsyncJobService.StartScriptMutationJob("test_create_editmode", path.Replace("\\", "/"), true, 20);
-        result.SetResult(new
-        {
-            success = true,
-            status = "accepted",
-            path,
-            testName,
-            jobId = job.jobId,
-            serverAvailability = ServerAvailabilityHelper.CreateTransientUnavailableNotice(
-                $"已创建测试脚本: {path}。Unity 可能短暂重载脚本域。",
-                alwaysInclude: true)
-        });
+
+        result.SetResult(new { success = true, path, testName });
     }
 }
 ```

@@ -12,9 +12,12 @@ Configure Noise settings on a VCam using `CinemachineBasicMultiChannelPerlin`. A
 - The `CinemachineBasicMultiChannelPerlin` component is auto-added to the VCam if missing.
 - You still need a Noise Profile asset assigned for the noise to be visible. Use `cinemachine_set_vcam_property` with `componentType="CinemachineBasicMultiChannelPerlin"`, `propertyName="NoiseProfile"` to assign an asset by name.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -38,7 +41,8 @@ internal class CommandScript : IRunCommand
             WorkflowManager.SnapshotCreatedComponent(perlin);
         }
 
-        CinemachineAdapter.SetNoiseGains(perlin, amplitudeGain, frequencyGain);
+        perlin.AmplitudeGain = amplitudeGain;
+        perlin.FrequencyGain = frequencyGain;
         EditorUtility.SetDirty(perlin);
 
         result.SetResult(new { success = true, message = "Set Noise profile." });

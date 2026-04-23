@@ -10,6 +10,8 @@ Selectively update properties on an existing PanelSettings asset.
 - Only provided (non-null) parameters are changed; all others are left as-is.
 - `renderMode`, `colliderUpdateMode`, and `colliderIsTrigger` are Unity 6+ internal fields updated via `SerializedObject`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

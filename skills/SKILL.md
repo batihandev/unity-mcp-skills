@@ -50,7 +50,6 @@ This index lists all available domain modules for interacting with the Unity Edi
 | [package](./package/SKILL.md) | UPM install/query | `Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData` |
 | [project](./project/SKILL.md) | Project info/settings | `Unity_GetProjectData` |
 | [optimization](./optimization/SKILL.md) | Asset optimization | `Unity_RunCommand` |
-| [sample](./sample/SKILL.md) | Demo/test skills | `Unity_RunCommand` |
 | [test](./test/SKILL.md) | Unity Test Runner | `Unity_RunCommand` |
 | [scriptableobject](./scriptableobject/SKILL.md) | ScriptableObject assets | `Unity_RunCommand` |
 

@@ -4,20 +4,6 @@ Copy a component from one GameObject to another using Unity's built-in Component
 
 **Signature:** `ComponentCopy(string sourceName = null, int sourceInstanceId = 0, string sourcePath = null, string targetName = null, int targetInstanceId = 0, string targetPath = null, string componentType = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `sourceName` | string | No* | null | Source GameObject name |
-| `sourceInstanceId` | int | No* | 0 | Source Instance ID |
-| `sourcePath` | string | No* | null | Source hierarchy path |
-| `targetName` | string | No* | null | Target GameObject name |
-| `targetInstanceId` | int | No* | 0 | Target Instance ID |
-| `targetPath` | string | No* | null | Target hierarchy path |
-| `componentType` | string | Yes | - | Component type to copy |
-
-*At least one source identifier and one target identifier required.
-
 ## Returns
 
 ```json
@@ -36,7 +22,7 @@ Copy a component from one GameObject to another using Unity's built-in Component
 - If the source object does not have the specified component, the call returns an error.
 - Workflow tracking is enabled; the pasted component is recorded.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
@@ -46,24 +32,25 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        string componentType = "AudioSource";
+        string sourceName = null; int sourceInstanceId = 0; string sourcePath = null;
+        string targetName = null; int targetInstanceId = 0; string targetPath = null;
 
-            if (Validate.Required(componentType, "componentType") is object err) return err;
-            var (srcGo, srcErr) = GameObjectFinder.FindOrError(name: sourceName, instanceId: sourceInstanceId, path: sourcePath);
-            if (srcErr != null) return srcErr;
-            var (dstGo, dstErr) = GameObjectFinder.FindOrError(name: targetName, instanceId: targetInstanceId, path: targetPath);
-            if (dstErr != null) return dstErr;
+        if (Validate.Required(componentType, "componentType") is object err) { result.SetResult(err); return; }
+        var (srcGo, srcErr) = GameObjectFinder.FindOrError(name: sourceName, instanceId: sourceInstanceId, path: sourcePath);
+        if (srcErr != null) { result.SetResult(srcErr); return; }
+        var (dstGo, dstErr) = GameObjectFinder.FindOrError(name: targetName, instanceId: targetInstanceId, path: targetPath);
+        if (dstErr != null) { result.SetResult(dstErr); return; }
 
-            var type = FindComponentType(componentType);
-            if (type == null) return new { error = $"Component type not found: {componentType}" };
+        var type = ComponentSkills.FindComponentType(componentType);
+        if (type == null) { result.SetResult(new { error = $"Component type not found: {componentType}" }); return; }
 
-            var srcComp = srcGo.GetComponent(type);
-            if (srcComp == null) return new { error = $"No {componentType} on {sourceName}" };
+        var srcComp = srcGo.GetComponent(type);
+        if (srcComp == null) { result.SetResult(new { error = $"No {componentType} on {srcGo.name}" }); return; }
 
-            UnityEditorInternal.ComponentUtility.CopyComponent(srcComp);
-            UnityEditorInternal.ComponentUtility.PasteComponentAsNew(dstGo);
-            return new { success = true, source = sourceName, target = targetName, componentType };
-        */
+        UnityEditorInternal.ComponentUtility.CopyComponent(srcComp);
+        UnityEditorInternal.ComponentUtility.PasteComponentAsNew(dstGo);
+        result.SetResult(new { success = true, source = srcGo.name, target = dstGo.name, componentType });
     }
 }
 ```

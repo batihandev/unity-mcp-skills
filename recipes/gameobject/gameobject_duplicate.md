@@ -11,7 +11,7 @@ Duplicate a GameObject. The copy is placed under the same parent and gets the su
 - At least one identifier (`name`, `instanceId`, or `path`) is required.
 - The copy is named `<originalName>_Copy` and placed at the same hierarchy level as the original.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -25,24 +25,21 @@ internal class CommandScript : IRunCommand
         int instanceId = 0;
         string path = null;
 
-        /* Original Logic:
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        var copy = Object.Instantiate(go, go.transform.parent);
+        copy.name = go.name + "_Copy";
+        Undo.RegisterCreatedObjectUndo(copy, "Duplicate " + go.name);
+        WorkflowManager.SnapshotObject(copy, SnapshotType.Created);
 
-            var copy = Object.Instantiate(go, go.transform.parent);
-            copy.name = go.name + "_Copy";
-            Undo.RegisterCreatedObjectUndo(copy, "Duplicate " + go.name);
-            WorkflowManager.SnapshotObject(copy, SnapshotType.Created);
-
-            return new {
-                success = true,
-                originalName = go.name,
-                copyName = copy.name,
-                copyInstanceId = copy.GetInstanceID(),
-                copyPath = GameObjectFinder.GetPath(copy)
-            };
-        */
+        { result.SetResult(new {
+            success = true,
+            originalName = go.name,
+            copyName = copy.name,
+            copyInstanceId = copy.GetInstanceID(),
+            copyPath = GameObjectFinder.GetPath(copy)
+        }); return; }
     }
 }
 ```

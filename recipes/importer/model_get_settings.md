@@ -2,9 +2,6 @@
 
 Read the full importer settings for a model asset.
 
-**Skill ID:** `model_get_settings`
-**Source:** `ModelSkills.cs` — `ModelGetSettings`
-
 ## Signature
 
 ```
@@ -15,13 +12,7 @@ model_get_settings(assetPath: string)
       importNormals, importTangents, animationType, importAnimation, materialImportMode }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
@@ -33,46 +24,39 @@ internal class CommandScript : IRunCommand
     {
         string assetPath = "Assets/Models/hero.fbx"; // Replace with target path
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
         if (importer == null)
-            return new { error = $"Not a model file or asset not found: {assetPath}" };
+            { result.SetResult(new { error = $"Not a model file or asset not found: {assetPath}" }); return; }
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             path = assetPath,
-            // Scene
             globalScale = importer.globalScale,
             useFileScale = importer.useFileScale,
             importBlendShapes = importer.importBlendShapes,
             importVisibility = importer.importVisibility,
             importCameras = importer.importCameras,
             importLights = importer.importLights,
-            // Meshes
             meshCompression = importer.meshCompression.ToString(),
             isReadable = importer.isReadable,
             optimizeMeshPolygons = importer.optimizeMeshPolygons,
             optimizeMeshVertices = importer.optimizeMeshVertices,
             generateSecondaryUV = importer.generateSecondaryUV,
-            // Geometry
             keepQuads = importer.keepQuads,
             weldVertices = importer.weldVertices,
-            // Normals & Tangents
             importNormals = importer.importNormals.ToString(),
             importTangents = importer.importTangents.ToString(),
-            // Animation
             animationType = importer.animationType.ToString(),
             importAnimation = importer.importAnimation,
-            // Materials
             materialImportMode = importer.materialImportMode.ToString()
-        };
+        }); return; }
     }
 }
 ```
 
 ## Notes
-
-- Read-only; no reimport triggered.
 - For a lighter read of just scale/compression/animationType, use `model_get_import_settings`.
+

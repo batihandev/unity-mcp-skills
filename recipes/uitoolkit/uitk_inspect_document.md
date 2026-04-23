@@ -11,6 +11,8 @@ Inspect the live VisualElement tree of a UIDocument in the active scene.
 - The document must be active in the scene for `rootVisualElement` to be available.
 - `depth` controls how many levels deep the hierarchy is traversed.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

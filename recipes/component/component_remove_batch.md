@@ -4,12 +4,6 @@ Remove components from multiple GameObjects in a single call. Removes all instan
 
 **Signature:** `ComponentRemoveBatch(string items)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `items` | string | Yes | JSON array of batch items |
-
 ### Batch Item Schema
 
 ```json
@@ -44,45 +38,64 @@ The `count` field reports how many instances of the component were removed from 
 - Each item is processed independently; failures in one item do not block others.
 - Snapshots each component for workflow undo before removing.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchRemoveComponentItem
+{
+    public string name;
+    public int instanceId;
+    public string path;
+    public string componentType;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        var items = new[]
+        {
+            new _BatchRemoveComponentItem { name = "Enemy1", componentType = "Rigidbody" },
+            new _BatchRemoveComponentItem { path = "Level/Prop", componentType = "AudioSource" },
+        };
 
-            return BatchExecutor.Execute<BatchRemoveComponentItem>(items, item =>
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
+
+        foreach (var item in items)
+        {
+            var target = item.name ?? item.path ?? ("#" + item.instanceId);
+            var (go, err) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
+            if (err != null) { results.Add(new { target, success = false, error = "Object not found" }); failCount++; continue; }
+
+            if (string.IsNullOrEmpty(item.componentType))
+            { results.Add(new { target, success = false, error = "componentType required" }); failCount++; continue; }
+
+            var type = ComponentSkills.FindComponentType(item.componentType);
+            if (type == null)
+            { results.Add(new { target, success = false, error = "Component type not found: " + item.componentType }); failCount++; continue; }
+
+            var components = go.GetComponents(type);
+            if (components.Length == 0)
+            { results.Add(new { target, success = false, error = "Component not found: " + item.componentType }); failCount++; continue; }
+
+            Undo.RecordObject(go, "Batch Remove Component");
+            foreach (var c in components)
             {
-                var (go, error) = GameObjectFinder.FindOrError(item.name, item.instanceId, item.path);
-                if (error != null) throw new System.Exception("Object not found");
+                WorkflowManager.SnapshotObject(c);
+                Undo.DestroyObjectImmediate(c);
+            }
 
-                if (string.IsNullOrEmpty(item.componentType))
-                    throw new System.Exception("componentType required");
+            EditorUtility.SetDirty(go);
+            results.Add(new { target = go.name, success = true, removed = type.Name, count = components.Length });
+            successCount++;
+        }
 
-                var type = FindComponentType(item.componentType);
-                if (type == null)
-                    throw new System.Exception($"Component type not found: {item.componentType}");
-
-                var components = go.GetComponents(type);
-                if (components.Length == 0)
-                    throw new System.Exception($"Component not found: {item.componentType}");
-
-                Undo.RecordObject(go, "Batch Remove Component");
-                foreach (var c in components)
-                {
-                    WorkflowManager.SnapshotObject(c);
-                    Undo.DestroyObjectImmediate(c);
-                }
-
-                EditorUtility.SetDirty(go);
-                return new { target = go.name, success = true, removed = type.Name, count = components.Length };
-            }, item => item.name ?? item.path);
-        */
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

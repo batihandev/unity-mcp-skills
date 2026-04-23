@@ -10,6 +10,8 @@ Create an Image UI element, optionally loading a sprite from an asset path.
 - `spritePath` must be a project-relative path (e.g. `Assets/Sprites/icon.png`).
 - If the sprite is not found at the given path, the Image is created without a sprite (no error).
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;
@@ -37,7 +39,7 @@ internal class CommandScript : IRunCommand
         var rectTransform = go.AddComponent<RectTransform>();
         rectTransform.sizeDelta = new Vector2(width, height);
 
-        var image = go.AddComponent<Image>();
+        var image = go.AddComponent<UnityEngine.UI.Image>();
 
         if (!string.IsNullOrEmpty(spritePath))
         {
@@ -50,6 +52,25 @@ internal class CommandScript : IRunCommand
         WorkflowManager.SnapshotObject(go, SnapshotType.Created);
 
         result.SetResult(new { success = true, name = go.name, instanceId = go.GetInstanceID(), parent = parentGo.name });
+    }
+
+    private static GameObject FindOrCreateCanvas(string parentName)
+    {
+        if (!string.IsNullOrEmpty(parentName))
+        {
+            var p = GameObject.Find(parentName);
+            if (p != null) return p;
+        }
+        var canvas = Object.FindFirstObjectByType<Canvas>();
+        if (canvas != null) return canvas.gameObject;
+        var go = new GameObject("Canvas");
+        var canvasComp = go.AddComponent<Canvas>();
+        canvasComp.renderMode = RenderMode.ScreenSpaceOverlay;
+        go.AddComponent<CanvasScaler>();
+        go.AddComponent<GraphicRaycaster>();
+        Undo.RegisterCreatedObjectUndo(go, "Create Canvas");
+        WorkflowManager.SnapshotObject(go, SnapshotType.Created);
+        return go;
     }
 }
 ```

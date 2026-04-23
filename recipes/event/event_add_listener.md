@@ -11,12 +11,16 @@ Add a persistent listener to a UnityEvent at editor time. Supports void, int, fl
 - `mode`: `"RuntimeOnly"` (default), `"EditorAndRuntime"`, or `"Off"`
 - `targetComponentName`: use `"GameObject"` to target a GameObject method directly
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
 using UnityEditor.Events;
-using System.Reflection;
+
+// `using System.Reflection;` + any Type.GetMethod/GetField call triggers the
+// Unity_RunCommand reformatter NRE with no compile log. Fully-qualify instead.
 
 internal class CommandScript : IRunCommand
 {
@@ -62,8 +66,13 @@ internal class CommandScript : IRunCommand
         }
 
         var type = component.GetType();
-        var field = type.GetField(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        var property = type.GetProperty(eventName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        System.Reflection.FieldInfo field = null;
+        System.Reflection.PropertyInfo property = null;
+        for (var scan = type; scan != null && (field == null && property == null); scan = scan.BaseType)
+        {
+            foreach (var f in scan.GetFields()) if (f.Name == eventName) { field = f; break; }
+            foreach (var pr in scan.GetProperties()) if (pr.Name == eventName) { property = pr; break; }
+        }
 
         object rawEvent = null;
         if (field != null) rawEvent = field.GetValue(component);
@@ -77,13 +86,13 @@ internal class CommandScript : IRunCommand
         WorkflowManager.SnapshotObject(component);
         Undo.RecordObject(component, "Add Event Listener");
 
-        MethodInfo FindMethodOnTarget(System.Type[] paramTypes)
+        System.Reflection.MethodInfo FindMethodOnTarget(System.Type[] paramTypes)
         {
-            var mi = targetType.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public, null, paramTypes, null);
-            if (mi != null) return mi;
+            var mi = targetType.GetMethod(methodName, paramTypes);
+            if (mi != null && !mi.IsStatic) return mi;
             if (methodName.StartsWith("set_"))
             {
-                var prop2 = targetType.GetProperty(methodName.Substring(4), BindingFlags.Instance | BindingFlags.Public);
+                var prop2 = targetType.GetProperty(methodName.Substring(4));
                 if (prop2 != null && prop2.CanWrite)
                 {
                     var setter = prop2.GetSetMethod();
@@ -94,7 +103,7 @@ internal class CommandScript : IRunCommand
             return null;
         }
 
-        MethodInfo methodInfo = null;
+        System.Reflection.MethodInfo methodInfo = null;
         switch (argType.ToLower())
         {
             case "void":

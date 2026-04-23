@@ -10,6 +10,8 @@ Optimize texture settings (maxSize, compression) for all Texture2D assets matchi
 - `modified` — array of `{ path, name }` for each changed asset
 - `limit = 0` means no cap (process all matches)
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

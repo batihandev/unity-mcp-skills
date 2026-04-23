@@ -4,37 +4,30 @@ Force Unity to refresh the asset database and request immediate script recompila
 
 **Signature:** `DebugForceRecompile()` — no parameters.
 
-**Returns:** `{ success, message, serverAvailability }`
+**Returns:** `{ success, message }`
 
 ## Notes
 
 - Calls `AssetDatabase.Refresh()` then `CompilationPipeline.RequestScriptCompilation()`.
-- The REST server will be transiently unavailable while Unity reloads assemblies after compilation.
-- `serverAvailability` contains a structured notice; always surface it to the user.
-- Requires `using UnityEditor.Compilation;`.
+- Unity will reload assemblies after compilation — subsequent `Unity_RunCommand` calls queue during that window.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.Compilation;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
         AssetDatabase.Refresh();
-        CompilationPipeline.RequestScriptCompilation();
+        // Fully-qualified: `CompilationPipeline` short-name collides with
+        // Unity.CompilationPipeline (the Unity_RunCommand compile namespace is
+        // Unity.AI.Assistant.Agent.Dynamic.Extension.Editor — CS0234 on short form).
+        UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
 
-        result.Return(new
-        {
-            success = true,
-            message = "Compilation requested",
-            serverAvailability = ServerAvailabilityHelper.CreateTransientUnavailableNotice(
-                "Compilation was requested manually. The REST server may be briefly unavailable while Unity reloads assemblies.",
-                alwaysInclude: true)
-        });
+        result.SetResult(new { success = true, message = "Compilation requested" });
     }
 }
 ```

@@ -12,7 +12,7 @@ Get all layer definitions from the project's TagManager. Read-only; no parameter
 - The returned array contains only non-empty layer names (Unity skips empty slots).
 - Layer indices are not returned; use `LayerMask.NameToLayer(name)` in code to get them.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

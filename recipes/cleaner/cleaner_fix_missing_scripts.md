@@ -4,12 +4,6 @@ Remove missing script components from all loaded GameObjects using `GameObjectUt
 
 **Signature:** `CleanerFixMissingScripts(bool includeInactive = true)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `includeInactive` | bool | No | true | Include inactive GameObjects |
-
 ## Returns
 
 ```json
@@ -28,11 +22,14 @@ Remove missing script components from all loaded GameObjects using `GameObjectUt
 - To preview which objects have missing scripts before fixing, use `cleaner_find_missing_references` first.
 - This operation is tracked by the workflow manager (`TracksWorkflow = true`).
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -44,7 +41,7 @@ internal class CommandScript : IRunCommand
             ? Resources.FindObjectsOfTypeAll<GameObject>()
                 .Where(go => !EditorUtility.IsPersistent(go) && go.hideFlags == HideFlags.None)
                 .ToArray()
-            : Object.FindObjectsOfType<GameObject>();
+            : Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
 
         int totalRemoved = 0;
         foreach (var go in allObjects)
@@ -58,7 +55,7 @@ internal class CommandScript : IRunCommand
             }
         }
 
-        result.SetValue(new { success = true, removedComponents = totalRemoved });
+        result.SetResult(new { success = true, removedComponents = totalRemoved });
     }
 }
 ```

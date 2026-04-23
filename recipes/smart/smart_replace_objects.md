@@ -12,6 +12,8 @@ Replace selected objects with a prefab, preserving position, rotation, scale, an
 - Undoable
 - `prefabPath` must be a valid `Assets/...` path
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

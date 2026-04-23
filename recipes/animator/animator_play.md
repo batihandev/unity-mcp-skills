@@ -6,6 +6,8 @@ Play a specific animation state on an Animator component. Resolves the GameObjec
 
 **Returns:** `{ success, gameObject, state, layer }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

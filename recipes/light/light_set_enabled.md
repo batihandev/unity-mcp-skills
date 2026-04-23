@@ -10,6 +10,8 @@ Enable or disable a light component.
 - Provide at least one of `name`, `instanceId`, or `path`.
 - This toggles the Light component, not the GameObject itself. Use `gameobject_set_active` to toggle the whole object.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

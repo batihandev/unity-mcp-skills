@@ -10,12 +10,13 @@ Validate the active scene for missing scripts, missing prefabs, duplicate names,
 - `checkEmptyGameObjects` is off by default to reduce noise; enable for thorough audits
 - `severity` values: `"Error"`, `"Warning"`, `"Info"`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
-using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -29,6 +30,7 @@ internal class CommandScript : IRunCommand
         var issues = new List<object>();
         var scene = SceneManager.GetActiveScene();
         var allObjects = FindHelper.FindAll<GameObject>();
+        int errCount = 0, warnCount = 0, infoCount = 0;
 
         if (checkMissingScripts)
         {
@@ -48,6 +50,7 @@ internal class CommandScript : IRunCommand
                             message = $"Missing script at component index {i}",
                             count = 0
                         });
+                        errCount++;
                     }
                 }
             }
@@ -68,24 +71,32 @@ internal class CommandScript : IRunCommand
                         message = "Prefab asset is missing",
                         count = 0
                     });
+                    warnCount++;
                 }
             }
         }
 
         if (checkDuplicateNames)
         {
-            var nameGroups = allObjects.GroupBy(go => go.name).Where(g => g.Count() > 1);
-            foreach (var group in nameGroups)
+            var nameCounts = new Dictionary<string, int>();
+            foreach (var go in allObjects)
             {
+                if (nameCounts.ContainsKey(go.name)) nameCounts[go.name]++;
+                else nameCounts[go.name] = 1;
+            }
+            foreach (var kv in nameCounts)
+            {
+                if (kv.Value <= 1) continue;
                 issues.Add(new
                 {
                     type = "DuplicateName",
                     severity = "Info",
-                    gameObject = group.Key,
+                    gameObject = kv.Key,
                     path = (string)null,
-                    message = $"{group.Count()} objects share the name '{group.Key}'",
-                    count = group.Count()
+                    message = $"{kv.Value} objects share the name '{kv.Key}'",
+                    count = kv.Value
                 });
+                infoCount++;
             }
         }
 
@@ -105,16 +116,12 @@ internal class CommandScript : IRunCommand
                         message = "GameObject has no components (except Transform) and no children",
                         count = 0
                     });
+                    infoCount++;
                 }
             }
         }
 
-        var summary = new
-        {
-            errors = issues.Count(i => ((dynamic)i).severity == "Error"),
-            warnings = issues.Count(i => ((dynamic)i).severity == "Warning"),
-            info = issues.Count(i => ((dynamic)i).severity == "Info")
-        };
+        var summary = new { errors = errCount, warnings = warnCount, info = infoCount };
 
         result.SetResult(new
         {

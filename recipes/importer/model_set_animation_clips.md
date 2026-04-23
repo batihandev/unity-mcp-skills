@@ -2,22 +2,12 @@
 
 Configure animation clip splits on a model importer.
 
-**Skill ID:** `model_set_animation_clips`
-**Source:** `ModelSkills.cs` — `ModelSetAnimationClips`
-
 ## Signature
 
 ```
 model_set_animation_clips(assetPath: string, clips: string)
   → { success, path, clipCount }
 ```
-
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-| `clips` | string | yes | JSON array of clip definition objects |
 
 ### Clip Object Schema
 
@@ -29,38 +19,46 @@ model_set_animation_clips(assetPath: string, clips: string)
 | `loop` | bool | no | Loop the clip |
 | `takeName` | string | no | Take name in file (default `"Take 001"`) |
 
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
+The upstream JSON-string form is replaced by a typed `_AnimClipDef[]` — agents pass a native C# array.
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
 using System.Linq;
+
+internal sealed class _AnimClipDef
+{
+    public string name;
+    public int firstFrame;
+    public int lastFrame;
+    public bool loop;
+    public string takeName;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string assetPath = "Assets/Models/hero.fbx"; // Replace
-        string clips = @"[
-            { ""name"": ""Idle"",   ""firstFrame"": 0,  ""lastFrame"": 60,  ""loop"": true  },
-            { ""name"": ""Run"",    ""firstFrame"": 61, ""lastFrame"": 90,  ""loop"": true  },
-            { ""name"": ""Attack"", ""firstFrame"": 91, ""lastFrame"": 120, ""loop"": false }
-        ]";
+        string assetPath = "Assets/Models/hero.fbx";
+        var clips = new[]
+        {
+            new _AnimClipDef { name = "Idle",   firstFrame = 0,   lastFrame = 60,  loop = true },
+            new _AnimClipDef { name = "Run",    firstFrame = 61,  lastFrame = 90,  loop = true },
+            new _AnimClipDef { name = "Attack", firstFrame = 91,  lastFrame = 120, loop = false },
+        };
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
-        if (Validate.Required(clips, "clips") is object err2) return err2;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
-        if (importer == null) return new { error = $"Not a model: {assetPath}" };
-
-        var clipList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClipDef>>(clips);
-        if (clipList == null || clipList.Count == 0) return new { error = "No clips provided" };
+        if (importer == null) { result.SetResult(new { error = $"Not a model: {assetPath}" }); return; }
+        if (clips == null || clips.Length == 0) { result.SetResult(new { error = "No clips provided" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
 
-        importer.clipAnimations = clipList.Select(c => new ModelImporterClipAnimation
+        importer.clipAnimations = clips.Select(c => new ModelImporterClipAnimation
         {
             name = c.name,
             takeName = c.takeName ?? "Take 001",
@@ -71,7 +69,7 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, clipCount = clipList.Count };
+        result.SetResult(new { success = true, path = assetPath, clipCount = clips.Length });
     }
 }
 ```

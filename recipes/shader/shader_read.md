@@ -7,16 +7,14 @@ Read the full source code of a shader file from disk.
 **Returns:** `{ path, lines, content }`
 
 ## Notes
-
-- `shaderPath` must be a valid `Assets/`-rooted path to a `.shader` file.
-- Returns an error if the file does not exist.
 - `lines` is the number of newline-separated lines in the file.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {
@@ -24,17 +22,14 @@ internal class CommandScript : IRunCommand
     {
         string shaderPath = "Assets/Shaders/MyShader.shader";
 
-        /* Original Logic:
+        if (Validate.SafePath(shaderPath, "shaderPath") is object pathErr) { result.SetResult(pathErr); return; }
+        if (!File.Exists(shaderPath))
+            { result.SetResult(new { error = $"Shader not found: {shaderPath}" }); return; }
 
-            if (Validate.SafePath(shaderPath, "shaderPath") is object pathErr) return pathErr;
-            if (!File.Exists(shaderPath))
-                return new { error = $"Shader not found: {shaderPath}" };
+        var content = File.ReadAllText(shaderPath, System.Text.Encoding.UTF8);
+        var lines = content.Split('\n').Length;
 
-            var content = File.ReadAllText(shaderPath, System.Text.Encoding.UTF8);
-            var lines = content.Split('\n').Length;
-
-            return new { path = shaderPath, lines, content };
-        */
+        { result.SetResult(new { path = shaderPath, lines, content }); return; }
     }
 }
 ```

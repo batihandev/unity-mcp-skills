@@ -15,72 +15,96 @@ Create multiple GameObjects in one call.
 - Rotation defaults to 0 — only applied when any rot value is non-zero.
 - Each item's parent is resolved independently; a missing parent causes that item to fail without stopping the rest.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+internal sealed class _BatchCreateItem
+{
+    public string name;
+    public string primitiveType;
+    public float x, y, z;
+    public float rotX, rotY, rotZ;
+    public float scaleX = 1, scaleY = 1, scaleZ = 1;
+    public string parentName;
+    public int parentInstanceId;
+    public string parentPath;
+}
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string items = @"[
-            { ""name"": ""Cube1"", ""primitiveType"": ""Cube"", ""x"": 0, ""y"": 0, ""z"": 0 },
-            { ""name"": ""Sphere1"", ""primitiveType"": ""Sphere"", ""x"": 2, ""y"": 0, ""z"": 0 },
-            { ""name"": ""Empty1"", ""x"": 4, ""y"": 0, ""z"": 0 }
-        ]";
+        var items = new[]
+        {
+            new _BatchCreateItem { name = "Cube1", primitiveType = "Cube" },
+            new _BatchCreateItem { name = "Sphere1", primitiveType = "Sphere", x = 2 },
+            new _BatchCreateItem { name = "Empty1", x = 4 },
+        };
 
-        /* Original Logic:
+        var results = new List<object>();
+        int successCount = 0, failCount = 0;
 
-            return BatchExecutor.Execute<BatchCreateItem>(items, item =>
+        foreach (var item in items)
+        {
+            GameObject go;
+            string primitiveType = item.primitiveType;
+            if (string.IsNullOrEmpty(primitiveType) ||
+                primitiveType.Equals("Empty", System.StringComparison.OrdinalIgnoreCase) ||
+                primitiveType.Equals("None", System.StringComparison.OrdinalIgnoreCase))
             {
-                GameObject go;
-                string primitiveType = item.primitiveType;
+                go = new GameObject(item.name);
+                primitiveType = null;
+            }
+            else if (System.Enum.TryParse<PrimitiveType>(primitiveType, true, out var pt))
+            {
+                go = GameObject.CreatePrimitive(pt);
+                go.name = item.name;
+            }
+            else
+            {
+                results.Add(new { success = false, name = item.name, error = "Unknown primitive type: " + primitiveType });
+                failCount++;
+                continue;
+            }
 
-                if (string.IsNullOrEmpty(primitiveType) ||
-                    primitiveType.Equals("Empty", System.StringComparison.OrdinalIgnoreCase) ||
-                    primitiveType.Equals("None", System.StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(item.parentName) || item.parentInstanceId != 0 || !string.IsNullOrEmpty(item.parentPath))
+            {
+                var (parentGo, parentErr) = GameObjectFinder.FindOrError(item.parentName, item.parentInstanceId, item.parentPath);
+                if (parentErr != null)
                 {
-                    go = new GameObject(item.name);
-                    primitiveType = null;
+                    Object.DestroyImmediate(go);
+                    results.Add(new { success = false, name = item.name, error = "Parent not found" });
+                    failCount++;
+                    continue;
                 }
-                else if (System.Enum.TryParse<PrimitiveType>(primitiveType, true, out var pt))
-                {
-                    go = GameObject.CreatePrimitive(pt);
-                    go.name = item.name;
-                }
-                else
-                {
-                    throw new System.Exception($"Unknown primitive type: {primitiveType}");
-                }
+                go.transform.SetParent(parentGo.transform, false);
+            }
 
-                if (!string.IsNullOrEmpty(item.parentName) || item.parentInstanceId != 0 || !string.IsNullOrEmpty(item.parentPath))
-                {
-                    var (parentGo, parentErr) = GameObjectFinder.FindOrError(item.parentName, item.parentInstanceId, item.parentPath);
-                    if (parentErr != null) throw new System.Exception($"Parent not found for '{item.name}'");
-                    go.transform.SetParent(parentGo.transform, false);
-                }
+            go.transform.localPosition = new Vector3(item.x, item.y, item.z);
+            if (item.rotX != 0 || item.rotY != 0 || item.rotZ != 0)
+                go.transform.eulerAngles = new Vector3(item.rotX, item.rotY, item.rotZ);
+            if (item.scaleX != 1 || item.scaleY != 1 || item.scaleZ != 1)
+                go.transform.localScale = new Vector3(item.scaleX, item.scaleY, item.scaleZ);
 
-                go.transform.localPosition = new Vector3(item.x, item.y, item.z);
-                if (item.rotX != 0 || item.rotY != 0 || item.rotZ != 0)
-                    go.transform.eulerAngles = new Vector3(item.rotX, item.rotY, item.rotZ);
-                if (item.scaleX != 1 || item.scaleY != 1 || item.scaleZ != 1)
-                    go.transform.localScale = new Vector3(item.scaleX, item.scaleY, item.scaleZ);
+            Undo.RegisterCreatedObjectUndo(go, "Batch Create " + item.name);
+            WorkflowManager.SnapshotCreatedGameObject(go, primitiveType);
 
-                Undo.RegisterCreatedObjectUndo(go, "Batch Create " + item.name);
-                WorkflowManager.SnapshotCreatedGameObject(go, primitiveType);
+            results.Add(new
+            {
+                success = true,
+                name = go.name,
+                instanceId = go.GetInstanceID(),
+                path = GameObjectFinder.GetPath(go),
+                position = new { x = item.x, y = item.y, z = item.z }
+            });
+            successCount++;
+        }
 
-                return new
-                {
-                    success = true,
-                    name = go.name,
-                    instanceId = go.GetInstanceID(),
-                    path = GameObjectFinder.GetPath(go),
-                    position = new { x = item.x, y = item.y, z = item.z }
-                };
-            }, item => item.name);
-        */
+        result.SetResult(new { success = failCount == 0, totalItems = items.Length, successCount, failCount, results });
     }
 }
 ```

@@ -1,23 +1,20 @@
 # shader_delete
 
-Delete a shader asset file from the project.
+Move a shader asset file to the OS trash (restorable).
 
 **Signature:** `ShaderDelete(string shaderPath)`
 
 **Returns:** `{ success, deleted }`
 
 ## Notes
+- Uses `AssetDatabase.MoveAssetToTrash` — restorable from the OS trash. The Unity_RunCommand analyzer rejects any module containing `AssetDatabase.DeleteAsset`.
 
-- `shaderPath` must be a valid `Assets/`-rooted path to a `.shader` file.
-- Returns an error if the file does not exist.
-- A workflow snapshot is taken before deletion for undo support.
-- The asset is removed via `AssetDatabase.DeleteAsset`.
-
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 internal class CommandScript : IRunCommand
 {
@@ -25,18 +22,17 @@ internal class CommandScript : IRunCommand
     {
         string shaderPath = "Assets/Shaders/MyShader.shader";
 
-        /* Original Logic:
+        if (Validate.SafePath(shaderPath, "shaderPath", isDelete: true) is object pathErr) { result.SetResult(pathErr); return; }
+        if (!File.Exists(shaderPath))
+        { result.SetResult(new { error = $"Shader not found: {shaderPath}" }); return; }
 
-            if (Validate.SafePath(shaderPath, "shaderPath", isDelete: true) is object pathErr) return pathErr;
-            if (!File.Exists(shaderPath))
-                return new { error = $"Shader not found: {shaderPath}" };
+        var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shaderPath);
+        if (asset != null) WorkflowManager.SnapshotObject(asset);
 
-            var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shaderPath);
-            if (asset != null) WorkflowManager.SnapshotObject(asset);
+        if (!AssetDatabase.MoveAssetToTrash(shaderPath))
+        { result.SetResult(new { error = "Delete failed: " + shaderPath }); return; }
 
-            AssetDatabase.DeleteAsset(shaderPath);
-            return new { success = true, deleted = shaderPath };
-        */
+        result.SetResult(new { success = true, deleted = shaderPath });
     }
 }
 ```

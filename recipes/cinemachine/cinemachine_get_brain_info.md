@@ -11,9 +11,12 @@ Get information about the active `CinemachineBrain` on the Main Camera: which VC
 - Returns an error if there is no Main Camera or no `CinemachineBrain` on the Main Camera.
 - `activeBlend` is `"None"` when no blend is in progress.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {
@@ -26,7 +29,6 @@ internal class CommandScript : IRunCommand
         if (brain == null) { result.SetResult(new { error = "No CinemachineBrain on Main Camera" }); return; }
 
         var activeCam = brain.ActiveVirtualCamera as Component;
-        var updateMethod = CinemachineAdapter.GetBrainUpdateMethod(brain);
 
         result.SetResult(new
         {
@@ -34,7 +36,7 @@ internal class CommandScript : IRunCommand
             activeCamera = activeCam ? activeCam.name : "None",
             isBlending = brain.IsBlending,
             activeBlend = brain.ActiveBlend?.Description ?? "None",
-            updateMethod
+            updateMethod = brain.UpdateMethod.ToString()
         });
     }
 }

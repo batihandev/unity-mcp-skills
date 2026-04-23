@@ -6,6 +6,8 @@ Duplicate a ScriptableObject asset, generating a unique path for the copy.
 
 **Returns:** `{ success, original, copy }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

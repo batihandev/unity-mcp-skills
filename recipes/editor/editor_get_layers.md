@@ -8,6 +8,8 @@ Get all named layers (indices 0–31) defined in the project's layer settings.
 
 Note: no top-level `success` key.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

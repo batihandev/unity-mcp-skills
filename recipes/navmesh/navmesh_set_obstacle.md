@@ -8,6 +8,8 @@ Set `NavMeshObstacle` properties. Pass only the parameters you want to change; o
 
 Valid `shape` values: `Box`, `Capsule`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.AI;

@@ -2,9 +2,6 @@
 
 List all AudioSource components in the active scene.
 
-**Skill ID:** `audio_find_sources_in_scene`
-**Source:** `AudioSkills.cs` — `AudioFindSourcesInScene`
-
 ## Signature
 
 ```
@@ -12,13 +9,7 @@ audio_find_sources_in_scene(limit?: int = 50)
   → { success, totalFound, showing, sources[{ gameObject, path, clip, volume, loop, enabled }] }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `limit` | int | no | `50` | Max results returned |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;
@@ -42,7 +33,7 @@ internal class CommandScript : IRunCommand
             enabled = s.enabled
         }).ToArray();
 
-        return new { success = true, totalFound = sources.Length, showing = results.Length, sources = results };
+        { result.SetResult(new { success = true, totalFound = sources.Length, showing = results.Length, sources = results }); return; }
     }
 }
 ```

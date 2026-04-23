@@ -11,6 +11,8 @@ Add or configure a LayoutElement component on a UI element for layout constraint
 - All size parameters are optional; only provided values are set.
 - `ignoreLayout = true` removes this element from layout group calculations entirely.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;

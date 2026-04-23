@@ -10,6 +10,8 @@ Find project assets whose on-disk size meets or exceeds a threshold. Optionally 
 - `assets` — array of `{ path, sizeKB, name }`, ordered by discovery (not by size)
 - Only paths under `Assets/` are examined; meta files and non-file entries are skipped.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

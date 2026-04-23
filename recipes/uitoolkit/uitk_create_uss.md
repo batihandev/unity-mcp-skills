@@ -11,6 +11,8 @@ Create a new USS stylesheet file for UI Toolkit.
 - Creates intermediate directories automatically.
 - `content = null` produces a generated starter stylesheet with `:root` design tokens.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -8,6 +8,8 @@ Set terrain heights in a rectangular region using a 2D array. Heights array is i
 
 > **Note:** `heights` is a jagged array where the outer index is Z and the inner index is X. All values must be in the 0-1 range (normalized, not world units).
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -88,7 +90,7 @@ internal class CommandScript : IRunCommand
             var go = GameObject.Find(name);
             return go?.GetComponent<Terrain>();
         }
-        return Object.FindObjectOfType<Terrain>();
+        return Object.FindFirstObjectByType<Terrain>();
     }
 }
 ```

@@ -1,21 +1,23 @@
 ---
 name: unity-xr
-description: "Use when users want to set up XR rigs, add grab interactions, configure teleportation, continuous locomotion, XR UI, or diagnose XR scenes. Requires com.unity.xr.interaction.toolkit. Compatible with XRI 2.x (Unity 2022) and XRI 3.x (Unity 6+)."
+description: "Use when users want to set up XR rigs, add grab interactions, configure teleportation, continuous locomotion, XR UI, or diagnose XR scenes. Requires com.unity.xr.interaction.toolkit 3.x on Unity 6+."
 ---
 
 # Unity XR Interaction Toolkit Skills
+
+## Requirements
+
+- `com.unity.xr.interaction.toolkit` (≥ 3.4). Recipes target XRI 3 API only. If missing, install via `Unity_PackageManager_ExecuteAction` with `operation=Add`, `package=com.unity.xr.interaction.toolkit`, `version=3.4.1`.
 
 ## When to Use
 
 Use this module for XR Interaction Toolkit setup and configuration.
 
-> **Requires**: `com.unity.xr.interaction.toolkit`.
 > **Hard rule**: Read this file before the first `xr_*` call in a session. Wrong property names can fail silently because the bridge is reflection-based.
 
 ## Common Mistakes
 
 **DO NOT** (common hallucinations):
-- Package not installed → recipes silently fail; install first: `Unity_PackageManager_ExecuteAction` with `packageId=com.unity.xr.interaction.toolkit`, `action=Add`
 - `XRHand`, `XRPlayer`, `XRTeleporter`, `GrabInteractor`, `VRController`, `XRLocomotion`, and `XRManager` are not the runtime classes you want here
 - `interactable.OnGrab()` / `OnRelease()` are not the XRI event model -> use `selectEntered` / `selectExited`
 - `controller.vibrate()` is not the documented route here -> configure haptics through `xr_configure_haptics`

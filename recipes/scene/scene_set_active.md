@@ -8,6 +8,8 @@ Set the active scene for multi-scene editing.
 
 `sceneName` can be the scene name or a path suffix. The scene must already be loaded. New GameObjects created at runtime are placed into the active scene.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

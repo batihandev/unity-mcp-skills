@@ -6,6 +6,8 @@ Get global gravity setting.
 
 **Returns:** `{ x, y, z }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

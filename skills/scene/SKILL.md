@@ -20,7 +20,7 @@ Control Unity scenes - the containers that hold all your GameObjects.
 **Routing**:
 - For detailed hierarchy tree → use `perception` module's `hierarchy_describe`
 - For scene statistics → use `perception` module's `scene_summarize`
-- For screenshot → `scene_screenshot` (this module) or `camera_screenshot` (camera module, Full-Auto)
+- For screenshot → `scene_screenshot` (this module) uses the Scene View; for a Game Camera capture use the native `Unity_Camera_Capture` tool
 
 ## Skills Overview
 

@@ -8,6 +8,8 @@ Get the current editor state including play/pause/compile flags, Unity version, 
 
 Note: no top-level `success` key. The SKILL.md description omitted `timeSinceStartup` and `unityVersion` — both are present in the upstream implementation.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

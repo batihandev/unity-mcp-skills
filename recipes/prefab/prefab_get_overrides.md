@@ -4,15 +4,6 @@ Inspect all property overrides, added components, removed components, and added 
 
 **Signature:** `PrefabGetOverrides(string name = null, int instanceId = 0)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | Prefab instance name |
-| `instanceId` | int | No* | Instance ID (preferred) |
-
-*At least one identifier required.
-
 ## Returns
 
 ```json
@@ -28,13 +19,11 @@ Inspect all property overrides, added components, removed components, and added 
 ```
 
 ## Notes
-
-- Read-only — does not modify anything.
 - Uses the outermost prefab root even when a child is passed.
 - `propertyOverrides` is the count of `PropertyModification` entries where the target is non-null (internal Unity bookkeeping entries with null targets are excluded).
 - Check `hasOverrides` for a quick true/false before deciding whether to apply or revert.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;
@@ -44,44 +33,44 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        string name = null;
+        int instanceId = 0;
 
-            var (go, goErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId);
-            if (goErr != null) return goErr;
+        var (go, goErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId);
+        if (goErr != null) { result.SetResult(goErr); return; }
 
-            var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
-            if (prefabRoot == null) return new { error = "Not a prefab instance" };
+        var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
+        if (prefabRoot == null) { result.SetResult(new { error = "Not a prefab instance" }); return; }
 
-            var overrides = PrefabUtility.GetPropertyModifications(prefabRoot);
-            var addedComponents = PrefabUtility.GetAddedComponents(prefabRoot);
-            var removedComponents = PrefabUtility.GetRemovedComponents(prefabRoot);
-            var addedObjects = PrefabUtility.GetAddedGameObjects(prefabRoot);
+        var overrides = PrefabUtility.GetPropertyModifications(prefabRoot);
+        var addedComponents = PrefabUtility.GetAddedComponents(prefabRoot);
+        var removedComponents = PrefabUtility.GetRemovedComponents(prefabRoot);
+        var addedObjects = PrefabUtility.GetAddedGameObjects(prefabRoot);
 
-            var propOverrides = new System.Collections.Generic.List<object>();
-            if (overrides != null)
+        var propOverrides = new System.Collections.Generic.List<object>();
+        if (overrides != null)
+        {
+            foreach (var o in overrides)
             {
-                foreach (var o in overrides)
-                {
-                    if (o.target == null) continue;
-                    propOverrides.Add(new {
-                        target = o.target.name,
-                        property = o.propertyPath,
-                        value = o.value
-                    });
-                }
+                if (o.target == null) continue;
+                propOverrides.Add(new { 
+                    target = o.target.name, 
+                    property = o.propertyPath, 
+                    value = o.value 
+                });
             }
+        }
 
-            return new
-            {
-                success = true,
-                prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabRoot),
-                propertyOverrides = propOverrides.Count,
-                addedComponents = addedComponents.Count,
-                removedComponents = removedComponents.Count,
-                addedGameObjects = addedObjects.Count,
-                hasOverrides = propOverrides.Count > 0 || addedComponents.Count > 0 || removedComponents.Count > 0
-            };
-        */
+        { result.SetResult(new
+        {
+            success = true,
+            prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabRoot),
+            propertyOverrides = propOverrides.Count,
+            addedComponents = addedComponents.Count,
+            removedComponents = removedComponents.Count,
+            addedGameObjects = addedObjects.Count,
+            hasOverrides = propOverrides.Count > 0 || addedComponents.Count > 0 || removedComponents.Count > 0
+        }); return; }
     }
 }
 ```

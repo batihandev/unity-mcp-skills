@@ -4,13 +4,6 @@ Find which assets in the project reference a specific asset (reverse dependency 
 
 **Signature:** `CleanerGetAssetUsage(string assetPath, int limit = 50)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `assetPath` | string | Yes | — | Project-relative path to the asset |
-| `limit` | int | No | 50 | Max number of referencing assets to return |
-
 ## Returns
 
 ```json
@@ -43,11 +36,14 @@ The path is also validated by `Validate.SafePath`; invalid paths return an error
 - A `usedByCount` of 0 means no tracked asset directly references this path — but runtime loading via `Resources.Load` or Addressables will not be detected.
 - Use this before `cleaner_delete_assets` to confirm an asset is truly safe to remove.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -87,7 +83,7 @@ internal class CommandScript : IRunCommand
 
         var targetAsset = AssetDatabase.LoadMainAssetAtPath(assetPath);
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             asset = new

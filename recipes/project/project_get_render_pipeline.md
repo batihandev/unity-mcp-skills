@@ -12,7 +12,7 @@ Get the current render pipeline type and probe which common shaders are availabl
 - `availableShaders` lists the canonical shaders for the detected pipeline and whether each was found via `Shader.Find`.
 - Use `colorProperty` and `textureProperty` when setting material properties to avoid hardcoding pipeline-specific names.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

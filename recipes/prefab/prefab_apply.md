@@ -4,16 +4,6 @@ Apply all changes from a prefab instance back to its source prefab asset. Equiva
 
 **Signature:** `PrefabApply(string name = null, int instanceId = 0, string path = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | Prefab instance name |
-| `instanceId` | int | No* | Instance ID (preferred) |
-| `path` | string | No* | Hierarchy path |
-
-*At least one identifier required.
-
 ## Returns
 
 ```json
@@ -30,7 +20,7 @@ Apply all changes from a prefab instance back to its source prefab asset. Equiva
 - `prefab_save` does not exist — use this command.
 - Equivalent to `prefab_apply_overrides`; both call `PrefabUtility.ApplyPrefabInstance`.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -40,21 +30,22 @@ internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        /* Original Logic:
+        string name = null;
+        int instanceId = 0;
+        string path = null;
 
-            var (go, goErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
-            if (goErr != null) return goErr;
+        var (go, goErr) = GameObjectFinder.FindOrError(name: name, instanceId: instanceId, path: path);
+        if (goErr != null) { result.SetResult(goErr); return; }
 
-            var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
-            if (prefabRoot == null)
-                return new { error = "GameObject is not a prefab instance" };
+        var prefabRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
+        if (prefabRoot == null)
+            { result.SetResult(new { error = "GameObject is not a prefab instance" }); return; }
 
-            WorkflowManager.SnapshotObject(prefabRoot);
-            var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabRoot);
-            PrefabUtility.ApplyPrefabInstance(prefabRoot, InteractionMode.UserAction);
+        WorkflowManager.SnapshotObject(prefabRoot);
+        var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabRoot);
+        PrefabUtility.ApplyPrefabInstance(prefabRoot, InteractionMode.UserAction);
 
-            return new { success = true, appliedTo = prefabPath };
-        */
+        { result.SetResult(new { success = true, appliedTo = prefabPath }); return; }
     }
 }
 ```

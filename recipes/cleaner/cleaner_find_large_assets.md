@@ -4,14 +4,6 @@ Find the largest assets in the project by file size, sorted descending.
 
 **Signature:** `CleanerFindLargeAssets(string searchPath = "Assets", int limit = 20, long minSizeBytes = 0)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `searchPath` | string | No | "Assets" | Root path to search within |
-| `limit` | int | No | 20 | Max number of results to return |
-| `minSizeBytes` | long | No | 0 | Minimum file size threshold (exclusive — files must be **strictly greater than** this value) |
-
 ## Returns
 
 ```json
@@ -32,11 +24,14 @@ Find the largest assets in the project by file size, sorted descending.
 - Paths are normalized to use forward slashes and are relative from the `Assets/` segment.
 - Results are sorted largest first and capped at `limit`.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 internal class CommandScript : IRunCommand
 {
@@ -61,7 +56,7 @@ internal class CommandScript : IRunCommand
             })
             .ToArray();
 
-        result.SetValue(new { success = true, count = files.Length, assets = files });
+        result.SetResult(new { success = true, count = files.Length, assets = files });
     }
 }
 ```

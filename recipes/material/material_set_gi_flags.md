@@ -13,7 +13,7 @@ Set global illumination flags on a material.
 - Returns an error listing the valid options if an unrecognised value is provided.
 - `material_set_emission` sets GI flags automatically; use this skill only when you need direct control.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -28,26 +28,46 @@ internal class CommandScript : IRunCommand
         string path       = null;      // or material asset path
         string flags      = "BakedEmissive"; // None | RealtimeEmissive | BakedEmissive | EmissiveIsBlack | AnyEmissive
 
-        /* Original Logic:
+        var (material, go, error) = FindMaterial(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (material, go, error) = FindMaterial(name, instanceId, path);
-            if (error != null) return error;
+        MaterialGlobalIlluminationFlags giFlags;
+        if (!System.Enum.TryParse(flags, true, out giFlags))
+        {
+            { result.SetResult(new { 
+                error = $"Invalid GI flags: {flags}",
+                validOptions = new[] { "None", "RealtimeEmissive", "BakedEmissive", "EmissiveIsBlack", "AnyEmissive" }
+            }); return; }
+        }
 
-            MaterialGlobalIlluminationFlags giFlags;
-            if (!System.Enum.TryParse(flags, true, out giFlags))
-                return new {
-                    error = $"Invalid GI flags: {flags}",
-                    validOptions = new[] { "None", "RealtimeEmissive", "BakedEmissive", "EmissiveIsBlack", "AnyEmissive" }
-                };
+        WorkflowManager.SnapshotObject(material);
+        Undo.RecordObject(material, "Set GI Flags");
+        material.globalIlluminationFlags = giFlags;
 
-            WorkflowManager.SnapshotObject(material);
-            Undo.RecordObject(material, "Set GI Flags");
-            material.globalIlluminationFlags = giFlags;
+        if (go == null) EditorUtility.SetDirty(material);
 
-            if (go == null) EditorUtility.SetDirty(material);
+        { result.SetResult(new { 
+            success = true, 
+            target = go != null ? go.name : path, 
+            giFlags = flags
+        }); return; }
+    }
 
-            return new { success = true, target = go != null ? go.name : path, giFlags = flags };
-        */
+    private static (Material mat, GameObject go, object error) FindMaterial(string name, int instanceId, string path)
+    {
+        if (!string.IsNullOrEmpty(path) && path.EndsWith(".mat"))
+        {
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) return (null, null, new { error = "Material asset not found: " + path });
+            return (m, null, null);
+        }
+        var (go, err) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (err != null) return (null, null, err);
+        var rdr = go.GetComponent<Renderer>();
+        if (rdr == null) return (null, go, new { error = "No Renderer on " + go.name });
+        var mat = rdr.sharedMaterial;
+        if (mat == null) return (null, go, new { error = "No material on " + go.name });
+        return (mat, go, null);
     }
 }
 ```

@@ -11,6 +11,8 @@ Create a new light GameObject in the scene.
 - `range` applies to Point and Spot only; `spotAngle` applies to Spot only.
 - `shadows` defaults to `"soft"`; invalid value falls back to `None`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

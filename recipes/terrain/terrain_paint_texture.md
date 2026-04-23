@@ -8,6 +8,8 @@ Paint a terrain texture layer at a normalized position. The terrain must have la
 
 > **Prerequisite:** Call `terrain_get_info` first to verify available layer indices. Layer index is 0-based.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -106,7 +108,7 @@ internal class CommandScript : IRunCommand
             var go = GameObject.Find(name);
             return go?.GetComponent<Terrain>();
         }
-        return Object.FindObjectOfType<Terrain>();
+        return Object.FindFirstObjectByType<Terrain>();
     }
 }
 ```

@@ -2,9 +2,6 @@
 
 Set one or more importer settings on a texture asset and reimport it.
 
-**Skill ID:** `texture_set_settings`
-**Source:** `TextureSkills.cs` — `TextureSetSettings`
-
 ## Signature
 
 ```
@@ -24,24 +21,7 @@ texture_set_settings(
 ) → { success, path, changesApplied, changes }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `textureType` | string | no | `Default`, `NormalMap`, `Sprite`, `EditorGUI`, `Cursor`, `Cookie`, `Lightmap`, `SingleChannel` |
-| `maxSize` | int | no | Max texture dimension (32–8192) |
-| `filterMode` | string | no | `Point`, `Bilinear`, `Trilinear` |
-| `compression` | string | no | `None`, `LowQuality`, `NormalQuality`, `HighQuality` |
-| `mipmapEnabled` | bool | no | Generate mipmaps |
-| `sRGB` | bool | no | Treat as sRGB colour texture |
-| `readable` | bool | no | Enable CPU read access (`isReadable`) |
-| `alphaIsTransparency` | bool | no | Dilate colour channels at alpha edges |
-| `spritePixelsPerUnit` | float | no | Pixels-per-unit for Sprite type |
-| `wrapMode` | string | no | `Repeat`, `Clamp`, `Mirror`, `MirrorOnce` |
-| `npotScale` | string | no | NPOT scaling mode (`None`, `ToNearest`, `ToLarger`, `ToSmaller`) |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -65,11 +45,11 @@ internal class CommandScript : IRunCommand
         string wrapMode = null;
         string npotScale = null;
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
 
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
         if (importer == null)
-            return new { error = $"Not a texture or asset not found: {assetPath}" };
+            { result.SetResult(new { error = $"Not a texture or asset not found: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -84,7 +64,7 @@ internal class CommandScript : IRunCommand
                 changes.Add($"textureType={tt}");
             }
             else
-                return new { error = $"Invalid textureType: {textureType}. Valid: Default, NormalMap, Sprite, EditorGUI, Cursor, Cookie, Lightmap, SingleChannel" };
+                { result.SetResult(new { error = $"Invalid textureType: {textureType}. Valid: Default, NormalMap, Sprite, EditorGUI, Cursor, Cookie, Lightmap, SingleChannel" }); return; }
         }
 
         if (!string.IsNullOrEmpty(filterMode) && System.Enum.TryParse<FilterMode>(filterMode, true, out var fm))
@@ -125,7 +105,7 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, changesApplied = changes.Count, changes };
+        { result.SetResult(new { success = true, path = assetPath, changesApplied = changes.Count, changes }); return; }
     }
 }
 ```

@@ -6,6 +6,8 @@ Set terrain height at a single normalized coordinate (0-1 range).
 
 **Returns:** `{ success, normalizedX, normalizedZ, height, pixelX, pixelZ }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
@@ -61,7 +63,7 @@ internal class CommandScript : IRunCommand
             var go = GameObject.Find(name);
             return go?.GetComponent<Terrain>();
         }
-        return Object.FindObjectOfType<Terrain>();
+        return Object.FindFirstObjectByType<Terrain>();
     }
 }
 ```

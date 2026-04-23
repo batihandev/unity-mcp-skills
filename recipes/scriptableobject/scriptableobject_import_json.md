@@ -6,13 +6,7 @@ Import JSON data into an existing ScriptableObject asset.
 
 **Returns:** `{ success, assetPath }`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `assetPath` | string | Yes | - | Asset path of the target ScriptableObject |
-| `json` | string | No | null | JSON string to import directly |
-| `jsonFilePath` | string | No | null | Path to a JSON file to read and import |
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ## Notes
 

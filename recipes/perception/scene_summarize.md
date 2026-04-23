@@ -1,26 +1,16 @@
 # scene_summarize
 
-**Skill:** `scene_summarize`
-**C# method:** `PerceptionSkills.SceneSummarize`
-
 ## Signature
 
 ```
 SceneSummarize(bool includeComponentStats = true, int topComponentsLimit = 10)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `includeComponentStats` | `bool` | `true` | Whether to collect and return per-component-type counts |
-| `topComponentsLimit` | `int` | `10` | Max component types to return in `topComponents` |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `scenePath`, `isDirty`, `stats` (totalObjects, activeObjects, inactiveObjects, rootObjects, maxHierarchyDepth, lights, cameras, canvases), and `topComponents` array (component name + count, excluding Transform).
 
-## RunCommand Recipe
+**Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 ```csharp
 using UnityEngine;
@@ -80,7 +70,7 @@ internal class CommandScript : IRunCommand
             .Select(kv => (object)new { component = kv.Key, count = kv.Value })
             .ToArray();
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = scene.name,

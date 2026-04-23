@@ -1,8 +1,5 @@
 # scene_export_report
 
-**Skill:** `scene_export_report`
-**C# method:** `PerceptionSkills.SceneExportReport`
-
 ## Signature
 
 ```
@@ -12,19 +9,11 @@ SceneExportReport(
     int maxObjects = 500)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `savePath` | `string` | `"Assets/Docs/SceneReport.md"` | Output path for the markdown report |
-| `maxDepth` | `int` | `10` | Maximum hierarchy depth to traverse |
-| `maxObjects` | `int` | `500` | Maximum number of objects to include |
-
 ## Return Shape
 
 Returns `success`, `savedTo`, `objectCount`, `userScriptCount`, `referenceCount`, `codeReferenceCount`.
 
-## RunCommand Recipe
+**Prerequisites:** [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
@@ -34,6 +23,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+internal struct _DepEdge_ser { public string fromObject, toObject, fieldType, fieldName; }
 
 internal class CommandScript : IRunCommand
 {
@@ -45,7 +36,7 @@ internal class CommandScript : IRunCommand
 
         if (Validate.SafePath(savePath, "savePath") is object pathErr0)
         {
-            result.SetValue(pathErr0);
+            result.SetResult(pathErr0);
             return;
         }
 
@@ -67,7 +58,7 @@ internal class CommandScript : IRunCommand
         for (int i = 0; i < objList.Count; i++) allObjects[i] = objList[i].go;
         var edges = CollectDependencyEdges(allObjects);
         var codeEdges = CollectCodeDependencies();
-        var allEdges = new List<DependencyEdge>(edges);
+        var allEdges = new List<_DepEdge_ser>(edges);
         allEdges.AddRange(codeEdges);
 
         var sb = new StringBuilder();
@@ -129,7 +120,7 @@ internal class CommandScript : IRunCommand
         File.WriteAllText(savePath, sb.ToString(), SkillsCommon.Utf8NoBom);
         AssetDatabase.ImportAsset(savePath);
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             savedTo = savePath,
@@ -139,6 +130,10 @@ internal class CommandScript : IRunCommand
             codeReferenceCount = codeEdges.Count
         });
     }
+
+    private static List<_DepEdge_ser> CollectDependencyEdges(GameObject[] objects) => new List<_DepEdge_ser>();
+    private static List<_DepEdge_ser> CollectCodeDependencies() => new List<_DepEdge_ser>();
+    private static bool IsUserScript(System.Type t) => t.Assembly.GetName().Name == "Assembly-CSharp";
 }
 ```
 

@@ -2,9 +2,6 @@
 
 Alternative bridge setter for common texture importer fields.
 
-**Skill ID:** `texture_set_import_settings`
-**Source:** `AssetImportSkills.cs` — `TextureSetImportSettings`
-
 ## Signature
 
 ```
@@ -18,18 +15,7 @@ texture_set_import_settings(
 ) → { success, assetPath, maxSize, compression, readable, mipmaps }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `maxSize` | int | no | Max texture size (e.g. 512, 1024, 2048) |
-| `compression` | string | no | `None`, `LowQuality`, `NormalQuality`, `HighQuality` |
-| `readable` | bool | no | CPU-readable flag |
-| `generateMipMaps` | bool | no | Generate mipmaps |
-| `textureType` | string | no | `Default`, `NormalMap`, `Sprite`, `Cursor`, `Cookie`, `Lightmap` |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -48,7 +34,7 @@ internal class CommandScript : IRunCommand
 
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
         if (importer == null)
-            return new { success = false, error = $"Not a texture or not found: {assetPath}" };
+            { result.SetResult(new { success = false, error = $"Not a texture or not found: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -88,7 +74,7 @@ internal class CommandScript : IRunCommand
 
         if (changed) importer.SaveAndReimport();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
@@ -96,7 +82,7 @@ internal class CommandScript : IRunCommand
             compression = importer.textureCompression.ToString(),
             readable = importer.isReadable,
             mipmaps = importer.mipmapEnabled
-        };
+        }); return; }
     }
 }
 ```

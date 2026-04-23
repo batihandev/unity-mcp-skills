@@ -6,6 +6,8 @@ Get the labels currently attached to an asset.
 
 **Returns:** `{ success, assetPath, labels: [string] }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

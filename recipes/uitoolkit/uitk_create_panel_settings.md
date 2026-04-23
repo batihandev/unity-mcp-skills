@@ -11,6 +11,8 @@ Create a new PanelSettings asset for UI Toolkit rendering.
 - `scaleMode`: `ScaleWithScreenSize` (default), `ConstantPixelSize`, or `ConstantPhysicalSize`.
 - `renderMode`, `colliderUpdateMode`, and `colliderIsTrigger` are Unity 6+ only and are applied via `SerializedObject`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

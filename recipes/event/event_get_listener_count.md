@@ -6,6 +6,8 @@ Get the number of persistent listeners currently registered on a UnityEvent. Use
 
 **Returns:** `{ success, count }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.Events;
@@ -35,8 +37,10 @@ internal class CommandScript : IRunCommand
         var component = go.GetComponent(componentName);
         if (component == null) return (null, null, new { error = $"Component not found: {componentName}" });
         var type = component.GetType();
-        var field = type.GetField(eventName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
-        var property = type.GetProperty(eventName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+        System.Reflection.FieldInfo field = null;
+        foreach (var _f in type.GetFields()) if (_f.Name == eventName) { field = _f; break; }
+        System.Reflection.PropertyInfo property = null;
+        foreach (var _p in type.GetProperties()) if (_p.Name == eventName) { property = _p; break; }
         UnityEventBase evt = null;
         if (field != null) evt = field.GetValue(component) as UnityEventBase;
         else if (property != null) evt = property.GetValue(component) as UnityEventBase;

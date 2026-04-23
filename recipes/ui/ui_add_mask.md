@@ -12,6 +12,8 @@ Add a Mask or RectMask2D component to a UI element for content clipping.
 - `RectMask2D` is generally preferred for rectangular clipping (no stencil buffer cost).
 - `showMaskGraphic` only applies to the `Mask` type.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,8 +40,8 @@ internal class CommandScript : IRunCommand
         if (maskType.Equals("Mask", StringComparison.OrdinalIgnoreCase))
         {
             // Mask requires an Image component
-            if (go.GetComponent<Image>() == null)
-                Undo.AddComponent<Image>(go);
+            if (go.GetComponent<UnityEngine.UI.Image>() == null)
+                Undo.AddComponent<UnityEngine.UI.Image>(go);
             var mask = go.GetComponent<Mask>() ?? Undo.AddComponent<Mask>(go);
             mask.showMaskGraphic = showMaskGraphic;
             applied = "Mask";

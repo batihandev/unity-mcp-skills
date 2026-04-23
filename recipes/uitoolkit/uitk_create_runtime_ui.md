@@ -12,6 +12,8 @@ Generate a runtime MonoBehaviour C# script that queries UI Toolkit elements from
 - The generated class is decorated with `[RequireComponent(typeof(UIDocument))]`.
 - Callback registration stubs are included but commented out as reminders.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

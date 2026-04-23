@@ -7,11 +7,9 @@ Rename a GameObject.
 **Returns:** `{ success, oldName, newName, instanceId, path }`
 
 ## Notes
-
 - At least one identifier (`name`, `instanceId`, or `path`) is required to locate the object.
-- `newName` is required.
 
-## Recipe
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -26,26 +24,23 @@ internal class CommandScript : IRunCommand
         string path = null;
         string newName = "RenamedObject"; // required
 
-        /* Original Logic:
+        if (Validate.Required(newName, "newName") is object err) { result.SetResult(err); return; }
 
-            if (Validate.Required(newName, "newName") is object err) return err;
+        var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (error != null) { result.SetResult(error); return; }
 
-            var (go, error) = GameObjectFinder.FindOrError(name, instanceId, path);
-            if (error != null) return error;
+        var oldName = go.name;
+        WorkflowManager.SnapshotObject(go);
+        Undo.RecordObject(go, "Rename GameObject");
+        go.name = newName;
 
-            var oldName = go.name;
-            WorkflowManager.SnapshotObject(go);
-            Undo.RecordObject(go, "Rename GameObject");
-            go.name = newName;
-
-            return new { 
-                success = true, 
-                oldName, 
-                newName = go.name, 
-                instanceId = go.GetInstanceID(),
-                path = GameObjectFinder.GetPath(go)
-            };
-        */
+        { result.SetResult(new { 
+            success = true, 
+            oldName, 
+            newName = go.name, 
+            instanceId = go.GetInstanceID(),
+            path = GameObjectFinder.GetPath(go)
+        }); return; }
     }
 }
 ```

@@ -6,6 +6,8 @@ Get whether two layers collide.
 
 **Returns:** `{ layer1, layer2, collisionEnabled }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

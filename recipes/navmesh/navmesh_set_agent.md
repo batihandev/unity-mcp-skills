@@ -6,6 +6,8 @@ Set `NavMeshAgent` properties on an existing agent. Pass only the parameters you
 
 **Returns:** `{ success, gameObject, speed, radius }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.AI;

@@ -1,48 +1,55 @@
 # GameObjectFinder Utilities
 
-Use these C# utility classes inside your `IRunCommand` scripts when performing complex targeted scene searches. 
-This bypasses slow iteration via `FindObjectsOfType` by enforcing structural caching.
+Paste-in helpers for scene GameObject lookup. `FindHelper.FindAll<T>()` is a
+Unity-version-compatible wrapper over `FindObjectsByType`. `GameObjectFinder`
+caches scene traversal per request and supports lookup by name, instance ID,
+hierarchy path, tag, or component.
 
-To use, just paste these static classes adjacent to your `CommandScript` inside the execution block.
+## Call surface
+
+- `FindHelper.FindAll<T>(bool includeInactive = false)` — all objects of type T.
+- `GameObjectFinder.Find(name, instanceId, path, tag, componentType)` — returns `GameObject` or `null`.
+- `GameObjectFinder.FindByPath(string path)` — returns `GameObject` or `null`.
+- `GameObjectFinder.FindByNameCaseInsensitive(string)` / `FindByNameContains(string)`.
+- `GameObjectFinder.FindOrError(...)` — returns `(GameObject, object error)`.
+- `GameObjectFinder.FindComponentOrError<T>(name, instanceId, path)` — returns `(T, object error)`.
+- `GameObjectFinder.GetPath(GameObject)` / `GetCachedPath(GameObject)` — full hierarchy path string.
+- `GameObjectFinder.GetDepth(GameObject)` — hierarchy depth (0 for roots).
+- `GameObjectFinder.GetSceneObjects()` / `InvalidateCache()`.
+
+## Do not
+
+- Do not nest cache helper classes as `private` inside a static class — the
+  `Unity_RunCommand` code transformer duplicates them to namespace scope and
+  compile fails (CS1527). Keep `_GameObjectFinderCache` top-level `internal`.
+- Do not use `BindingFlags.Public | BindingFlags.Instance` in code pasted with
+  this shim — same transformer fault.
+
+## Paste-in
 
 ```csharp
-    /// <summary>
-    /// Compatibility helper for FindObjectsByType (Unity 6+) / FindObjectsOfType fallback.
-    /// </summary>
     internal static class FindHelper
     {
         internal static T[] FindAll<T>(bool includeInactive = false) where T : UnityEngine.Object
         {
-#if UNITY_6000_0_OR_NEWER
             return includeInactive
                 ? UnityEngine.Object.FindObjectsByType<T>(UnityEngine.FindObjectsInactive.Include, UnityEngine.FindObjectsSortMode.None)
                 : UnityEngine.Object.FindObjectsByType<T>(UnityEngine.FindObjectsSortMode.None);
-#else
-            return includeInactive
-                ? UnityEngine.Resources.FindObjectsOfTypeAll<T>()
-                : UnityEngine.Object.FindObjectsOfType<T>();
-#endif
         }
     }
 
-    /// <summary>
-    /// Unified utility for finding GameObjects by multiple methods.
-    /// Supports: name, instance ID, hierarchy path, tag, component type.
-    /// Enhanced with intelligent fallback search strategies.
-    /// </summary>
+    internal sealed class _GameObjectFinderCache
+    {
+        public readonly System.Collections.Generic.List<UnityEngine.GameObject> Objects = new System.Collections.Generic.List<UnityEngine.GameObject>();
+        public readonly System.Collections.Generic.Dictionary<int, string> PathsByInstanceId = new System.Collections.Generic.Dictionary<int, string>();
+        public readonly System.Collections.Generic.Dictionary<int, int> DepthsByInstanceId = new System.Collections.Generic.Dictionary<int, int>();
+        public readonly System.Collections.Generic.Dictionary<string, UnityEngine.GameObject> PathLookup =
+            new System.Collections.Generic.Dictionary<string, UnityEngine.GameObject>(System.StringComparer.OrdinalIgnoreCase);
+    }
+
     public static class GameObjectFinder
     {
-        private sealed class SceneObjectCache
-        {
-            public readonly System.Collections.Generic.List<GameObject> Objects = new System.Collections.Generic.List<GameObject>();
-            public readonly System.Collections.Generic.Dictionary<int, string> PathsByInstanceId = new System.Collections.Generic.Dictionary<int, string>();
-            public readonly System.Collections.Generic.Dictionary<int, int> DepthsByInstanceId = new System.Collections.Generic.Dictionary<int, int>();
-            public readonly System.Collections.Generic.Dictionary<string, GameObject> PathLookup =
-                new System.Collections.Generic.Dictionary<string, GameObject>(System.StringComparer.OrdinalIgnoreCase);
-        }
-
-        // Request-level cache for scene traversal metadata - invalidated after each request via InvalidateCache()
-        private static SceneObjectCache _cachedSceneData;
+        private static _GameObjectFinderCache _cachedSceneData;
         private static bool _cacheValid = false;
 
         public static void InvalidateCache()
@@ -51,14 +58,14 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
             _cacheValid = false;
         }
 
-        private static SceneObjectCache GetOrBuildSceneCache()
+        private static _GameObjectFinderCache GetOrBuildSceneCache()
         {
             if (_cachedSceneData != null && _cacheValid)
                 return _cachedSceneData;
 
-            var cache = new SceneObjectCache();
+            var cache = new _GameObjectFinderCache();
             var roots = GetLoadedSceneRoots();
-            var stack = new System.Collections.Generic.Stack<(Transform transform, string path, string sceneName, int depth)>();
+            var stack = new System.Collections.Generic.Stack<(UnityEngine.Transform transform, string path, string sceneName, int depth)>();
             foreach (var root in roots)
                 stack.Push((root.transform, root.name, root.scene.name, 0));
 
@@ -76,7 +83,7 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
                 if (!string.IsNullOrEmpty(sceneName))
                     AddPathLookup(cache.PathLookup, sceneName + "/" + path, gameObject);
 
-                foreach (Transform child in transform)
+                foreach (UnityEngine.Transform child in transform)
                     stack.Push((child, path + "/" + child.name, sceneName, depth + 1));
             }
 
@@ -85,10 +92,10 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
             return cache;
         }
 
-        private static System.Collections.Generic.IEnumerable<GameObject> GetAllSceneObjects() => GetOrBuildSceneCache().Objects;
-        public static System.Collections.Generic.IReadOnlyList<GameObject> GetSceneObjects() => GetOrBuildSceneCache().Objects;
+        private static System.Collections.Generic.IEnumerable<UnityEngine.GameObject> GetAllSceneObjects() => GetOrBuildSceneCache().Objects;
+        public static System.Collections.Generic.IReadOnlyList<UnityEngine.GameObject> GetSceneObjects() => GetOrBuildSceneCache().Objects;
 
-        public static int GetDepth(GameObject go)
+        public static int GetDepth(UnityEngine.GameObject go)
         {
             if (go == null) return 0;
 
@@ -111,7 +118,7 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
             return depth;
         }
 
-        private static void AddPathLookup(System.Collections.Generic.Dictionary<string, GameObject> lookup, string path, GameObject go)
+        private static void AddPathLookup(System.Collections.Generic.Dictionary<string, UnityEngine.GameObject> lookup, string path, UnityEngine.GameObject go)
         {
             if (string.IsNullOrEmpty(path) || lookup.ContainsKey(path)) return;
             lookup[path] = go;
@@ -128,7 +135,7 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
             return parts.Length == 0 ? null : string.Join("/", parts);
         }
 
-        private static System.Collections.Generic.IEnumerable<GameObject> GetLoadedSceneRoots()
+        private static System.Collections.Generic.IEnumerable<UnityEngine.GameObject> GetLoadedSceneRoots()
         {
             for (int sceneIndex = 0; sceneIndex < UnityEngine.SceneManagement.SceneManager.sceneCount; sceneIndex++)
             {
@@ -140,23 +147,20 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
             }
         }
 
-        public static GameObject Find(string name = null, int instanceId = 0, string path = null, string tag = null, string componentType = null)
+        public static UnityEngine.GameObject Find(string name = null, int instanceId = 0, string path = null, string tag = null, string componentType = null)
         {
-            // Priority 1: Instance ID
             if (instanceId != 0)
             {
                 var obj = UnityEditor.EditorUtility.InstanceIDToObject(instanceId);
-                if (obj is GameObject idGo) return idGo;
+                if (obj is UnityEngine.GameObject idGo) return idGo;
             }
 
-            // Priority 2: Hierarchy path
             if (!string.IsNullOrEmpty(path))
             {
                 var pGo = FindByPath(path);
                 if (pGo != null) return pGo;
             }
 
-            // Priority 3: Simple name search
             if (!string.IsNullOrEmpty(name))
             {
                 var nGo = FindByNameCaseInsensitive(name);
@@ -166,7 +170,6 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
                 if (nGo != null) return nGo;
             }
 
-            // Priority 4: Tag search
             if (!string.IsNullOrEmpty(tag))
             {
                 var tGo = System.Linq.Enumerable.FirstOrDefault(GetAllSceneObjects(), candidate =>
@@ -177,12 +180,10 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
                 if (tGo != null) return tGo;
             }
 
-            // Component Type omitted for generic raw copy since it relies on ComponentSkills 
-
             return null;
         }
 
-        public static GameObject FindByPath(string path)
+        public static UnityEngine.GameObject FindByPath(string path)
         {
             var normalizedPath = NormalizePathKey(path);
             if (string.IsNullOrEmpty(normalizedPath)) return null;
@@ -195,8 +196,8 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
 
             foreach (var scene in System.Linq.Enumerable.Where(
                 System.Linq.Enumerable.Select(
-                    System.Linq.Enumerable.Range(0, UnityEngine.SceneManagement.SceneManager.sceneCount), 
-                    UnityEngine.SceneManagement.SceneManager.GetSceneAt), 
+                    System.Linq.Enumerable.Range(0, UnityEngine.SceneManagement.SceneManager.sceneCount),
+                    UnityEngine.SceneManagement.SceneManager.GetSceneAt),
                 scene => scene.IsValid() && scene.isLoaded))
             {
                 var rootObjects = scene.GetRootGameObjects();
@@ -223,14 +224,14 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
             return null;
         }
 
-        private static GameObject FindDirectChild(GameObject parent, string childName)
+        private static UnityEngine.GameObject FindDirectChild(UnityEngine.GameObject parent, string childName)
         {
             if (parent == null || string.IsNullOrEmpty(childName)) return null;
 
             var exact = parent.transform.Find(childName);
             if (exact != null) return exact.gameObject;
 
-            foreach (Transform child in parent.transform)
+            foreach (UnityEngine.Transform child in parent.transform)
             {
                 if (child.name.Equals(childName, System.StringComparison.OrdinalIgnoreCase))
                     return child.gameObject;
@@ -238,21 +239,98 @@ To use, just paste these static classes adjacent to your `CommandScript` inside 
             return null;
         }
 
-        public static GameObject FindByNameCaseInsensitive(string name)
+        public static UnityEngine.GameObject FindByNameCaseInsensitive(string name)
         {
-            return System.Linq.Enumerable.FirstOrDefault(GetAllSceneObjects(), go => 
+            return System.Linq.Enumerable.FirstOrDefault(GetAllSceneObjects(), go =>
                 go.name.Equals(name, System.StringComparison.OrdinalIgnoreCase));
         }
 
-        public static GameObject FindByNameContains(string name)
+        public static UnityEngine.GameObject FindByNameContains(string name)
         {
-            var exactWord = System.Linq.Enumerable.FirstOrDefault(GetAllSceneObjects(), go => 
-                System.Linq.Enumerable.Any(go.name.Split(' ', '_', '-'), 
+            var exactWord = System.Linq.Enumerable.FirstOrDefault(GetAllSceneObjects(), go =>
+                System.Linq.Enumerable.Any(go.name.Split(' ', '_', '-'),
                     word => word.Equals(name, System.StringComparison.OrdinalIgnoreCase)));
             if (exactWord != null) return exactWord;
 
-            return System.Linq.Enumerable.FirstOrDefault(GetAllSceneObjects(), go => 
+            return System.Linq.Enumerable.FirstOrDefault(GetAllSceneObjects(), go =>
                 go.name.IndexOf(name, System.StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        public static string GetPath(UnityEngine.GameObject go)
+        {
+            if (go == null) return null;
+
+            var path = go.name;
+            var parent = go.transform.parent;
+            while (parent != null)
+            {
+                path = parent.name + "/" + path;
+                parent = parent.parent;
+            }
+
+            return path;
+        }
+
+        public static string GetCachedPath(UnityEngine.GameObject go)
+        {
+            if (go == null) return null;
+
+            var instanceId = go.GetInstanceID();
+            var cache = GetOrBuildSceneCache();
+            if (cache.PathsByInstanceId.TryGetValue(instanceId, out var cachedPath))
+                return cachedPath;
+
+            var path = GetPath(go);
+            cache.PathsByInstanceId[instanceId] = path;
+            return path;
+        }
+
+        public static (UnityEngine.GameObject go, object error) FindOrError(
+            string name = null, int instanceId = 0, string path = null, string tag = null, string componentType = null)
+        {
+            var go = Find(name, instanceId, path, tag, componentType);
+            if (go == null)
+            {
+                var identifier = instanceId != 0 ? $"instanceId {instanceId}" :
+                    !string.IsNullOrEmpty(path) ? $"path '{path}'" :
+                    !string.IsNullOrEmpty(tag) ? $"tag '{tag}'" :
+                    !string.IsNullOrEmpty(componentType) ? $"component '{componentType}'" :
+                    $"name '{name}'";
+
+                var suggestions = GetSuggestions(name);
+
+                return (null, new
+                {
+                    error = $"GameObject not found: {identifier}",
+                    suggestions = suggestions.Length > 0 ? suggestions : null
+                });
+            }
+            return (go, null);
+        }
+
+        public static (T component, object error) FindComponentOrError<T>(
+            string name = null, int instanceId = 0, string path = null) where T : UnityEngine.Component
+        {
+            var (go, err) = FindOrError(name, instanceId, path);
+            if (err != null) return (null, err);
+            var comp = go.GetComponent<T>();
+            if (comp == null) return (null, new { error = $"No {typeof(T).Name} component on {go.name}" });
+            return (comp, null);
+        }
+
+        private static string[] GetSuggestions(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return System.Array.Empty<string>();
+
+            var prefix = name.Substring(0, System.Math.Min(3, name.Length));
+            return System.Linq.Enumerable.ToArray(
+                System.Linq.Enumerable.Select(
+                    System.Linq.Enumerable.Take(
+                        System.Linq.Enumerable.Where(
+                            GetAllSceneObjects(),
+                            go => go.name.IndexOf(prefix, System.StringComparison.OrdinalIgnoreCase) >= 0),
+                        5),
+                    go => $"'{go.name}' (path: {GetPath(go)})"));
         }
     }
 ```

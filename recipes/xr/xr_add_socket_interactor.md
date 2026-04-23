@@ -11,22 +11,57 @@ Adds XRSocketInteractor and a trigger SphereCollider (if no collider is present)
 - `recycleDelay`: seconds before the socket can accept another object after release.
 - `showHoverMesh` controls whether a ghost mesh appears when an interactable hovers over the socket.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
+**Requires:** `com.unity.xr.interaction.toolkit` (≥ 3.4).
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string name = "ItemSlot";
+        string name = null;
+        int instanceId = 0;
+        string path = null;
         bool showHoverMesh = true;
         float recycleDelay = 1f;
 
-        var res = UnitySkillsBridge.Call("xr_add_socket_interactor", new {
-            name, showHoverMesh, recycleDelay
-        });
-        result.SetResult(res);
+        var (go, findErr) = GameObjectFinder.FindOrError(name, instanceId, path);
+        if (findErr != null) { result.SetResult(findErr); return; }
+
+        Undo.RecordObject(go, "Add XRSocketInteractor");
+
+        var existing = go.GetComponent<XRSocketInteractor>();
+        var comp = existing != null ? existing : go.AddComponent<XRSocketInteractor>();
+        if (existing == null)
+            Undo.RegisterCreatedObjectUndo(comp, "Add XRSocketInteractor");
+
+        comp.showInteractableHoverMeshes = showHoverMesh;
+        comp.recycleDelayTime = recycleDelay;
+
+        // Add SphereCollider trigger if no collider exists
+        if (go.GetComponent<Collider>() == null)
+        {
+            var sphere = go.AddComponent<SphereCollider>();
+            sphere.isTrigger = true;
+            sphere.radius = 0.15f;
+        }
+
+        WorkflowManager.SnapshotObject(go);
+
+        { result.SetResult(new
+        {
+            success = true,
+            name = go.name,
+            instanceId = go.GetInstanceID(),
+            interactorType = comp.GetType().Name,
+            showHoverMesh,
+            recycleDelay
+        }); return; }
     }
 }
 ```

@@ -2,9 +2,6 @@
 
 Alternative bridge setter for common model importer fields.
 
-**Skill ID:** `model_set_import_settings`
-**Source:** `AssetImportSkills.cs` — `ModelSetImportSettings`
-
 ## Signature
 
 ```
@@ -19,19 +16,7 @@ model_set_import_settings(
 ) → { success, assetPath, globalScale, importAnimation, meshCompression }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model |
-| `globalScale` | float | no | Import scale factor |
-| `importMaterials` | bool | no | `true` = `ImportViaMaterialDescription`, `false` = `None` |
-| `importAnimation` | bool | no | Import animation clips |
-| `generateColliders` | bool | no | Add mesh colliders (`addCollider`) |
-| `readable` | bool | no | CPU-readable mesh data |
-| `meshCompression` | string | no | `Off`, `Low`, `Medium`, `High` |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -51,7 +36,7 @@ internal class CommandScript : IRunCommand
 
         var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
         if (importer == null)
-            return new { success = false, error = $"Not a model or not found: {assetPath}" };
+            { result.SetResult(new { success = false, error = $"Not a model or not found: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -85,20 +70,19 @@ internal class CommandScript : IRunCommand
 
         if (changed) importer.SaveAndReimport();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
             globalScale = importer.globalScale,
             importAnimation = importer.importAnimation,
             meshCompression = importer.meshCompression.ToString()
-        };
+        }); return; }
     }
 }
 ```
 
 ## Notes
-
-- `importMaterials` is a simplified bool shorthand. For full `materialImportMode` string control, use `model_set_settings`.
 - `generateColliders` maps to `importer.addCollider`.
 - For the full setter with normals, tangents, blend shapes, etc., use `model_set_settings`.
+

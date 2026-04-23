@@ -4,15 +4,6 @@ Switch the active quality level by index or by name. Mutates the runtime quality
 
 **Signature:** `ProjectSetQualityLevel(int level = -1, string levelName = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `level` | int | No | -1 | Quality level index (0-based) |
-| `levelName` | string | No | null | Quality level name (e.g. `"High"`) |
-
-At least one of `level` or `levelName` must be provided and valid.
-
 ## Returns
 
 ```json
@@ -35,7 +26,7 @@ On out-of-range index:
 - Quality level names are defined in Project Settings > Quality. Use `project_get_quality_settings` to list them.
 - `QualitySettings.SetQualityLevel(level, true)` applies quality settings immediately.
 
-## C# Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;

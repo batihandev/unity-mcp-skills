@@ -2,9 +2,6 @@
 
 Configure sprite-specific importer knobs (pixels-per-unit, sprite mode).
 
-**Skill ID:** `texture_set_sprite_settings`
-**Source:** `TextureSkills.cs` — `TextureSetSpriteSettings`
-
 ## Signature
 
 ```
@@ -12,15 +9,7 @@ texture_set_sprite_settings(assetPath: string, pixelsPerUnit?: float, spriteMode
   → { success, path, pixelsPerUnit, spriteMode }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `pixelsPerUnit` | float | no | How many pixels correspond to one Unity unit |
-| `spriteMode` | string | no | `Single`, `Multiple`, `Polygon` |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 ```csharp
 using UnityEngine;
@@ -34,9 +23,9 @@ internal class CommandScript : IRunCommand
         float? pixelsPerUnit = 100f;
         string spriteMode = "Single"; // Single | Multiple | Polygon
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-        if (importer == null) return new { error = $"Not a texture: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a texture: {assetPath}" }); return; }
 
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
         if (asset != null) WorkflowManager.SnapshotObject(asset);
@@ -47,13 +36,13 @@ internal class CommandScript : IRunCommand
 
         importer.SaveAndReimport();
 
-        return new
+        { result.SetResult(new
         {
             success = true,
             path = assetPath,
             pixelsPerUnit = importer.spritePixelsPerUnit,
             spriteMode = importer.spriteImportMode.ToString()
-        };
+        }); return; }
     }
 }
 ```

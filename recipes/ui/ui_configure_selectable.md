@@ -12,6 +12,8 @@ Configure Selectable component properties: transition mode, navigation, and colo
 - `navigationMode` values: `None`, `Horizontal`, `Vertical`, `Automatic`, `Explicit`.
 - Color channels are applied independently; omit any channel to keep its current value.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEngine.UI;
@@ -51,7 +53,7 @@ internal class CommandScript : IRunCommand
 
         if (!string.IsNullOrEmpty(navigationMode))
         {
-            if (Enum.TryParse<Navigation.Mode>(navigationMode, true, out var navMode))
+            if (Enum.TryParse<UnityEngine.UI.Navigation.Mode>(navigationMode, true, out var navMode))
             {
                 var nav = selectable.navigation;
                 nav.mode = navMode;

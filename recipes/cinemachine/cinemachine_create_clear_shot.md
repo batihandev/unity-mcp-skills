@@ -11,9 +11,12 @@ Create a `CinemachineClearShot` camera that automatically selects the best-quali
 - Each child VCam should have a `CinemachineDeoccluder` / `CinemachineCollider` extension to evaluate shot quality.
 - Configure activation timing and blend with `cinemachine_configure_camera_manager`.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;
+using Unity.Cinemachine;
 
 internal class CommandScript : IRunCommand
 {

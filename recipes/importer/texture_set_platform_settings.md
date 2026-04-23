@@ -2,9 +2,6 @@
 
 Set per-platform texture import overrides (max size, format, compression quality).
 
-**Skill ID:** `texture_set_platform_settings`
-**Source:** `TextureSkills.cs` — `TextureSetPlatformSettings`
-
 ## Signature
 
 ```
@@ -18,18 +15,7 @@ texture_set_platform_settings(
 ) → { success, path, platform, maxSize, format }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `platform` | string | yes | `Standalone`, `iPhone`, `Android`, `WebGL` |
-| `maxSize` | int | no | Max texture dimension for this platform |
-| `format` | string | no | `TextureImporterFormat` value (e.g. `ASTC_6x6`, `ETC2_RGBA8`) |
-| `compressionQuality` | int | no | 0–100 quality for compressed formats |
-| `overridden` | bool | no | Whether platform override is active (default `true` when any value supplied) |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
@@ -46,10 +32,10 @@ internal class CommandScript : IRunCommand
         int? compressionQuality = null;
         bool? overridden = null;
 
-        if (Validate.Required(assetPath, "assetPath") is object err) return err;
-        if (Validate.Required(platform, "platform") is object err2) return err2;
+        if (Validate.Required(assetPath, "assetPath") is object err) { result.SetResult(err); return; }
+        if (Validate.Required(platform, "platform") is object err2) { result.SetResult(err2); return; }
         var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-        if (importer == null) return new { error = $"Not a texture: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not a texture: {assetPath}" }); return; }
 
         var ps = importer.GetPlatformTextureSettings(platform);
         ps.overridden = overridden.HasValue ? overridden.Value : true;
@@ -61,7 +47,7 @@ internal class CommandScript : IRunCommand
         importer.SetPlatformTextureSettings(ps);
         importer.SaveAndReimport();
 
-        return new { success = true, path = assetPath, platform, maxSize = ps.maxTextureSize, format = ps.format.ToString() };
+        { result.SetResult(new { success = true, path = assetPath, platform, maxSize = ps.maxTextureSize, format = ps.format.ToString() }); return; }
     }
 }
 ```

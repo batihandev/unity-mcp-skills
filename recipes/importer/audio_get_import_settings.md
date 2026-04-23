@@ -2,9 +2,6 @@
 
 Read a minimal set of audio importer settings (bridge getter).
 
-**Skill ID:** `audio_get_import_settings`
-**Source:** `AssetImportSkills.cs` — `AudioGetImportSettings`
-
 ## Signature
 
 ```
@@ -12,13 +9,7 @@ audio_get_import_settings(assetPath: string)
   → { success, assetPath, forceToMono, loadInBackground, loadType, compressionFormat, quality }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the audio file |
-
-## Unity_RunCommand Template
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
 ```csharp
 using UnityEngine;
@@ -31,10 +22,10 @@ internal class CommandScript : IRunCommand
         string assetPath = "Assets/Audio/bgm.wav"; // Replace with target path
 
         var importer = AssetImporter.GetAtPath(assetPath) as AudioImporter;
-        if (importer == null) return new { error = $"Not an audio asset: {assetPath}" };
+        if (importer == null) { result.SetResult(new { error = $"Not an audio asset: {assetPath}" }); return; }
 
         var settings = importer.defaultSampleSettings;
-        return new
+        { result.SetResult(new
         {
             success = true,
             assetPath,
@@ -43,13 +34,12 @@ internal class CommandScript : IRunCommand
             loadType = settings.loadType.ToString(),
             compressionFormat = settings.compressionFormat.ToString(),
             quality = settings.quality
-        };
+        }); return; }
     }
 }
 ```
 
 ## Notes
-
 - This is the lightweight bridge getter. For the full importer settings including `ambisonic` and `sampleRateSetting`, use `audio_get_settings`.
 - `quality` is returned as a `float` in `0.0`–`1.0` range.
-- Read-only; no reimport triggered.
+

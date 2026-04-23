@@ -8,6 +8,8 @@ Get the full scene hierarchy tree with component names at each node.
 
 `maxDepth` controls how many levels deep the tree expands. Nodes at the depth limit have `children: null`. For a narrative description of the hierarchy use `perception` module's `hierarchy_describe` instead.
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

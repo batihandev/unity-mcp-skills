@@ -6,6 +6,8 @@ Set the Scene View camera's position and rotation explicitly. Controls the **Sce
 
 **Returns:** `{ success, message }`
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

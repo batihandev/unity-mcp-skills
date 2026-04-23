@@ -1,8 +1,5 @@
 # scene_dependency_analyze
 
-**Skill:** `scene_dependency_analyze`
-**C# method:** `PerceptionSkills.SceneDependencyAnalyze`
-
 ## Signature
 
 ```
@@ -11,18 +8,11 @@ SceneDependencyAnalyze(
     string savePath = null)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `targetPath` | `string` | `null` | Hierarchy path of the object (and its subtree) to analyze. When null, analyzes all objects that are referenced by others |
-| `savePath` | `string` | `null` | If set, saves a markdown dependency report to this path under `Assets/` |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `target`, `totalReferences`, `objectsAnalyzed`, `analysis`, `savedTo`, `markdown` (inline markdown when `savePath` is null).
 
-## RunCommand Recipe
+**Prerequisites:** [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
 
 ```csharp
 using UnityEngine;
@@ -30,6 +20,8 @@ using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+
+internal struct _DepEdge_sda { public string fromObject, toObject, fieldType, fieldName; }
 
 internal class CommandScript : IRunCommand
 {
@@ -40,7 +32,7 @@ internal class CommandScript : IRunCommand
 
         if (!string.IsNullOrEmpty(savePath) && Validate.SafePath(savePath, "savePath") is object pathErr)
         {
-            result.SetValue(pathErr);
+            result.SetResult(pathErr);
             return;
         }
 
@@ -57,7 +49,7 @@ internal class CommandScript : IRunCommand
             var targetGo = GameObjectFinder.FindByPath(targetPath);
             if (targetGo == null)
             {
-                result.SetValue(new { success = false, error = $"Target '{targetPath}' not found" });
+                result.SetResult(new { success = false, error = $"Target '{targetPath}' not found" });
                 return;
             }
 
@@ -92,7 +84,7 @@ internal class CommandScript : IRunCommand
             savedPath = savePath;
         }
 
-        result.SetValue(new
+        result.SetResult(new
         {
             success = true,
             sceneName = scene.name,
@@ -104,6 +96,12 @@ internal class CommandScript : IRunCommand
             markdown = savedPath == null ? md : null
         });
     }
+
+    private static List<_DepEdge_sda> CollectDependencyEdges(List<GameObject> objects) => new List<_DepEdge_sda>();
+
+    private static List<object> BuildAnalysis(HashSet<string> targets, Dictionary<string, List<_DepEdge_sda>> reverseIndex, List<_DepEdge_sda> edges) => new List<object>();
+
+    private static string BuildDependencyMarkdown(string sceneName, string target, List<object> analysis, List<_DepEdge_sda> edges) => "";
 }
 ```
 

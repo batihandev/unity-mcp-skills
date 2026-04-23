@@ -17,6 +17,8 @@ Find assets using an AssetDatabase search filter.
 | `name` | `player` | By name (partial match) |
 | Combined | `t:Material player` | Multiple filters |
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

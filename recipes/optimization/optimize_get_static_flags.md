@@ -9,6 +9,8 @@ Read the current `StaticEditorFlags` and the `isStatic` shortcut property of a G
 - `flags` — string representation of the `StaticEditorFlags` enum value (e.g. `"Everything"`, `"BatchingStatic, OccluderStatic"`)
 - `isStatic` — Unity's combined `GameObject.isStatic` bool shortcut
 
+**Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
+
 ```csharp
 using UnityEngine;
 using UnityEditor;

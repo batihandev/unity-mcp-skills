@@ -46,7 +46,10 @@ Control the Unity Editor itself - enter play mode, manage selection, undo/redo, 
 ## Skills
 
 ### editor_play
-Enter play mode.
+Enter play mode. Fire-and-forget: sets `EditorApplication.isPlaying = true`
+and returns `{ success, mode, started }` immediately. Observe the
+transition by calling `editor_get_state` (check `isPlaying`) in a later
+call — recipes cannot span domain reloads.
 
 ### editor_stop
 Exit play mode.
