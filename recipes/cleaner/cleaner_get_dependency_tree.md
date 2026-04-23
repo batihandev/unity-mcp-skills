@@ -4,13 +4,6 @@ Get the dependency tree for an asset — all assets that the given asset depends
 
 **Signature:** `CleanerGetDependencyTree(string assetPath, bool recursive = true)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `assetPath` | string | Yes | — | Project-relative path to the asset |
-| `recursive` | bool | No | true | Resolve dependencies recursively (transitive) |
-
 ## Returns
 
 ```json
@@ -42,8 +35,6 @@ When the asset path does not exist on disk, the skill returns (note: no `success
 - Directories are also valid inputs: the asset path can point to a folder.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

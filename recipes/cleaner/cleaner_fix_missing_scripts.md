@@ -4,12 +4,6 @@ Remove missing script components from all loaded GameObjects using `GameObjectUt
 
 **Signature:** `CleanerFixMissingScripts(bool includeInactive = true)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `includeInactive` | bool | No | true | Include inactive GameObjects |
-
 ## Returns
 
 ```json
@@ -29,8 +23,6 @@ Remove missing script components from all loaded GameObjects using `GameObjectUt
 - This operation is tracked by the workflow manager (`TracksWorkflow = true`).
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

@@ -1,8 +1,5 @@
 # scene_context
 
-**Skill:** `scene_context`
-**C# method:** `PerceptionSkills.SceneContext`
-
 ## Signature
 
 ```
@@ -15,24 +12,11 @@ SceneContext(
     bool includeCodeDeps = false)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `maxDepth` | `int` | `10` | Maximum hierarchy depth to traverse |
-| `maxObjects` | `int` | `200` | Maximum number of objects to export |
-| `rootPath` | `string` | `null` | Limit export to one subtree by object path |
-| `includeValues` | `bool` | `false` | Include serialized field values |
-| `includeReferences` | `bool` | `true` | Include cross-object serialized reference edges |
-| `includeCodeDeps` | `bool` | `false` | Include C# code-level dependency edges |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `totalObjects`, `scopeObjects`, `exportedObjects`, `truncated`, `objects` array, `references` array (when `includeReferences`), `codeDependencies` array (when `includeCodeDeps`).
 
 **Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

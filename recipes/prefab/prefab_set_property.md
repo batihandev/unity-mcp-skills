@@ -4,19 +4,6 @@ Set a serialized property on a component inside a prefab asset file directly, wi
 
 **Signature:** `PrefabSetProperty(string prefabPath = null, string componentType = null, string propertyName = null, string value = null, string assetReferencePath = null, string gameObjectName = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `prefabPath` | string | Yes | - | Path to the prefab asset |
-| `componentType` | string | Yes | - | Component type name (e.g. `Rigidbody`, `Light`) |
-| `propertyName` | string | Yes | - | Serialized property name |
-| `value` | string | Cond. | null | Value for basic types (int/float/bool/string/enum/vector/color) |
-| `assetReferencePath` | string | Cond. | null | Asset path for Object reference fields (Material, Texture, AudioClip, etc.) |
-| `gameObjectName` | string | No | null | Child object name inside the prefab (defaults to root) |
-
-Provide exactly one of `value` or `assetReferencePath`.
-
 ## Returns
 
 ```json
@@ -58,8 +45,6 @@ On property not found:
 | Color | `"1,0,0,1"` (RGBA) |
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`value_converter`](../_shared/value_converter.md), [`skills_common`](../_shared/skills_common.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

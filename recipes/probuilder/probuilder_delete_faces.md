@@ -7,16 +7,12 @@ Delete faces by index from a ProBuilder mesh.
 **Returns:** `{ success, name, instanceId, deletedCount, remainingFaces, remainingVertices }`
 
 ## Notes
-
-- `faceIndexes` is required (comma-separated integers, e.g. `"0,1"`).
 - Out-of-range indices are silently skipped; at least one valid index is required.
 - Call `probuilder_get_info` first to verify face count.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.probuilder` package.
-
-## Recipe
 
 ```csharp
 using UnityEngine;

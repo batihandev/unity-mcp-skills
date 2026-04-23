@@ -7,8 +7,6 @@ Get all enabled shader keywords on a material, plus the status of common known k
 **Returns:** `{ success, target, shader, enabledKeywords, commonKeywordStatus: [{ keyword, enabled }] }`
 
 ## Notes
-
-- Read-only: does not modify the material.
 - `enabledKeywords` is the raw array of currently-enabled keywords.
 - `commonKeywordStatus` checks a fixed set of well-known keywords (see list below) and reports their enabled/disabled state regardless of whether they are in `enabledKeywords`.
 - Use `material_set_keyword` to enable or disable individual keywords.
@@ -18,8 +16,6 @@ Get all enabled shader keywords on a material, plus the status of common known k
 `_EMISSION`, `_NORMALMAP`, `_METALLICGLOSSMAP`, `_SPECGLOSSMAP`, `_ALPHATEST_ON`, `_ALPHABLEND_ON`, `_ALPHAPREMULTIPLY_ON`, `_DETAIL_MULX2`, `_PARALLAXMAP`, `_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A`, `_SPECULARHIGHLIGHTS_OFF`, `_ENVIRONMENTREFLECTIONS_OFF`, `_RECEIVE_SHADOWS_OFF`, `_SURFACE_TYPE_TRANSPARENT`
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

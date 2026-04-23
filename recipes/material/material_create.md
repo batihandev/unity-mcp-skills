@@ -17,8 +17,6 @@ Create a new material (auto-detects render pipeline if shader not specified). `s
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

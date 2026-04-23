@@ -4,14 +4,6 @@ Find duplicate files by grouping on file size first, then computing MD5 hashes t
 
 **Signature:** `CleanerFindDuplicates(string assetType = "Texture2D", string searchPath = "Assets", int limit = 50)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `assetType` | string | No | "Texture2D" | Asset type to scan |
-| `searchPath` | string | No | "Assets" | Root path to search within |
-| `limit` | int | No | 50 | Max number of duplicate groups to return |
-
 ## Returns
 
 ```json
@@ -40,8 +32,6 @@ Find duplicate files by grouping on file size first, then computing MD5 hashes t
 - After identifying duplicates, use `cleaner_get_asset_usage` to decide which copy to keep before calling `cleaner_delete_assets`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

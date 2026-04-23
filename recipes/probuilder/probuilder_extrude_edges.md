@@ -17,8 +17,6 @@ Extrude open edges outward on a ProBuilder mesh to create walls, rails, or flang
 
 **Requires:** `com.unity.probuilder` package.
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

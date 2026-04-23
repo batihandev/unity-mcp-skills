@@ -4,12 +4,6 @@ Set properties on components across multiple GameObjects in a single call. Suppo
 
 **Signature:** `ComponentSetPropertyBatch(string items)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `items` | string | Yes | JSON array of batch items |
-
 ### Batch Item Schema
 
 ```json
@@ -65,8 +59,6 @@ Each item supports: `name`, `instanceId`, `path` (at least one required), `compo
 ## Notes
 
 The `value` and `assetPath` input paths are supported. Cross-scene reference resolution (`referencePath` / `referenceName` from upstream) is out of scope — use a dedicated recipe if you need that.
-
-## C# Template
 
 ```csharp
 using UnityEngine;

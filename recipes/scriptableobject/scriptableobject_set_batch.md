@@ -6,13 +6,6 @@ Set multiple fields on a ScriptableObject in a single operation.
 
 **Returns:** `{ success, fieldsSet }`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | Yes | Asset path of the ScriptableObject |
-| `fields` | string | Yes | JSON object with field-value pairs, e.g. `{"fieldName": "value", ...}` |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md), [`value_converter`](../_shared/value_converter.md)
 
 ## Notes

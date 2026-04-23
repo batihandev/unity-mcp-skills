@@ -4,12 +4,6 @@ Find components with missing scripts or null serialized object references in the
 
 **Signature:** `CleanerFindMissingReferences(bool includeInactive = true)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `includeInactive` | bool | No | true | Include inactive GameObjects in the search |
-
 ## Returns
 
 ```json
@@ -51,8 +45,6 @@ Find components with missing scripts or null serialized object references in the
 - MissingReference issues must be fixed manually by reassigning the field in the Inspector.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

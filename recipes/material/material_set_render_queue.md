@@ -7,10 +7,8 @@ Set the render queue of a material.
 **Returns:** `{ success, target, renderQueue, queueCategory }`
 
 ## Notes
-
 - `renderQueue = -1` restores the shader's default queue (reported as `ShaderDefault`).
 - `queueCategory` is derived from the numeric value:
-
 | Range | Category |
 |-------|----------|
 | -1 | ShaderDefault |
@@ -22,8 +20,6 @@ Set the render queue of a material.
 | >= 4000 | Overlay |
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

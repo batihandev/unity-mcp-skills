@@ -2,9 +2,6 @@
 
 Search for Texture2D assets in the project using an AssetDatabase filter.
 
-**Skill ID:** `texture_find_assets`
-**Source:** `TextureSkills.cs` — `TextureFindAssets`
-
 ## Signature
 
 ```
@@ -12,16 +9,7 @@ texture_find_assets(filter?: string = "", limit?: int = 50)
   → { success, totalFound, showing, textures[{ path, name, width, height }] }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `filter` | string | no | `""` | Additional AssetDatabase search terms appended to `t:Texture2D` |
-| `limit` | int | no | `50` | Max results returned |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

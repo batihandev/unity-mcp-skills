@@ -2,9 +2,6 @@
 
 Read the full importer settings for a model asset.
 
-**Skill ID:** `model_get_settings`
-**Source:** `ModelSkills.cs` — `ModelGetSettings`
-
 ## Signature
 
 ```
@@ -15,15 +12,7 @@ model_get_settings(assetPath: string)
       importNormals, importTangents, animationType, importAnimation, materialImportMode }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;
@@ -69,6 +58,5 @@ internal class CommandScript : IRunCommand
 ```
 
 ## Notes
-
-- Read-only; no reimport triggered.
 - For a lighter read of just scale/compression/animationType, use `model_get_import_settings`.
+

@@ -2,9 +2,6 @@
 
 Alternative bridge setter for common texture importer fields.
 
-**Skill ID:** `texture_set_import_settings`
-**Source:** `AssetImportSkills.cs` — `TextureSetImportSettings`
-
 ## Signature
 
 ```
@@ -18,20 +15,7 @@ texture_set_import_settings(
 ) → { success, assetPath, maxSize, compression, readable, mipmaps }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `maxSize` | int | no | Max texture size (e.g. 512, 1024, 2048) |
-| `compression` | string | no | `None`, `LowQuality`, `NormalQuality`, `HighQuality` |
-| `readable` | bool | no | CPU-readable flag |
-| `generateMipMaps` | bool | no | Generate mipmaps |
-| `textureType` | string | no | `Default`, `NormalMap`, `Sprite`, `Cursor`, `Cookie`, `Lightmap` |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

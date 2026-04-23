@@ -4,20 +4,6 @@ Delete specified assets using a mandatory two-step confirmation flow. Step 1 pre
 
 **Signature:** `CleanerDeleteAssets(string[] paths = null, string confirmToken = null)`
 
-## Parameters
-
-**Step 1 — Preview** (omit `confirmToken`):
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `paths` | string[] | Yes | Asset paths to delete |
-
-**Step 2 — Execute** (provide `confirmToken`):
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `confirmToken` | string | Yes | Token returned by the preview call |
-
 ## Returns
 
 **Step 1 — Preview response:**
@@ -64,8 +50,6 @@ Delete specified assets using a mandatory two-step confirmation flow. Step 1 pre
 - Use `cleaner_find_unused_assets`, `cleaner_find_duplicates`, or `cleaner_find_large_assets` to identify candidates first.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

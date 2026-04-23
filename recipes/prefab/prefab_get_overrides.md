@@ -4,15 +4,6 @@ Inspect all property overrides, added components, removed components, and added 
 
 **Signature:** `PrefabGetOverrides(string name = null, int instanceId = 0)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | Prefab instance name |
-| `instanceId` | int | No* | Instance ID (preferred) |
-
-*At least one identifier required.
-
 ## Returns
 
 ```json
@@ -28,15 +19,11 @@ Inspect all property overrides, added components, removed components, and added 
 ```
 
 ## Notes
-
-- Read-only — does not modify anything.
 - Uses the outermost prefab root even when a child is passed.
 - `propertyOverrides` is the count of `PropertyModification` entries where the target is non-null (internal Unity bookkeeping entries with null targets are excluded).
 - Check `hasOverrides` for a quick true/false before deciding whether to apply or revert.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

@@ -2,9 +2,6 @@
 
 Set one or more importer settings on a texture asset and reimport it.
 
-**Skill ID:** `texture_set_settings`
-**Source:** `TextureSkills.cs` — `TextureSetSettings`
-
 ## Signature
 
 ```
@@ -24,26 +21,7 @@ texture_set_settings(
 ) → { success, path, changesApplied, changes }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `textureType` | string | no | `Default`, `NormalMap`, `Sprite`, `EditorGUI`, `Cursor`, `Cookie`, `Lightmap`, `SingleChannel` |
-| `maxSize` | int | no | Max texture dimension (32–8192) |
-| `filterMode` | string | no | `Point`, `Bilinear`, `Trilinear` |
-| `compression` | string | no | `None`, `LowQuality`, `NormalQuality`, `HighQuality` |
-| `mipmapEnabled` | bool | no | Generate mipmaps |
-| `sRGB` | bool | no | Treat as sRGB colour texture |
-| `readable` | bool | no | Enable CPU read access (`isReadable`) |
-| `alphaIsTransparency` | bool | no | Dilate colour channels at alpha edges |
-| `spritePixelsPerUnit` | float | no | Pixels-per-unit for Sprite type |
-| `wrapMode` | string | no | `Repeat`, `Clamp`, `Mirror`, `MirrorOnce` |
-| `npotScale` | string | no | NPOT scaling mode (`None`, `ToNearest`, `ToLarger`, `ToSmaller`) |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

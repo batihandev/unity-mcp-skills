@@ -2,9 +2,6 @@
 
 Read a minimal set of texture importer settings (bridge getter).
 
-**Skill ID:** `texture_get_import_settings`
-**Source:** `AssetImportSkills.cs` — `TextureGetImportSettings`
-
 ## Signature
 
 ```
@@ -12,15 +9,7 @@ texture_get_import_settings(assetPath: string)
   → { success, assetPath, textureType, maxSize, compression, readable, mipmaps, spriteMode, pixelsPerUnit }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

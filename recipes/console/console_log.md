@@ -18,8 +18,6 @@ Write a custom message to the Unity console.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -14,8 +14,6 @@ Get the current render pipeline type and probe which common shaders are availabl
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## C# Template
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

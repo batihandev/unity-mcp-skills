@@ -14,8 +14,6 @@ Get project information including Unity version, product name, company name, pla
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## C# Template
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

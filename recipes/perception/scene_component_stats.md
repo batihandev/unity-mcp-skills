@@ -1,27 +1,16 @@
 # scene_component_stats
 
-**Skill:** `scene_component_stats`
-**C# method:** `PerceptionSkills.SceneComponentStats`
-
 ## Signature
 
 ```
 SceneComponentStats(int topComponentsLimit = 15)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `topComponentsLimit` | `int` | `15` | Maximum number of top component types to return |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `stats` (object counts, hierarchy depth, cameras, lights, canvases, EventSystems, AudioListeners, prefab instances, disabled ratio, empty leaf count), `keyFacilities` (bool flags for main camera, light, canvas, EventSystem, AudioListener, UGUI, UI Toolkit), and `topComponents` array.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`perception_helpers`](../_shared/perception_helpers.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

@@ -2,20 +2,11 @@
 
 Apply model importer settings to multiple model assets in one call.
 
-**Skill ID:** `model_set_settings_batch`
-**Source:** `ModelSkills.cs` — `ModelSetSettingsBatch`
-
 ## Signature
 
 ```
 model_set_settings_batch(items: string) → { results[], errors[] }
 ```
-
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `items` | string | yes | JSON array of item objects (see schema below) |
 
 ### Item Schema
 
@@ -36,8 +27,6 @@ Each object in the JSON array may contain:
 | `materialImportMode` | string | `None`, `ImportViaMaterialDescription`, `ImportStandard` |
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

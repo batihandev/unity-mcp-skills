@@ -15,8 +15,6 @@ Get the subshader and pass count for a shader as a proxy for variant complexity.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -2,9 +2,6 @@
 
 Set importer settings on an audio asset and reimport.
 
-**Skill ID:** `audio_set_settings`
-**Source:** `AudioSkills.cs` — `AudioSetSettings`
-
 ## Signature
 
 ```
@@ -20,22 +17,7 @@ audio_set_settings(
 ) → { success, path, changesApplied, changes }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the audio file |
-| `forceToMono` | bool | no | Downmix to mono |
-| `loadInBackground` | bool | no | Load clip in background thread |
-| `ambisonic` | bool | no | Mark as ambisonic audio |
-| `loadType` | string | no | `DecompressOnLoad`, `CompressedInMemory`, `Streaming` |
-| `compressionFormat` | string | no | `PCM`, `Vorbis`, `ADPCM` |
-| `quality` | float | no | 0.0–1.0 quality for Vorbis compression |
-| `sampleRateSetting` | string | no | `PreserveSampleRate`, `OptimizeSampleRate`, `OverrideSampleRate` |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

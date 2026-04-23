@@ -2,9 +2,6 @@
 
 Read the full importer settings for an audio asset.
 
-**Skill ID:** `audio_get_settings`
-**Source:** `AudioSkills.cs` — `AudioGetSettings`
-
 ## Signature
 
 ```
@@ -13,15 +10,7 @@ audio_get_settings(assetPath: string)
       loadType, compressionFormat, quality, sampleRateSetting }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the audio file |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;
@@ -58,7 +47,6 @@ internal class CommandScript : IRunCommand
 ```
 
 ## Notes
-
 - `quality` is returned as a `float` in the `0.0`–`1.0` range.
-- Read-only; no reimport triggered.
 - For the lightweight bridge getter, use `audio_get_import_settings`.
+

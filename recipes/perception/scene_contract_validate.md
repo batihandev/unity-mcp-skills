@@ -1,8 +1,5 @@
 # scene_contract_validate
 
-**Skill:** `scene_contract_validate`
-**C# method:** `PerceptionSkills.SceneContractValidate`
-
 ## Signature
 
 ```
@@ -13,22 +10,11 @@ SceneContractValidate(
     bool requireEventSystemForUi = true)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `requiredRootsJson` | `string` | `null` | JSON array of required root object names, e.g. `'["Managers","World"]'` |
-| `requiredTagsJson` | `string` | `null` | JSON array of tags that must be defined, e.g. `'["Player","Enemy"]'` |
-| `requiredLayersJson` | `string` | `null` | JSON array of layers that must be defined, e.g. `'["UI","Interactable"]'` |
-| `requireEventSystemForUi` | `bool` | `true` | Whether to require an EventSystem when UGUI objects are present |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `checkedRoots`, `checkedTags`, `checkedLayers`, `summary` (passed, errors, warnings, info), and `findings` array with `type`, `severity`, `name`, `message`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`perception_helpers`](../_shared/perception_helpers.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

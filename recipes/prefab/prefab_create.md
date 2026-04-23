@@ -4,17 +4,6 @@ Create a prefab asset from a scene GameObject. The source object remains in the 
 
 **Signature:** `PrefabCreate(string name = null, int instanceId = 0, string path = null, string savePath = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | Source GameObject name |
-| `instanceId` | int | No* | Instance ID (preferred) |
-| `path` | string | No* | Hierarchy path |
-| `savePath` | string | Yes | Asset save path (e.g. `Assets/Prefabs/Enemy.prefab`) |
-
-*At least one object identifier required alongside `savePath`.
-
 ## Returns
 
 ```json
@@ -34,8 +23,6 @@ Create a prefab asset from a scene GameObject. The source object remains in the 
 - Do NOT use `prefab_create_from_object` — that command does not exist.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

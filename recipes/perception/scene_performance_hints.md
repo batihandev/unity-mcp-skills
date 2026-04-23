@@ -1,25 +1,16 @@
 # scene_performance_hints
 
-**Skill:** `scene_performance_hints`
-**C# method:** `PerceptionSkills.ScenePerformanceHints`
-
 ## Signature
 
 ```
 ScenePerformanceHints()
 ```
 
-## Parameters
-
-None.
-
 ## Return Shape
 
 Returns `success`, `hintCount`, `hints` array with `priority` (1=high, 3=low), `category`, `issue`, `suggestion`, `fixSkill` (name of the skill to fix the issue, or null).
 
 **Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

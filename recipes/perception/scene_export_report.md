@@ -1,8 +1,5 @@
 # scene_export_report
 
-**Skill:** `scene_export_report`
-**C# method:** `PerceptionSkills.SceneExportReport`
-
 ## Signature
 
 ```
@@ -12,21 +9,11 @@ SceneExportReport(
     int maxObjects = 500)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `savePath` | `string` | `"Assets/Docs/SceneReport.md"` | Output path for the markdown report |
-| `maxDepth` | `int` | `10` | Maximum hierarchy depth to traverse |
-| `maxObjects` | `int` | `500` | Maximum number of objects to include |
-
 ## Return Shape
 
 Returns `success`, `savedTo`, `objectCount`, `userScriptCount`, `referenceCount`, `codeReferenceCount`.
 
 **Prerequisites:** [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

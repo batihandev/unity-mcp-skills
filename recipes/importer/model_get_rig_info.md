@@ -2,9 +2,6 @@
 
 Read the rig configuration (animation type, avatar setup) of a model.
 
-**Skill ID:** `model_get_rig_info`
-**Source:** `ModelSkills.cs` — `ModelGetRigInfo`
-
 ## Signature
 
 ```
@@ -12,15 +9,7 @@ model_get_rig_info(assetPath: string)
   → { success, path, animationType, avatarSetup, sourceAvatar, optimizeGameObjects, isHuman }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;
@@ -51,7 +40,5 @@ internal class CommandScript : IRunCommand
 ```
 
 ## Notes
-
-- `isHuman` is a convenience bool (`true` when `animationType == Humanoid`).
-- Read-only; no reimport triggered.
 - Use `model_set_rig` to change the rig configuration.
+

@@ -13,8 +13,6 @@ Force Unity to refresh the asset database and request immediate script recompila
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

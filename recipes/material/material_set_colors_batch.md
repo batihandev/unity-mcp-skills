@@ -17,8 +17,6 @@ Set colors on multiple GameObjects or material assets in a single call (efficien
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

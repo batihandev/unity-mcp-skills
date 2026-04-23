@@ -4,16 +4,6 @@ Apply all changes from a prefab instance back to its source prefab asset. Equiva
 
 **Signature:** `PrefabApply(string name = null, int instanceId = 0, string path = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | Prefab instance name |
-| `instanceId` | int | No* | Instance ID (preferred) |
-| `path` | string | No* | Hierarchy path |
-
-*At least one identifier required.
-
 ## Returns
 
 ```json
@@ -31,8 +21,6 @@ Apply all changes from a prefab instance back to its source prefab asset. Equiva
 - Equivalent to `prefab_apply_overrides`; both call `PrefabUtility.ApplyPrefabInstance`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

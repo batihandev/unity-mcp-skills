@@ -7,14 +7,10 @@ Set an integer property on a material.
 **Returns:** `{ success, target, property, value }`
 
 ## Notes
-
-- `propertyName` is required. Returns an error (with `shaderName`) if the property does not exist on the shader.
 - Common integer properties include surface type toggles and stencil values.
 - Use `material_get_properties` to discover integer properties available on a material.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

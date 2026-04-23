@@ -8,14 +8,6 @@ Find ScriptableObject assets by type name within a search path.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `typeName` | string | Yes | - | ScriptableObject type name to search for |
-| `searchPath` | string | No | `"Assets"` | Folder path to search within |
-| `limit` | int | No | `50` | Maximum number of results to return |
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

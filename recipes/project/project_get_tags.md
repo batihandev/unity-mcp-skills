@@ -13,8 +13,6 @@ Get all tag definitions from the project's TagManager. Read-only; no parameters 
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## C# Template
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -2,9 +2,6 @@
 
 Create a new AudioMixer asset in the project.
 
-**Skill ID:** `audio_create_mixer`
-**Source:** `AudioSkills.cs` — `AudioCreateMixer`
-
 ## Signature
 
 ```
@@ -12,16 +9,7 @@ audio_create_mixer(mixerName?: string = "NewAudioMixer", folder?: string = "Asse
   → { success, path, name }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `mixerName` | string | no | `"NewAudioMixer"` | Name of the mixer asset (no path separators) |
-| `folder` | string | no | `"Assets"` | Destination folder in the project |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

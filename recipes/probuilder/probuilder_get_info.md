@@ -7,8 +7,6 @@ Get face, vertex, edge, material, and bounds info for a ProBuilder mesh.
 **Returns:** `{ success, name, instanceId, isProBuilder, vertexCount, faceCount, edgeCount, triangleCount, shapeType, position, bounds, materials, submeshFaceCounts }`
 
 ## Notes
-
-- Read-only — does not modify the mesh.
 - Call this before face or vertex edits to confirm indices and topology.
 - `shapeType` is detected via reflection (internal `ProBuilderShape` API).
 - `submeshFaceCounts` shows how many faces belong to each submesh/material slot.
@@ -16,8 +14,6 @@ Get face, vertex, edge, material, and bounds info for a ProBuilder mesh.
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 **Requires:** `com.unity.probuilder` package.
-
-## Recipe
 
 ```csharp
 using UnityEngine;

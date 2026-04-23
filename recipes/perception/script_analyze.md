@@ -1,28 +1,16 @@
 # script_analyze
 
-**Skill:** `script_analyze`
-**C# method:** `PerceptionSkills.ScriptAnalyze`
-
 ## Signature
 
 ```
 ScriptAnalyze(string scriptName, bool includePrivate = false)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `scriptName` | `string` | required | Class name to analyze (case-insensitive). Must be a MonoBehaviour, ScriptableObject, or non-abstract user class |
-| `includePrivate` | `bool` | `false` | Whether to include private fields and methods |
-
 ## Return Shape
 
 Returns `success`, `script`, `fullName`, `kind` (`MonoBehaviour` / `ScriptableObject` / `Class`), `baseClass`, `fields` (name, type, isSerializable), `properties` (name, type, canWrite), `methods` (name, returnType, parameters), `unityCallbacks` (list of implemented Unity lifecycle methods, MonoBehaviour only).
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`skills_common`](../_shared/skills_common.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

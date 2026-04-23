@@ -4,12 +4,6 @@ Delete all empty folders under a search path. Processes deepest paths first to a
 
 **Signature:** `CleanerDeleteEmptyFolders(string searchPath = "Assets")`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `searchPath` | string | No | "Assets" | Root path to search within |
-
 ## Returns
 
 ```json
@@ -31,8 +25,6 @@ Delete all empty folders under a search path. Processes deepest paths first to a
 - This operation is tracked by the workflow manager (`TracksWorkflow = true`).
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

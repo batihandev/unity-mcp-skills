@@ -4,12 +4,6 @@ Remove components from multiple GameObjects in a single call. Removes all instan
 
 **Signature:** `ComponentRemoveBatch(string items)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `items` | string | Yes | JSON array of batch items |
-
 ### Batch Item Schema
 
 ```json
@@ -45,8 +39,6 @@ The `count` field reports how many instances of the component were removed from 
 - Snapshots each component for workflow undo before removing.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

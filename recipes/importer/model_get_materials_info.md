@@ -2,9 +2,6 @@
 
 Inspect sub-asset materials and meshes embedded in a model file.
 
-**Skill ID:** `model_get_materials_info`
-**Source:** `ModelSkills.cs` — `ModelGetMaterialsInfo`
-
 ## Signature
 
 ```
@@ -13,15 +10,7 @@ model_get_materials_info(assetPath: string)
       meshCount, meshes[{ name, vertices, triangles }] }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`skills_common`](../_shared/skills_common.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

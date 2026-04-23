@@ -1,25 +1,16 @@
 # scene_tag_layer_stats
 
-**Skill:** `scene_tag_layer_stats`
-**C# method:** `PerceptionSkills.SceneTagLayerStats`
-
 ## Signature
 
 ```
 SceneTagLayerStats()
 ```
 
-## Parameters
-
-None.
-
 ## Return Shape
 
 Returns `success`, `totalObjects`, `untaggedCount`, `tags` array (tag, count, sorted by count desc), `layers` array (layer, count, sorted by count desc), `emptyDefinedLayers` array (layer names that are defined in TagManager but have no objects).
 
 **Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

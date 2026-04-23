@@ -7,14 +7,10 @@ Get Player Settings including product name, company name, bundle version, defaul
 **Returns:** `{ success, productName, companyName, bundleVersion, defaultScreenWidth, defaultScreenHeight, fullscreen, apiCompatibility, scriptingBackend }`
 
 ## Notes
-
 - Player Settings are read-only via this command. To edit them, open Project Settings via `editor_execute_menu` with `menuPath="Edit/Project Settings..."` and navigate to Player.
 - `apiCompatibility` and `scriptingBackend` reflect the currently selected build target group.
-- `fullscreen` is a string representation of the `FullScreenMode` enum (e.g. `"ExclusiveFullScreen"`, `"Windowed"`).
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

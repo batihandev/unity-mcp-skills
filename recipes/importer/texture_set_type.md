@@ -2,9 +2,6 @@
 
 Switch the texture type on a texture asset and reimport.
 
-**Skill ID:** `texture_set_type`
-**Source:** `TextureSkills.cs` — `TextureSetType`
-
 ## Signature
 
 ```
@@ -12,16 +9,7 @@ texture_set_type(assetPath: string, textureType: string)
   → { success, path, textureType }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `textureType` | string | yes | `Default`, `NormalMap`, `Sprite`, `EditorGUI`, `Cursor`, `Cookie`, `Lightmap`, `SingleChannel` |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

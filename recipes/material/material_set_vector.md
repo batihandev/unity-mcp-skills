@@ -7,14 +7,10 @@ Set a Vector4 property on a material.
 **Returns:** `{ success, target, property, value: {x,y,z,w} }`
 
 ## Notes
-
-- `propertyName` is required. Returns an error (with `shaderName`) if the property does not exist on the shader.
 - Use `material_get_properties` to discover vector properties available on a material.
 - All four components `x`, `y`, `z`, `w` default to `0` if omitted.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

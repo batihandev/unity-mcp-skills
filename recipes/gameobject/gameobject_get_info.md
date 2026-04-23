@@ -29,8 +29,6 @@ Get detailed information about a GameObject.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -2,9 +2,6 @@
 
 Read a minimal set of model importer settings (bridge getter).
 
-**Skill ID:** `model_get_import_settings`
-**Source:** `AssetImportSkills.cs` — `ModelGetImportSettings`
-
 ## Signature
 
 ```
@@ -13,15 +10,7 @@ model_get_import_settings(assetPath: string)
       meshCompression, readable, generateColliders }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;
@@ -52,7 +41,5 @@ internal class CommandScript : IRunCommand
 ```
 
 ## Notes
-
-- `importMaterials` is a simplified bool (`true` when `materialImportMode != None`).
 - For the full importer settings including normals, tangents, blend shapes, etc., use `model_get_settings`.
-- Read-only; no reimport triggered.
+

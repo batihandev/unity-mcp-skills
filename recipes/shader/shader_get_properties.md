@@ -15,8 +15,6 @@ Get all property definitions exposed by a shader (name, type, description).
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

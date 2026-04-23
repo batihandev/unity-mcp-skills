@@ -7,16 +7,12 @@ Merge 2 or more faces into a single face on a ProBuilder mesh.
 **Returns:** `{ success, name, instanceId, mergedFromCount, totalFaces, totalVertices }`
 
 ## Notes
-
 - `faceIndexes`: comma-separated face indices (at least 2 required), e.g. `"2,3"`. Omit to merge all faces.
-- Returns an error if fewer than 2 valid faces are selected.
 - Useful to clean up over-subdivided areas or combine coplanar faces.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.probuilder` package.
-
-## Recipe
 
 ```csharp
 using UnityEngine;

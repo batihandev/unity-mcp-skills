@@ -7,8 +7,6 @@ Change the shader of a material.
 **Returns:** `{ success, target, shader }`
 
 ## Notes
-
-- `shaderName` is required. Returns an error with a suggestion if the shader is not found.
 - Use `project_get_render_pipeline` to identify the active pipeline and its recommended shaders.
 - Switching shaders may reset property values; verify with `material_get_properties` afterwards.
 
@@ -22,8 +20,6 @@ Change the shader of a material.
 | Unlit | `Unlit/Color`, `Unlit/Texture` |
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

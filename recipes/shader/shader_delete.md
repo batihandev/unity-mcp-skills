@@ -7,13 +7,9 @@ Move a shader asset file to the OS trash (restorable).
 **Returns:** `{ success, deleted }`
 
 ## Notes
-
-- `shaderPath` must be a valid `Assets/`-rooted path to a `.shader` file.
 - Uses `AssetDatabase.MoveAssetToTrash` — restorable from the OS trash. The Unity_RunCommand analyzer rejects any module containing `AssetDatabase.DeleteAsset`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

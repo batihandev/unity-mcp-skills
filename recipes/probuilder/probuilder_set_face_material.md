@@ -18,8 +18,6 @@ Assign a material to specific faces of a ProBuilder mesh.
 
 **Requires:** `com.unity.probuilder` package.
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

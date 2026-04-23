@@ -7,14 +7,9 @@ Assign a material asset to a renderer on a GameObject.
 **Returns:** `{ success, gameObject, material }`
 
 ## Notes
-
 - Exactly one of `name`, `instanceId`, or `path` must identify the target GameObject.
-- `materialPath` is the asset path of the material to assign (e.g. `Assets/Materials/MyMat.mat`). Required.
-- Fails if the GameObject has no `Renderer` component.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

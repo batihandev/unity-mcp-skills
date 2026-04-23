@@ -2,9 +2,6 @@
 
 Alternative bridge setter for common model importer fields.
 
-**Skill ID:** `model_set_import_settings`
-**Source:** `AssetImportSkills.cs` — `ModelSetImportSettings`
-
 ## Signature
 
 ```
@@ -19,21 +16,7 @@ model_set_import_settings(
 ) → { success, assetPath, globalScale, importAnimation, meshCompression }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model |
-| `globalScale` | float | no | Import scale factor |
-| `importMaterials` | bool | no | `true` = `ImportViaMaterialDescription`, `false` = `None` |
-| `importAnimation` | bool | no | Import animation clips |
-| `generateColliders` | bool | no | Add mesh colliders (`addCollider`) |
-| `readable` | bool | no | CPU-readable mesh data |
-| `meshCompression` | string | no | `Off`, `Low`, `Medium`, `High` |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;
@@ -100,7 +83,6 @@ internal class CommandScript : IRunCommand
 ```
 
 ## Notes
-
-- `importMaterials` is a simplified bool shorthand. For full `materialImportMode` string control, use `model_set_settings`.
 - `generateColliders` maps to `importer.addCollider`.
 - For the full setter with normals, tangents, blend shapes, etc., use `model_set_settings`.
+

@@ -1,27 +1,14 @@
 # hierarchy_describe
 
-**Skill:** `hierarchy_describe`
-**C# method:** `PerceptionSkills.HierarchyDescribe`
-
 ## Signature
 
 ```
 HierarchyDescribe(int maxDepth = 5, bool includeInactive = false, int maxItemsPerLevel = 20)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `maxDepth` | `int` | `5` | Maximum depth levels to traverse |
-| `includeInactive` | `bool` | `false` | Whether to include inactive GameObjects |
-| `maxItemsPerLevel` | `int` | `20` | Maximum children shown per level |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `hierarchy` (text-formatted tree string), `totalObjectsShown`.
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

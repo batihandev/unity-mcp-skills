@@ -15,8 +15,6 @@ List all shader assets in the project, with optional name filter and result limi
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

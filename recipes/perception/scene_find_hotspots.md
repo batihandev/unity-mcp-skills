@@ -1,29 +1,16 @@
 # scene_find_hotspots
 
-**Skill:** `scene_find_hotspots`
-**C# method:** `PerceptionSkills.SceneFindHotspots`
-
 ## Signature
 
 ```
 SceneFindHotspots(int deepHierarchyThreshold = 8, int largeChildCountThreshold = 25, int maxResults = 20)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `deepHierarchyThreshold` | `int` | `8` | Depth at which a node is considered deeply nested |
-| `largeChildCountThreshold` | `int` | `25` | Number of direct children that triggers a large-group finding |
-| `maxResults` | `int` | `20` | Maximum hotspots returned |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `thresholds`, `hotspotCount`, and `hotspots` array with `type`, `severity`, `name`, `path`, `count`, `depth`, `message`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`perception_helpers`](../_shared/perception_helpers.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

@@ -4,17 +4,6 @@ List all components on a GameObject. Optionally includes key property summaries 
 
 **Signature:** `ComponentList(string name = null, int instanceId = 0, string path = null, bool includeProperties = false)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `name` | string | No* | null | GameObject name |
-| `instanceId` | int | No* | 0 | Instance ID |
-| `path` | string | No* | null | Hierarchy path |
-| `includeProperties` | bool | No | false | Include key property summaries per component |
-
-*At least one object identifier required.
-
 ## Returns
 
 ```json
@@ -53,8 +42,6 @@ With `includeProperties: true`, components that have key properties (Transform, 
 - `path` in the response is the full hierarchy path as returned by `GameObjectFinder.GetPath`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

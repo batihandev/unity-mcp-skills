@@ -4,12 +4,6 @@ Add components to multiple GameObjects in a single call. Use instead of repeated
 
 **Signature:** `ComponentAddBatch(string items)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `items` | string | Yes | JSON array of batch items |
-
 ### Batch Item Schema
 
 ```json
@@ -47,8 +41,6 @@ If a component already exists (and disallows multiple), the item returns with a 
 - Records created components in the workflow snapshot if a workflow is recording.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

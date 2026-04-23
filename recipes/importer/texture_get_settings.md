@@ -2,9 +2,6 @@
 
 Read the full importer settings for a texture asset.
 
-**Skill ID:** `texture_get_settings`
-**Source:** `TextureSkills.cs` — `TextureGetSettings`
-
 ## Signature
 
 ```
@@ -14,15 +11,7 @@ texture_get_settings(assetPath: string)
       spriteMode, spritePixelsPerUnit, npotScale }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture asset |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

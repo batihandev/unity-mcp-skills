@@ -1,27 +1,16 @@
 # scene_materials
 
-**Skill:** `scene_materials`
-**C# method:** `PerceptionSkills.SceneMaterials`
-
 ## Signature
 
 ```
 SceneMaterials(bool includeProperties = false)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `includeProperties` | `bool` | `false` | Whether to include per-material shader property list |
-
 ## Return Shape
 
 Returns `success`, `totalMaterials`, `totalShaders`, `shaders` array grouped by shader name — each entry has `shader`, `materialCount`, `materials` (name, path, renderQueue, userCount, users[0..4], properties when requested).
 
 **Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

@@ -4,17 +4,6 @@ Add a component to a GameObject. Supports finding the object by name, instanceId
 
 **Signature:** `ComponentAdd(string name = null, int instanceId = 0, string path = null, string componentType = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | GameObject name |
-| `instanceId` | int | No* | Instance ID (preferred) |
-| `path` | string | No* | Hierarchy path |
-| `componentType` | string | Yes | Component type name (case-sensitive) |
-
-*At least one object identifier required.
-
 ## Returns
 
 ```json
@@ -45,8 +34,6 @@ If the component already exists (and disallows multiple):
 - Records the created component in the workflow snapshot if a workflow is recording.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md), [`skills_common`](../_shared/skills_common.md), [`component_type_finder`](../_shared/component_type_finder.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

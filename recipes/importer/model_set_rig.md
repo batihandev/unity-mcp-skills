@@ -2,9 +2,6 @@
 
 Switch the rig/skeleton mode on a model and reimport.
 
-**Skill ID:** `model_set_rig`
-**Source:** `ModelSkills.cs` — `ModelSetRig`
-
 ## Signature
 
 ```
@@ -12,17 +9,7 @@ model_set_rig(assetPath: string, animationType: string, avatarSetup?: string)
   → { success, path, animationType }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-| `animationType` | string | yes | `None`, `Legacy`, `Generic`, `Humanoid` |
-| `avatarSetup` | string | no | `NoAvatar`, `CreateFromThisModel`, `CopyFromOther` |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

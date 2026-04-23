@@ -4,13 +4,6 @@ Find which assets in the project reference a specific asset (reverse dependency 
 
 **Signature:** `CleanerGetAssetUsage(string assetPath, int limit = 50)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `assetPath` | string | Yes | — | Project-relative path to the asset |
-| `limit` | int | No | 50 | Max number of referencing assets to return |
-
 ## Returns
 
 ```json
@@ -44,8 +37,6 @@ The path is also validated by `Validate.SafePath`; invalid paths return an error
 - Use this before `cleaner_delete_assets` to confirm an asset is truly safe to remove.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

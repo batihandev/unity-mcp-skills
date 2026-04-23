@@ -7,16 +7,12 @@ Create a new shader file at the given path. If `template` is omitted, a default 
 **Returns:** `{ success, shaderName, path }`
 
 ## Notes
-
 - `shaderName` is the internal shader name used in the `Shader "..."` declaration (e.g., `"Custom/MyShader"`).
 - `savePath` must be an `Assets/`-rooted path ending in `.shader`.
-- Returns an error if the file already exists at `savePath`.
 - If `template` is provided, its content is written verbatim; otherwise a full CG Unlit shader is generated.
 - The asset is imported and snapshot-tracked after creation.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md), [`skills_common`](../_shared/skills_common.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

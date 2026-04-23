@@ -15,8 +15,6 @@ Get the list of keywords declared in a shader's keyword space.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -14,8 +14,6 @@ Add multiple persistent listeners to a UnityEvent in a single call. Each item in
 
 Handles the `argType = "void"` / `mode = "RuntimeOnly"` case only. For typed-arg events (`int`, `float`, `string`, `bool`), use the single-item `event_add_listener` recipe per call.
 
-## C# Template
-
 ```csharp
 using UnityEngine;
 using UnityEngine.Events;

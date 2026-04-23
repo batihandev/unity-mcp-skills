@@ -2,9 +2,6 @@
 
 List animation clips and frame rates embedded in a model file.
 
-**Skill ID:** `model_get_animations_info`
-**Source:** `ModelSkills.cs` — `ModelGetAnimationsInfo`
-
 ## Signature
 
 ```
@@ -14,15 +11,7 @@ model_get_animations_info(assetPath: string)
       clipDefinitions[{ name, firstFrame, lastFrame, loop }] }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

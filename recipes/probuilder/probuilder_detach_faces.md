@@ -16,8 +16,6 @@ Detach faces from shared vertices, creating independent geometry on a ProBuilder
 
 **Requires:** `com.unity.probuilder` package.
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

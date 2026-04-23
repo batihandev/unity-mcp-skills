@@ -7,16 +7,12 @@ Query vertex positions of a ProBuilder mesh. Essential before any vertex edit.
 **Returns:** `{ success, name, vertexCount, faceCount, vertices: [{ index, x, y, z }] }`
 
 ## Notes
-
 - `vertexIndexes`: comma-separated indices to query specific vertices. Omit for all.
 - `verbose`: when `true` (default), returns all vertices even on large meshes. When `false` and mesh has more than 100 vertices, returns a summary with bounds instead.
-- Read-only — does not modify the mesh.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
 
 **Requires:** `com.unity.probuilder` package.
-
-## Recipe
 
 ```csharp
 using UnityEngine;

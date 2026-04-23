@@ -2,22 +2,12 @@
 
 Configure animation clip splits on a model importer.
 
-**Skill ID:** `model_set_animation_clips`
-**Source:** `ModelSkills.cs` — `ModelSetAnimationClips`
-
 ## Signature
 
 ```
 model_set_animation_clips(assetPath: string, clips: string)
   → { success, path, clipCount }
 ```
-
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the model file |
-| `clips` | string | yes | JSON array of clip definition objects |
 
 ### Clip Object Schema
 
@@ -30,8 +20,6 @@ model_set_animation_clips(assetPath: string, clips: string)
 | `takeName` | string | no | Take name in file (default `"Take 001"`) |
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 The upstream JSON-string form is replaced by a typed `_AnimClipDef[]` — agents pass a native C# array.
 

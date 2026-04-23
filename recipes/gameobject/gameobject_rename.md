@@ -7,13 +7,9 @@ Rename a GameObject.
 **Returns:** `{ success, oldName, newName, instanceId, path }`
 
 ## Notes
-
 - At least one identifier (`name`, `instanceId`, or `path`) is required to locate the object.
-- `newName` is required.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

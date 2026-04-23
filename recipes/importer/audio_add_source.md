@@ -2,9 +2,6 @@
 
 Add an AudioSource component to a GameObject in the active scene.
 
-**Skill ID:** `audio_add_source`
-**Source:** `AudioSkills.cs` — `AudioAddSource`
-
 ## Signature
 
 ```
@@ -19,23 +16,7 @@ audio_add_source(
 ) → { success, gameObject, instanceId }
 ```
 
-## Parameters
-
-Target resolution — provide at least one of `name`, `instanceId`, or `path`:
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `name` | string | no | — | GameObject name in the scene |
-| `instanceId` | int | no | `0` | GameObject instance ID |
-| `path` | string | no | — | Hierarchy path (e.g. `Player/Body`) |
-| `clipPath` | string | no | — | Asset path to the AudioClip to assign |
-| `playOnAwake` | bool | no | `false` | Play clip automatically on scene start |
-| `loop` | bool | no | `false` | Loop the clip |
-| `volume` | float | no | `1` | Initial volume |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

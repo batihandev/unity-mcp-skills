@@ -4,12 +4,6 @@ Add a new custom tag to the project's TagManager. Mutates `ProjectSettings/TagMa
 
 **Signature:** `ProjectAddTag(string tagName)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tagName` | string | Yes | The tag name to add (case-sensitive) |
-
 ## Returns
 
 ```json
@@ -28,8 +22,6 @@ On duplicate:
 - Does not support adding layers; for layers open Project Settings manually.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

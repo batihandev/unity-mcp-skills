@@ -2,20 +2,11 @@
 
 Apply audio importer settings to multiple audio assets in one call.
 
-**Skill ID:** `audio_set_settings_batch`
-**Source:** `AudioSkills.cs` — `AudioSetSettingsBatch`
-
 ## Signature
 
 ```
 audio_set_settings_batch(items: string) → { results[], errors[] }
 ```
-
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `items` | string | yes | JSON array of item objects (see schema below) |
 
 ### Item Schema
 
@@ -31,8 +22,6 @@ Each object in the JSON array may contain:
 | `quality` | float | 0.0–1.0 Vorbis quality |
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

@@ -1,8 +1,5 @@
 # scene_spatial_query
 
-**Skill:** `scene_spatial_query`
-**C# method:** `PerceptionSkills.SceneSpatialQuery`
-
 ## Signature
 
 ```
@@ -14,25 +11,11 @@ SceneSpatialQuery(
     int maxResults = 50)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `x` | `float` | `0` | World-space X of query center (ignored when `nearObject` is set) |
-| `y` | `float` | `0` | World-space Y of query center |
-| `z` | `float` | `0` | World-space Z of query center |
-| `radius` | `float` | `10f` | Search radius in world units |
-| `nearObject` | `string` | `null` | Name or path of an existing object to use as center |
-| `componentFilter` | `string` | `null` | Only return objects that have this component type |
-| `maxResults` | `int` | `50` | Maximum results returned (closest-first when capped) |
-
 ## Return Shape
 
 Returns `success`, `center` (x, y, z), `radius`, `totalFound`, `results` array with `name`, `path`, `distance`, `position`.
 
 **Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

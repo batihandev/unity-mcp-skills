@@ -14,8 +14,6 @@ Get the active build target, build target group, and the list of scenes register
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## C# Template
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

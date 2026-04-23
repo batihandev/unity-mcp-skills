@@ -17,8 +17,6 @@ Merge multiple ProBuilder meshes into one for optimization.
 
 **Requires:** `com.unity.probuilder` package.
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -2,9 +2,6 @@
 
 Get vertex, triangle, and submesh statistics for a mesh.
 
-**Skill ID:** `model_get_mesh_info`
-**Source:** `ModelSkills.cs` — `ModelGetMeshInfo`
-
 ## Signature
 
 ```
@@ -13,20 +10,7 @@ model_get_mesh_info(name?: string, instanceId?: int, path?: string, assetPath?: 
       hasNormals, hasTangents, hasUV, hasUV2, hasColors, blendShapeCount, isReadable }
 ```
 
-## Parameters
-
-Provide either `assetPath` (project asset) or a scene target (`name`/`instanceId`/`path`):
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | no | Project-relative path to the model asset |
-| `name` | string | no | Scene GameObject name |
-| `instanceId` | int | no | Scene GameObject instance ID |
-| `path` | string | no | Scene hierarchy path |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

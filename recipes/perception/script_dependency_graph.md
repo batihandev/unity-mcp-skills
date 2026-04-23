@@ -1,8 +1,5 @@
 # script_dependency_graph
 
-**Skill:** `script_dependency_graph`
-**C# method:** `PerceptionSkills.ScriptDependencyGraph`
-
 ## Signature
 
 ```
@@ -12,21 +9,11 @@ ScriptDependencyGraph(
     bool includeDetails = true)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `scriptName` | `string` | required | Entry class name (case-insensitive) |
-| `maxHops` | `int` | `2` | BFS depth in both dependency directions |
-| `includeDetails` | `bool` | `true` | Whether to include fields and Unity callbacks per script |
-
 ## Return Shape
 
 Returns `success`, `entryScript`, `totalScriptsReached`, `maxHops`, `scripts` array (name, hop, kind, baseClass, filePath, dependsOn, dependedBy, fields, unityCallbacks), `edges` array (from, to, type, detail), `suggestedReadOrder`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`skills_common`](../_shared/skills_common.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;
@@ -247,7 +234,6 @@ internal class CommandScript : IRunCommand
 ```
 
 ## Notes
-
 - BFS expands in both directions: scripts that `scriptName` depends on AND scripts that depend on `scriptName`.
-- `suggestedReadOrder` is a topological sort starting from leaf dependencies up to the entry script.
 - Use `script_analyze` for a single-class inspection without the full graph.
+

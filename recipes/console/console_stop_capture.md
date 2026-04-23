@@ -8,8 +8,6 @@ Clear the console capture session marker set by `console_start_capture`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

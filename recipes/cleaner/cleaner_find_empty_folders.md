@@ -4,12 +4,6 @@ Find empty folders in the project. A folder is considered empty if it contains n
 
 **Signature:** `CleanerFindEmptyFolders(string searchPath = "Assets")`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `searchPath` | string | No | "Assets" | Root path to search within |
-
 ## Returns
 
 ```json
@@ -32,8 +26,6 @@ Find empty folders in the project. A folder is considered empty if it contains n
 - This skill is read-only; it does not delete anything.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

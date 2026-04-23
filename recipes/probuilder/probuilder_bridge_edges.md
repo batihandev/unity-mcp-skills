@@ -7,16 +7,12 @@ Connect two edges with a new face on a ProBuilder mesh (create doorways, windows
 **Returns:** `{ success, name, instanceId, bridgedEdge: { a, b }, totalFaces, totalVertices }`
 
 ## Notes
-
 - `edgeA` and `edgeB` are both required; use vertex-index pairs, e.g. `"0-1"` and `"4-5"`.
 - `allowNonManifold`: allow bridging in cases that produce non-manifold geometry (default `false`).
-- Returns an error if either edge is not found or the bridge fails.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.probuilder` package.
-
-## Recipe
 
 ```csharp
 using UnityEngine;

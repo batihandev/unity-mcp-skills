@@ -7,8 +7,6 @@ Enable or disable a shader keyword on a material.
 **Returns:** `{ success, target, keyword, enabled, allKeywords }`
 
 ## Notes
-
-- `keyword` is required.
 - `enable` defaults to `true`; pass `false` to disable the keyword.
 - `allKeywords` in the response lists every currently-enabled keyword on the material after the change.
 
@@ -24,8 +22,6 @@ Enable or disable a shader keyword on a material.
 | `_ALPHAPREMULTIPLY_ON` | Enable premultiplied alpha |
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

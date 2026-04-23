@@ -2,20 +2,11 @@
 
 Apply texture importer settings to multiple texture assets in one call.
 
-**Skill ID:** `texture_set_settings_batch`
-**Source:** `TextureSkills.cs` — `TextureSetSettingsBatch`
-
 ## Signature
 
 ```
 texture_set_settings_batch(items: string) → { results[], errors[] }
 ```
-
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `items` | string | yes | JSON array of item objects (see schema below) |
 
 ### Item Schema
 
@@ -34,8 +25,6 @@ Each object in the JSON array may contain:
 | `spritePixelsPerUnit` | float | Pixels per unit |
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

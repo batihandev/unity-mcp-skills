@@ -15,8 +15,6 @@ Create multiple materials in a single call (efficient batch operation).
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

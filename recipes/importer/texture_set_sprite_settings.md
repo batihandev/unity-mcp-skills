@@ -2,9 +2,6 @@
 
 Configure sprite-specific importer knobs (pixels-per-unit, sprite mode).
 
-**Skill ID:** `texture_set_sprite_settings`
-**Source:** `TextureSkills.cs` — `TextureSetSpriteSettings`
-
 ## Signature
 
 ```
@@ -12,17 +9,7 @@ texture_set_sprite_settings(assetPath: string, pixelsPerUnit?: float, spriteMode
   → { success, path, pixelsPerUnit, spriteMode }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `pixelsPerUnit` | float | no | How many pixels correspond to one Unity unit |
-| `spriteMode` | string | no | `Single`, `Multiple`, `Polygon` |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

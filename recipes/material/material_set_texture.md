@@ -7,14 +7,10 @@ Set a texture on a material (auto-detects property name for the active render pi
 **Returns:** `{ success, target, texture, propertyUsed }`
 
 ## Notes
-
-- `texturePath` is required — must be a valid texture asset path (e.g. `Assets/Textures/Wood.png`).
 - `propertyName` auto-detects the main texture property for the active pipeline if omitted (`_BaseMap` for URP, `_BaseColorMap` for HDRP, `_MainTex` for Standard).
 - Target is resolved as a material asset path (if `path` ends in `.mat`) or via a GameObject renderer.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

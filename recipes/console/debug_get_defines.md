@@ -13,8 +13,6 @@ Get the scripting define symbols (preprocessor symbols) configured for the curre
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -7,14 +7,9 @@ Read the full source code of a shader file from disk.
 **Returns:** `{ path, lines, content }`
 
 ## Notes
-
-- `shaderPath` must be a valid `Assets/`-rooted path to a `.shader` file.
-- Returns an error if the file does not exist.
 - `lines` is the number of newline-separated lines in the file.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

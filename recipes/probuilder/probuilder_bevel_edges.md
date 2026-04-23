@@ -7,16 +7,12 @@ Chamfer (bevel) edges on a ProBuilder mesh.
 **Returns:** `{ success, name, instanceId, beveledEdgeCount, newFaceCount, amount, totalFaces, totalVertices }`
 
 ## Notes
-
 - `edgeIndexes`: vertex-index pairs, e.g. `"0-1,2-3"`. Omit to bevel all edges.
 - `amount`: bevel width factor in range `(0, 1]` (default `0.2`).
-- Returns an error if `amount <= 0` or `amount > 1`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
 
 **Requires:** `com.unity.probuilder` package.
-
-## Recipe
 
 ```csharp
 using UnityEngine;

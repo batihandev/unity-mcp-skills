@@ -2,9 +2,6 @@
 
 Set per-platform texture import overrides (max size, format, compression quality).
 
-**Skill ID:** `texture_set_platform_settings`
-**Source:** `TextureSkills.cs` — `TextureSetPlatformSettings`
-
 ## Signature
 
 ```
@@ -18,20 +15,7 @@ texture_set_platform_settings(
 ) → { success, path, platform, maxSize, format }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-| `platform` | string | yes | `Standalone`, `iPhone`, `Android`, `WebGL` |
-| `maxSize` | int | no | Max texture dimension for this platform |
-| `format` | string | no | `TextureImporterFormat` value (e.g. `ASTC_6x6`, `ETC2_RGBA8`) |
-| `compressionQuality` | int | no | 0–100 quality for compressed formats |
-| `overridden` | bool | no | Whether platform override is active (default `true` when any value supplied) |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

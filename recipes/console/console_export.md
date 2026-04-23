@@ -18,8 +18,6 @@ Export console logs to a file by reading directly from Unity's LogEntries.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

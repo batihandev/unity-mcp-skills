@@ -7,15 +7,11 @@ Get all properties of a material (colors, floats, vectors, textures, integers, a
 **Returns:** `{ success, target, shader, renderQueue, keywords, giFlags, properties: { colors, floats, vectors, textures, integers } }`
 
 ## Notes
-
-- Read-only: does not modify the material.
 - Each property entry includes `name`, `description`, and `value`. Float and Range properties also include `min` and `max`.
 - `keywords` is the raw array of enabled shader keywords.
 - Use this to discover property names before calling setters like `material_set_float` or `material_set_color`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

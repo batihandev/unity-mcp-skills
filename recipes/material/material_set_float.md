@@ -7,9 +7,7 @@ Set a float property on a material.
 **Returns:** `{ success, target, property, value }`
 
 ## Notes
-
 - Use this to set `_Metallic`, `_Glossiness` (Standard), `_Smoothness` (URP), `_Cutoff`, or any other float property.
-- `propertyName` is required. Returns an error if the property does not exist on the shader.
 - Use `material_get_properties` to discover available float properties and their valid ranges.
 - There is no `material_set_metallic` or `material_set_smoothness` skill — use this with the appropriate `propertyName`.
 
@@ -22,8 +20,6 @@ Set a float property on a material.
 | HDRP | `_Metallic` | `_Smoothness` |
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

@@ -2,9 +2,6 @@
 
 Alternative bridge setter for common audio importer fields.
 
-**Skill ID:** `audio_set_import_settings`
-**Source:** `AssetImportSkills.cs` — `AudioSetImportSettings`
-
 ## Signature
 
 ```
@@ -18,20 +15,7 @@ audio_set_import_settings(
 ) → { success, assetPath, forceToMono, loadType, compressionFormat }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the audio file |
-| `forceToMono` | bool | no | Convert to mono |
-| `loadInBackground` | bool | no | Background load |
-| `loadType` | string | no | `DecompressOnLoad`, `CompressedInMemory`, `Streaming` |
-| `compressionFormat` | string | no | `PCM`, `Vorbis`, `ADPCM` |
-| `quality` | int | no | 0–100 (mapped to `0.0`–`1.0` internally) |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

@@ -4,22 +4,6 @@ Set a property or field on a component. Supports scalar values, Unity math types
 
 **Signature:** `ComponentSetProperty(string name = null, int instanceId = 0, string path = null, string componentType = null, string propertyName = null, string value = null, string referencePath = null, string referenceName = null, string assetPath = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | GameObject name |
-| `instanceId` | int | No* | Instance ID |
-| `path` | string | No* | Hierarchy path |
-| `componentType` | string | Yes | Component type |
-| `propertyName` | string | Yes | Property or field name |
-| `value` | string | Cond. | Value for basic types, vectors, colors |
-| `referencePath` | string | No | Hierarchy path of a scene object reference |
-| `referenceName` | string | No | Name of a scene object reference |
-| `assetPath` | string | No | Project asset path (Material, Texture, AudioClip, Prefab, ScriptableObject, etc.) |
-
-*At least one object identifier required. Provide exactly one of `value`, `referencePath`/`referenceName`, or `assetPath`.
-
 ## Returns
 
 ```json
@@ -53,16 +37,12 @@ Set a property or field on a component. Supports scalar values, Unity math types
 | AnimationCurve | `"linear"` / `"easein"` / `"easeout"` / `"easeinout"` / `"constant"` |
 
 ## Notes
-
 - Property name lookup is case-insensitive as a fallback.
 - Uses reflection — both C# properties (`CanWrite`) and public fields are supported.
-- Read-only properties return an error with a list of available writable properties.
 - Uses `Undo.RecordObject` — operation is undoable.
 - Snapshots the component state for workflow undo before modifying.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`value_converter`](../_shared/value_converter.md), [`skills_common`](../_shared/skills_common.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

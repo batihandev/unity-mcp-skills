@@ -1,19 +1,10 @@
 # scene_diff
 
-**Skill:** `scene_diff`
-**C# method:** `PerceptionSkills.SceneDiff`
-
 ## Signature
 
 ```
 SceneDiff(string snapshotJson = null)
 ```
-
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `snapshotJson` | `string` | `null` | JSON snapshot from a previous `scene_diff` call. When null, the skill captures and returns the current state |
 
 ## Return Shape
 
@@ -22,8 +13,6 @@ SceneDiff(string snapshotJson = null)
 **Diff mode** (snapshotJson provided): returns `success`, `mode="diff"`, `sceneName`, `summary` (addedCount, removedCount, modifiedCount), `added` array, `removed` array, `modified` array (each with instanceId, name, path, changes[]).
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## RunCommand Recipe
 
 Two entry modes driven by `snapshotJson`:
 - **Snapshot** (`snapshotJson = null`): walk the active scene and return a flat list of objects (name, path, component list, transform). Agents save the entire JSON log output.

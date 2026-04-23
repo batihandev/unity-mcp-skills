@@ -17,8 +17,6 @@ Assign a material to an entire ProBuilder mesh, or apply a quick prototype color
 
 **Requires:** `com.unity.probuilder` package.
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

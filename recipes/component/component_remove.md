@@ -4,18 +4,6 @@ Remove a component from a GameObject. Supports removing a specific instance by i
 
 **Signature:** `ComponentRemove(string name = null, int instanceId = 0, string path = null, string componentType = null, int componentIndex = 0)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `name` | string | No* | null | GameObject name |
-| `instanceId` | int | No* | 0 | Instance ID |
-| `path` | string | No* | null | Hierarchy path |
-| `componentType` | string | Yes | - | Component type to remove |
-| `componentIndex` | int | No | 0 | Index when multiple instances exist |
-
-*At least one object identifier required.
-
 ## Returns
 
 ```json
@@ -39,8 +27,6 @@ On failure:
 - Snapshots the object state for workflow undo before removing.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

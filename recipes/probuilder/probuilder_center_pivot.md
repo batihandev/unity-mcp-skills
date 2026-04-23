@@ -16,8 +16,6 @@ Center the pivot to mesh bounds, or move it to a specific world position.
 
 **Requires:** `com.unity.probuilder` package.
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

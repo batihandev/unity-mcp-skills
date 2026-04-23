@@ -4,15 +4,6 @@ Revert all overrides on a prefab instance back to the values defined in the sour
 
 **Signature:** `PrefabRevertOverrides(string name = null, int instanceId = 0)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No* | Prefab instance name |
-| `instanceId` | int | No* | Instance ID (preferred) |
-
-*At least one identifier required.
-
 ## Returns
 
 ```json
@@ -30,8 +21,6 @@ Revert all overrides on a prefab instance back to the values defined in the sour
 - Use `prefab_get_overrides` first to inspect what will be discarded.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

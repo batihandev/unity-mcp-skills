@@ -16,8 +16,6 @@ Enable or disable the Collapse mode in the Unity console (identical repeated mes
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

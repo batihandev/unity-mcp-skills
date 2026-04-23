@@ -13,8 +13,6 @@ Mark the start of a console capture session. Sets an EditorPrefs timestamp that 
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

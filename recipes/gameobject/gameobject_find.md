@@ -17,8 +17,6 @@ Find GameObjects matching criteria.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -4,13 +4,6 @@ Find all instances of a prefab asset currently present in the active scene.
 
 **Signature:** `PrefabFindInstances(string prefabPath, int limit = 50)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `prefabPath` | string | Yes | - | Prefab asset path to search for |
-| `limit` | int | No | 50 | Maximum number of instances to return |
-
 ## Returns
 
 ```json
@@ -26,15 +19,11 @@ Find all instances of a prefab asset currently present in the active scene.
 ```
 
 ## Notes
-
-- Read-only — does not modify the scene.
 - Matches on exact `prefabPath` string; ensure the path matches the actual asset path.
 - `limit` defaults to 50 to avoid large result payloads in busy scenes.
 - Searches all GameObjects in the active scene regardless of hierarchy depth.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

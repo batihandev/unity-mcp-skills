@@ -12,8 +12,6 @@ Enable or disable the Error Pause setting in Play mode (equivalent to the pause 
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

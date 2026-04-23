@@ -4,17 +4,6 @@ Instantiate a single prefab asset into the current scene.
 
 **Signature:** `PrefabInstantiate(string prefabPath, float x = 0, float y = 0, float z = 0, string name = null, string parentName = null, int parentInstanceId = 0, string parentPath = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `prefabPath` | string | Yes | - | Prefab asset path |
-| `name` | string | No | prefab name | Name for the new instance |
-| `x`, `y`, `z` | float | No | 0 | Local position (relative to parent if set) |
-| `parentName` | string | No | null | Parent object name |
-| `parentInstanceId` | int | No | 0 | Parent instance ID |
-| `parentPath` | string | No | null | Parent hierarchy path |
-
 ## Returns
 
 ```json
@@ -34,8 +23,6 @@ Instantiate a single prefab asset into the current scene.
 - Operation is registered with `Undo.RegisterCreatedObjectUndo`.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

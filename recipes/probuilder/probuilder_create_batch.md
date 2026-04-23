@@ -17,8 +17,6 @@ Create multiple ProBuilder shapes in one call. Preferred for scene blockout with
 
 **Requires:** `com.unity.probuilder` package.
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

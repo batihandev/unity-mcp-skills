@@ -1,8 +1,5 @@
 # scene_dependency_analyze
 
-**Skill:** `scene_dependency_analyze`
-**C# method:** `PerceptionSkills.SceneDependencyAnalyze`
-
 ## Signature
 
 ```
@@ -11,20 +8,11 @@ SceneDependencyAnalyze(
     string savePath = null)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `targetPath` | `string` | `null` | Hierarchy path of the object (and its subtree) to analyze. When null, analyzes all objects that are referenced by others |
-| `savePath` | `string` | `null` | If set, saves a markdown dependency report to this path under `Assets/` |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `target`, `totalReferences`, `objectsAnalyzed`, `analysis`, `savedTo`, `markdown` (inline markdown when `savePath` is null).
 
 **Prerequisites:** [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

@@ -6,13 +6,6 @@ Export a ScriptableObject's data to JSON format.
 
 **Returns:** `{ success, path }` when `savePath` is provided, or `{ success, json }` when returned inline.
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `assetPath` | string | Yes | - | Asset path of the ScriptableObject to export |
-| `savePath` | string | No | null | File path to save the JSON output; if omitted, JSON is returned inline |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`skills_common`](../_shared/skills_common.md)
 
 ## Notes

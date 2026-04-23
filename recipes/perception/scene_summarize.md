@@ -1,28 +1,16 @@
 # scene_summarize
 
-**Skill:** `scene_summarize`
-**C# method:** `PerceptionSkills.SceneSummarize`
-
 ## Signature
 
 ```
 SceneSummarize(bool includeComponentStats = true, int topComponentsLimit = 10)
 ```
 
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `includeComponentStats` | `bool` | `true` | Whether to collect and return per-component-type counts |
-| `topComponentsLimit` | `int` | `10` | Max component types to return in `topComponents` |
-
 ## Return Shape
 
 Returns `success`, `sceneName`, `scenePath`, `isDirty`, `stats` (totalObjects, activeObjects, inactiveObjects, rootObjects, maxHierarchyDepth, lights, cameras, canvases), and `topComponents` array (component name + count, excluding Transform).
 
 **Prerequisites:** [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

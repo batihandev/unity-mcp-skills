@@ -8,13 +8,6 @@ List available ScriptableObject types in the project.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`skills_common`](../_shared/skills_common.md)
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `filter` | string | No | null | Filter by name substring |
-| `limit` | int | No | 50 | Maximum number of types to return |
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

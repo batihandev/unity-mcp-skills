@@ -4,18 +4,6 @@ Get all readable properties and fields of a component. Returns type, value, and 
 
 **Signature:** `ComponentGetProperties(string name = null, int instanceId = 0, string path = null, string componentType = null, bool includePrivate = false)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `name` | string | No* | null | GameObject name |
-| `instanceId` | int | No* | 0 | Instance ID |
-| `path` | string | No* | null | Hierarchy path |
-| `componentType` | string | Yes | - | Component type |
-| `includePrivate` | bool | No | false | Include non-public members |
-
-*At least one object identifier required.
-
 ## Returns
 
 ```json
@@ -45,8 +33,6 @@ Properties that cannot be read safely return `"(error reading)"` as their value.
 - `includePrivate: true` adds `BindingFlags.NonPublic` — output can be very large.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

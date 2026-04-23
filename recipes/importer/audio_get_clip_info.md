@@ -2,9 +2,6 @@
 
 Inspect length, channels, frequency, samples, and load state of an audio clip.
 
-**Skill ID:** `audio_get_clip_info`
-**Source:** `AudioSkills.cs` — `AudioGetClipInfo`
-
 ## Signature
 
 ```
@@ -13,15 +10,7 @@ audio_get_clip_info(assetPath: string)
       loadType, loadState, ambisonic }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the audio asset |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

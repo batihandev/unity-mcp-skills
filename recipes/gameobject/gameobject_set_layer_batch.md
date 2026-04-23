@@ -9,14 +9,10 @@ Set the layer for multiple GameObjects in one call.
 **Returns:** `{ success, totalItems, successCount, failCount, results: [{ success, target, layer }] }`
 
 ## Notes
-
-- `layer` is a layer name string (e.g., `"UI"`, `"Default"`, `"Ignore Raycast"`). Must match a layer defined in the project.
 - `recursive` (bool, default `false`): when `true`, the layer change is applied to the object and all of its children recursively.
 - A missing object or invalid layer name causes that item to fail without stopping the rest.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

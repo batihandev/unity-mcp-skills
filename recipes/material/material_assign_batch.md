@@ -7,14 +7,10 @@ Assign materials to multiple GameObjects in a single call via a typed item array
 **Returns:** `{ success, totalItems, successCount, failCount, results: [{ success, name, materialPath }] }`
 
 ## Notes
-
 - Each item resolves its target GameObject via `name`, `instanceId`, or `path` — at least one must be provided.
-- `materialPath` is required on every item.
 - Prefer this over calling `material_assign` repeatedly when assigning to 2+ objects.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

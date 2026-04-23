@@ -4,13 +4,6 @@ Create a prefab variant from an existing prefab. The variant inherits the source
 
 **Signature:** `PrefabCreateVariant(string sourcePrefabPath, string variantPath)`
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `sourcePrefabPath` | string | Yes | Path to the source prefab asset |
-| `variantPath` | string | Yes | Save path for the new variant (must end in `.prefab`) |
-
 ## Returns
 
 ```json
@@ -30,8 +23,6 @@ Create a prefab variant from an existing prefab. The variant inherits the source
 - Workflow snapshot records the created variant asset.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

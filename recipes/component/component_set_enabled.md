@@ -4,18 +4,6 @@ Enable or disable a component. Works on Behaviour (MonoBehaviour, Animator, etc.
 
 **Signature:** `ComponentSetEnabled(string name = null, int instanceId = 0, string path = null, string componentType = null, bool enabled = true)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `name` | string | No* | null | GameObject name |
-| `instanceId` | int | No* | 0 | Instance ID |
-| `path` | string | No* | null | Hierarchy path |
-| `componentType` | string | Yes | - | Component type to enable/disable |
-| `enabled` | bool | No | true | `true` to enable, `false` to disable |
-
-*At least one object identifier required.
-
 ## Returns
 
 ```json
@@ -39,8 +27,6 @@ If the component type does not support `enabled`:
 - Uses `Undo.RecordObject` — operation is undoable.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

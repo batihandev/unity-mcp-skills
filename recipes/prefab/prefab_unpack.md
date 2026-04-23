@@ -4,17 +4,6 @@ Unpack a prefab instance, breaking its connection to the prefab asset.
 
 **Signature:** `PrefabUnpack(string name = null, int instanceId = 0, string path = null, bool completely = false)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `name` | string | No* | - | Prefab instance name |
-| `instanceId` | int | No* | - | Instance ID (preferred) |
-| `path` | string | No* | - | Hierarchy path |
-| `completely` | bool | No | false | `true` = unpack all nested prefabs recursively; `false` = unpack outermost root only |
-
-*At least one identifier required.
-
 ## Returns
 
 ```json
@@ -32,8 +21,6 @@ Unpack a prefab instance, breaking its connection to the prefab asset.
 - Operation is undoable — the snapshot is recorded before unpacking.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

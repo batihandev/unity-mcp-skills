@@ -7,15 +7,11 @@ Duplicate an existing material asset.
 **Returns:** `{ success, name, path, sourcePath, shader }`
 
 ## Notes
-
 - `sourcePath` must be a valid `.mat` asset path (e.g. `Assets/Materials/Base.mat`).
-- `newName` is the name (without extension) of the duplicated material.
 - If `savePath` is omitted, the duplicate is saved in the same folder as `sourcePath`.
 - `savePath` accepts a folder or a full path; `.mat` extension is appended automatically.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

@@ -14,8 +14,6 @@ Get the current quality level and all quality level definitions, plus key render
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## C# Template
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

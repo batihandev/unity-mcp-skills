@@ -17,8 +17,6 @@ Create a parametric ProBuilder shape in the scene.
 
 **Requires:** `com.unity.probuilder` package.
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

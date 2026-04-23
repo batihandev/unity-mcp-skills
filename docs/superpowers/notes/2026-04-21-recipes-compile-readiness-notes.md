@@ -281,3 +281,16 @@ Session 2 scope lives in `docs/superpowers/plans/2026-04-21-recipes-compile-read
 - A `SKILL.md` is deleted only when every capability it claims is covered by another skill or a native MCP tool.
 - Deprecation replacements require web-confirmation against Unity's official docs, not model memory.
 - Unity 6000+ is the baseline; no `#if UNITY_` back-compat.
+
+### Task 22 — Prose cleanup sweep
+
+Applied `tools/prose_cleanup.py` to all 457 active recipes. Final scope:
+- 182 files changed; 1389 lines removed, 10 inserted (net -1379 lines, 4.0% overall).
+- New median recipe length: 64 lines (was 67). Mean: 72 lines (was 75).
+- Removed: `## Recipe` / `## C# Template` / `## Unity_RunCommand Template` / `## RunCommand Recipe` h2 headers (section headers, not code blocks).
+- Removed: `## Parameters` tables when `**Signature:**` inline or `## Signature` section exists.
+- Removed: `## Returns` / `## Return Shape` sections when `**Returns:**` inline exists.
+- Removed: trivially-obvious `## Notes` bullets ("`X` is required", "Returns an error if...", "Read-only", etc.).
+- Removed: old-format `**Skill ID:**` / `**Skill:**` / `**Source:**` / `**C# method:**` metadata lines (importer + perception domains).
+- No `csharp` code block content changed (verified: zero `+`/`-` lines on csharp fences in `git diff`).
+- Plan target of ≥30% median reduction was set for pre-sweep state; current recipes were substantially cleaned during the comp sweep.

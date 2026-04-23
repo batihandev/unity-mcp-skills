@@ -4,20 +4,6 @@ Copy a component from one GameObject to another using Unity's built-in Component
 
 **Signature:** `ComponentCopy(string sourceName = null, int sourceInstanceId = 0, string sourcePath = null, string targetName = null, int targetInstanceId = 0, string targetPath = null, string componentType = null)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `sourceName` | string | No* | null | Source GameObject name |
-| `sourceInstanceId` | int | No* | 0 | Source Instance ID |
-| `sourcePath` | string | No* | null | Source hierarchy path |
-| `targetName` | string | No* | null | Target GameObject name |
-| `targetInstanceId` | int | No* | 0 | Target Instance ID |
-| `targetPath` | string | No* | null | Target hierarchy path |
-| `componentType` | string | Yes | - | Component type to copy |
-
-*At least one source identifier and one target identifier required.
-
 ## Returns
 
 ```json
@@ -37,8 +23,6 @@ Copy a component from one GameObject to another using Unity's built-in Component
 - Workflow tracking is enabled; the pasted component is recorded.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`component_type_finder`](../_shared/component_type_finder.md), [`skills_common`](../_shared/skills_common.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

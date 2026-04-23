@@ -16,8 +16,6 @@ Make face normals point consistently outward on a ProBuilder mesh.
 
 **Requires:** `com.unity.probuilder` package.
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

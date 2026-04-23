@@ -4,14 +4,6 @@ Find potentially unused assets of a specific type by scanning dependencies acros
 
 **Signature:** `CleanerFindUnusedAssets(string assetType = "Material", string searchPath = "Assets", int limit = 100)`
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `assetType` | string | No | "Material" | Asset type filter (e.g. Texture2D, AudioClip) |
-| `searchPath` | string | No | "Assets" | Root path to search within |
-| `limit` | int | No | 100 | Max number of results to return |
-
 ## Returns
 
 ```json
@@ -35,8 +27,6 @@ Find potentially unused assets of a specific type by scanning dependencies acros
 - To delete found assets, use `cleaner_delete_assets` (two-step confirmation required).
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

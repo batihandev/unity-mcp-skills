@@ -1,21 +1,10 @@
 # scene_health_check
 
-**Skill:** `scene_health_check`
-**C# method:** `PerceptionSkills.SceneHealthCheck`
-
 ## Signature
 
 ```
 SceneHealthCheck(int issueLimit = 100, int deepHierarchyThreshold = 8, int largeChildCountThreshold = 25)
 ```
-
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `issueLimit` | `int` | `100` | Maximum findings to return |
-| `deepHierarchyThreshold` | `int` | `8` | Depth threshold for deep-hierarchy hotspots |
-| `largeChildCountThreshold` | `int` | `25` | Child count threshold for large-group hotspots |
 
 ## Return Shape
 
@@ -27,8 +16,6 @@ Returns `success`, `sceneName`, `summary` (totalFindings, shownFindings, errors,
 
 - Does the facility / hotspot / missing-reference checks inline (no delegation to `validate_scene` / `validate_missing_references`). For those specific validations call their recipes directly.
 - `suggestedNextSkills` is auto-generated based on finding types.
-
-## RunCommand Recipe
 
 ```csharp
 using UnityEngine;

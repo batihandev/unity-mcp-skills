@@ -15,8 +15,6 @@ Check a shader for compilation errors using Unity's ShaderUtil message count.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

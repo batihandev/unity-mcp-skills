@@ -2,9 +2,6 @@
 
 Find textures whose largest dimension falls within a pixel range.
 
-**Skill ID:** `texture_find_by_size`
-**Source:** `TextureSkills.cs` — `TextureFindBySize`
-
 ## Signature
 
 ```
@@ -12,17 +9,7 @@ texture_find_by_size(minSize?: int = 0, maxSize?: int = 99999, limit?: int = 50)
   → { success, count, textures[{ path, name, width, height }] }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `minSize` | int | no | `0` | Minimum value of `max(width, height)` |
-| `maxSize` | int | no | `99999` | Maximum value of `max(width, height)` |
-| `limit` | int | no | `50` | Max results returned |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;

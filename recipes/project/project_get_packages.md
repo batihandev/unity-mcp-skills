@@ -7,15 +7,11 @@ Read the project's UPM `Packages/manifest.json` and return its raw text + a hand
 **Returns:** `{ success, dependencies, manifestJson }`
 
 ## Notes
-
 - Returns `{ error: "manifest.json not found" }` when `Packages/manifest.json` does not exist.
-- `dependencies` is a flat `{ packageId: version }` object — the subset of the manifest almost every caller needs.
 - `manifestJson` is the raw file text, for callers who need `scopedRegistries` / `lock` / etc.
 - No package resolution is performed; this mirrors the on-disk manifest.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
-
-## C# Template
 
 ```csharp
 using UnityEngine;

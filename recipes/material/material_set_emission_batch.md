@@ -9,15 +9,11 @@ Set emission color on multiple objects in a single call (efficient batch operati
 **Returns:** `{ success, totalItems, successCount, failCount, results: [{ success, target, emissionEnabled }] }`
 
 ## Notes
-
 - Each item delegates to `material_set_emission` internally; all the same rules apply (HDR, keyword enable/disable).
 - `intensity` defaults to `1.0` for items that omit it (if `<= 0`, falls back to `1.0`).
-- `enableEmission` defaults to `true`.
 - Prefer this over calling `material_set_emission` repeatedly when operating on 2+ objects.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md), [`workflow_manager`](../_shared/workflow_manager.md)
-
-## Recipe
 
 ```csharp
 using UnityEngine;

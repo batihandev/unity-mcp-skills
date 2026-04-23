@@ -16,8 +16,6 @@ Enable or disable the Clear on Play setting in the Unity console (console is cle
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

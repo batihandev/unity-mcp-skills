@@ -2,9 +2,6 @@
 
 Read the AudioSource component configuration on a scene GameObject.
 
-**Skill ID:** `audio_get_source_info`
-**Source:** `AudioSkills.cs` — `AudioGetSourceInfo`
-
 ## Signature
 
 ```
@@ -13,19 +10,7 @@ audio_get_source_info(name?: string, instanceId?: int, path?: string)
       mute, spatialBlend, minDistance, maxDistance, priority }
 ```
 
-## Parameters
-
-Target resolution — provide at least one of `name`, `instanceId`, or `path`:
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | no | GameObject name in the scene |
-| `instanceId` | int | no | GameObject instance ID |
-| `path` | string | no | Hierarchy path (e.g. `Player/Body`) |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`gameobject_finder`](../_shared/gameobject_finder.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;
@@ -62,7 +47,6 @@ internal class CommandScript : IRunCommand
 ```
 
 ## Notes
-
-- Read-only; no scene modifications.
 - Returns `"null"` as a string if no clip is assigned.
 - Use `audio_set_source_properties` to update the AudioSource.
+

@@ -18,8 +18,6 @@ Set the scripting define symbols (preprocessor symbols) for the currently select
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md)
 
-## Recipe
-
 ```csharp
 using UnityEngine;
 using UnityEditor;

@@ -2,9 +2,6 @@
 
 Inspect runtime dimensions, format, and memory size of a texture.
 
-**Skill ID:** `texture_get_info`
-**Source:** `TextureSkills.cs` — `TextureGetInfo`
-
 ## Signature
 
 ```
@@ -13,15 +10,7 @@ texture_get_info(assetPath: string)
       filterMode, wrapMode, memorySizeKB }
 ```
 
-## Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `assetPath` | string | yes | Project-relative path to the texture |
-
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
-
-## Unity_RunCommand Template
 
 ```csharp
 using UnityEngine;
