@@ -78,7 +78,7 @@ fi
 git add -A
 commit_msg="publish: $(date +%Y-%m-%d) (from dev @ $dev_sha)
 
-$(git --no-pager diff --cached --stat | head -40)"
+$(git --no-pager diff --cached --stat | { head -40; cat >/dev/null; })"
 
 git commit -m "$commit_msg"
 echo
