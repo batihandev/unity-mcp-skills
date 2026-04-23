@@ -17,6 +17,8 @@ stays documentation-only.
 | [`skills_common.md`](./skills_common.md) | `public static class SkillsCommon` | `SkillsCommon.Utf8NoBom`, `.GetAllLoadedTypes`, `.GetTriangleCount` |
 | [`component_type_finder.md`](./component_type_finder.md) | `internal static class ComponentSkills` (type-lookup surface only) | `ComponentSkills.FindComponentType` |
 | [`value_converter.md`](./value_converter.md) | `internal static class ComponentSkills` (value-parsing surface only) | `ComponentSkills.ConvertValue` |
+| [`project_skills.md`](./project_skills.md) | `internal static class ProjectSkills` | `ProjectSkills.DetectRenderPipeline`, `.GetDefaultShaderName`, `.GetUnlitShaderName`, `.GetColorPropertyName`, `.GetMainTexturePropertyName` |
+| [`perception_helpers.md`](./perception_helpers.md) | `internal static class PerceptionHelpers` + `_SceneMetricsSnapshot` | `PerceptionHelpers.*`, `_SceneMetricsSnapshot` (perception domain recipes) |
 
 > `component_type_finder.md` and `value_converter.md` both declare
 > `internal static class ComponentSkills`. A recipe must paste **at most one**
