@@ -6,7 +6,11 @@ It contains **skills** (per-system guardrails and routing) and **recipes** (read
 
 > **Work in progress.** Things may be incomplete or rough around the edges — use with that expectation.
 
-**Requires:** Unity 6000+ (Unity 6). Recipes use the new object-find APIs (`FindFirstObjectByType` / `FindObjectsByType`) and assume the single-package baseline versions documented in each domain skill's `## Requirements` block. Older Unity versions are not supported.
+**Requires:**
+
+- **Unity's `com.unity.ai.assistant` package** with its **Unity MCP Server** enabled in *Project Settings → AI → Unity MCP Server* — the hard dependency that provides `Unity_RunCommand` and the `IRunCommand` contract every recipe targets. Nothing in this pack runs without it.
+- **Unity 6000+ (Unity 6).** Recipes use `FindFirstObjectByType` / `FindObjectsByType`; older versions are not supported.
+- **Per-domain package baselines** listed in each `skills/<domain>/SKILL.md` `## Requirements` block. Domain skills tell the agent how to install missing ones via `Unity_PackageManager_ExecuteAction`.
 
 ---
 
@@ -52,11 +56,6 @@ rm -rf ~/.claude/skills/unity-mcp-skills
 ```
 
 ---
-
-## Prerequisites
-
-- A Unity MCP-compatible server running in your Unity Editor; the Editor must be open during use.
-- An AI agent that can read local files and execute MCP tools (e.g. `Unity_RunCommand`).
 
 ## How discovery works
 

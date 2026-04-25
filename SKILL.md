@@ -9,19 +9,6 @@ description: Use when working with a Unity project via MCP — creating or editi
 
 The single entry point for Unity work via MCP. Domain skills under `skills/<domain>/SKILL.md` are loaded on demand from this router — read this file first, then navigate to the domain file that matches the task.
 
-## Integrity Check
-
-If during a task you find a referenced file is missing or a path does not resolve
-(e.g. `../../recipes/scene/scene_create.md` not found, a `recipes/_shared/` helper
-missing, `../../mcp-tools.md` missing, or a `references/<topic>.md` fallback missing),
-stop and tell the user:
-
-> The Unity skills library appears to be incomplete or out of date. Please reinstall
-> or update the `unity-mcp-skills` folder in your agent's skills directory to the latest
-> version from https://github.com/batihandev/unity-mcp-skills, then retry.
-
-Do not attempt to work around missing files by fabricating recipe content.
-
 ## Routing Order
 
 1. **Native MCP tool** — see `mcp-tools.md` (library root) for the routing matrix.
