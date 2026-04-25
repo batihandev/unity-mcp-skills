@@ -46,13 +46,13 @@ ln -s ~/src/unity-mcp-skills ~/.claude/skills/unity-mcp-skills
 ## Update
 
 ```bash
-cd ~/.claude/skills/unity-mcp-skills && git pull
+cd <your-skills-dir>/unity-mcp-skills && git pull
 ```
 
 ## Uninstall
 
 ```bash
-rm -rf ~/.claude/skills/unity-mcp-skills
+rm -rf <your-skills-dir>/unity-mcp-skills
 ```
 
 ---
@@ -70,9 +70,9 @@ Only the top-level `SKILL.md` is registered with your agent — under the name `
 - **`references/`** — offline reference dumps used as a tertiary fallback when skills and recipes lack detail.
 - **`mcp-tools.md`** — routing matrix for native MCP tools vs `Unity_RunCommand`.
 
-## Works with
+## Format
 
-Skills follow the [superpowers](https://github.com/obra/superpowers) format.
+Skills follow the [superpowers](https://github.com/obra/superpowers) skill format.
 
 ## Credits
 
