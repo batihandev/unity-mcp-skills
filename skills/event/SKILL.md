@@ -3,8 +3,6 @@ name: unity-event
 description: "Use when users want to inspect or modify UI events like Button.onClick."
 ---
 
-Recipe path rule: `../../recipes/event/<command>.md`
-
 # Event Skills
 
 ## Overview
@@ -135,3 +133,5 @@ Get the number of persistent listeners on a UnityEvent.
 **Returns:** `{ success, count }`
 
 ---
+
+Recipe path rule: `../../recipes/event/<command>.md`

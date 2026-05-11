@@ -23,7 +23,7 @@ The canonical list of recipe domains is the **Domain Skill Map** in the root [`.
 Cross-domain C# helpers live in [`_shared/`](./_shared/README.md):
 
 - `validate.md` — parameter validation (`Validate.Required` / `.SafePath` / `.InRange` / `.RequiredJsonArray`)
-- `execution_result.md` — `result.SetResult(object)` extension that serializes with `Newtonsoft.Json`
+- `execution_result.md` — `result.SetResult(object)` extension that serializes with `MiniJson`
 - `workflow_manager.md` — `WorkflowManager.Snapshot*` undo registration shim
 - `gameobject_finder.md` — `FindHelper.FindAll<T>` + `GameObjectFinder` cached lookups
 - `skills_common.md` — `SkillsCommon.Utf8NoBom` / `GetAllLoadedTypes` / `GetTriangleCount`
@@ -40,7 +40,6 @@ pastes the helper class into the same `Unity_RunCommand` code block as
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using Newtonsoft.Json;
 
 internal class CommandScript : IRunCommand {
     public void Execute(ExecutionResult result) {

@@ -141,9 +141,6 @@ everywhere. Listed here so a fresh session knows the shape.
   (CS0103 for `Regex`/`RegexOptions`, CS1069 for `Match`). A `using
   System.Text.RegularExpressions;` directive compiles, but the types resolve
   to nothing usable. Use `string` methods or a hand-written scanner.
-- `Newtonsoft.Json` is not available in the dynamic compile context even
-  when `com.unity.nuget.newtonsoft-json` is installed. Use the MiniJson
-  serializer in `_shared/execution_result.md`.
 - `JsonUtility.ToJson` silently returns `"{}"` for anonymous types.
 - `(long)((dynamic)obj).fieldName` member access on `dynamic`-cast values
   (typical when summing a field off an `object` produced by `new { ... }`)

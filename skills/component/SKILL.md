@@ -5,8 +5,6 @@ description: "Use when users want to add, remove, or configure components like R
 
 # Unity Component Skills
 
-Recipe path rule: `../../recipes/component/<command>.md`
-
 ## Overview
 
 > **BATCH-FIRST**: Use `*_batch` skills when operating on 2+ objects to reduce API calls from N to 1.
@@ -225,3 +223,5 @@ Enable or disable a component (Behaviour, Renderer, Collider, etc.).
 **Returns:** `{ success, gameObject, componentType, enabled }`
 
 ---
+
+Recipe path rule: `../../recipes/component/<command>.md`

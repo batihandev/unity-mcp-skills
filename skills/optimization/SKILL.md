@@ -3,8 +3,6 @@ name: unity-optimization
 description: "Use when users want to optimize textures, meshes, or improve performance."
 ---
 
-Recipe path rule: `../../recipes/optimization/<command>.md`
-
 # Optimization Skills
 
 ## Overview
@@ -136,3 +134,5 @@ Add or configure LOD Group. lodDistances: comma-separated screen-relative height
 **Returns:** `{ success, gameObject, lodLevels, distances }`
 
 ---
+
+Recipe path rule: `../../recipes/optimization/<command>.md`

@@ -3,7 +3,7 @@
 
 Usage:
     python3 tools/tracker_update.py gameobject_create comp x
-    python3 tools/tracker_update.py component_add comp B --note "missing Newtonsoft"
+    python3 tools/tracker_update.py component_add comp B --note "CS0103 compile error"
     python3 tools/tracker_update.py material_set_color run x --note "green"
 
 After updating a row, refreshes the Summary counters at the top.

@@ -136,7 +136,6 @@ internal class CommandScript : IRunCommand
         return Mathf.Abs(ax - bx) > eps || Mathf.Abs(ay - by) > eps || Mathf.Abs(az - bz) > eps;
     }
 
-    // Newtonsoft.Json is unavailable in Unity_RunCommand dynamic compile context.
     // Hand-parse the snapshot JSON emitted by MiniJson (_shared/execution_result).
     private static List<_SceneDiffEntry> ParseSnapshot(string json)
     {

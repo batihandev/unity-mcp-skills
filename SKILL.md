@@ -75,5 +75,5 @@ All paths above are relative to the library root (this file's directory).
 - `skills/SKILL.md` — internal index of the same domain map (for cross-linking from domain skills).
 - `mcp-tools.md` — full routing matrix for native MCP tools vs `Unity_RunCommand`.
 - `recipes/README.md` — recipes intro and conventions.
-- `recipes/_shared/README.md` — cross-domain C# helpers (`gameobject_finder`, `skills_common`, `validate`) embedded by many recipes.
+- `recipes/_shared/README.md` — cross-domain C# helpers embedded by many recipes: `execution_result`, `validate`, `workflow_manager`, `gameobject_finder`, `skills_common`, `component_type_finder`, `value_converter`, `project_skills`, `perception_helpers`.
 - `references/index.md` — catalog of all `references/<topic>.md` fallback docs.

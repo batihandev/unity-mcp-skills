@@ -123,10 +123,6 @@ Search GameObjects by name pattern, tag, or component type. For advanced search 
 
 ---
 
-## Example Usage
-
-*See `../../recipes/scene/<command>.md` for C# templates.*
-
 Recipe path rule: `../../recipes/scene/<command>.md`
 
 ## Best Practices

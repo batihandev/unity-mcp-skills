@@ -375,7 +375,7 @@ internal static class PerceptionHelpers
         return suggestions;
     }
 
-    // Hand-parse ["a","b","c"] JSON arrays (Newtonsoft.Json unavailable in Unity_RunCommand).
+    // Hand-parse ["a","b","c"] JSON arrays.
     public static string[] ParseOptionalStringArray(string rawJson, string[] defaults)
     {
         if (string.IsNullOrWhiteSpace(rawJson)) return defaults ?? System.Array.Empty<string>();

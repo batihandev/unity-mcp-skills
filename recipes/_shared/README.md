@@ -25,12 +25,15 @@ stays documentation-only.
 > of them per `Unity_RunCommand` call. No current recipe needs both; if that
 > changes, merge the two files at that time.
 
+## Missing prerequisite symptoms
+
+If `Unity_RunCommand` fails with `CS0103` or `CS7036` on `SetResult`, `Validate`, `FindHelper`, `WorkflowManager`, `SkillsCommon`, or `ComponentSkills` — you missed pasting one or more prerequisite helpers. Re-read the recipe's `**Prerequisites:**` line and paste every listed `_shared/*.md` `## Paste-in` block into the same code block as `CommandScript`.
+
 ## Paste pattern
 
 ```csharp
 using UnityEngine;
 using UnityEditor;
-using Newtonsoft.Json;
 // ... any other usings the recipe needs
 
 internal class CommandScript : IRunCommand
@@ -48,11 +51,3 @@ internal static class Validate { /* ... contents of validate.md ... */ }
 internal static class ExecutionResultExtensions { /* ... contents of execution_result.md ... */ }
 // etc.
 ```
-
-## Newtonsoft.Json
-
-`execution_result.md` and `validate.md` (`RequiredJsonArray`) depend on
-`Newtonsoft.Json`. The Unity package `com.unity.nuget.newtonsoft-json` provides
-it and ships as a transitive dependency of `com.unity.ai.assistant`, so most
-target projects already have it. If a recipe errors with "The type or namespace
-name 'Newtonsoft' could not be found", add the package via the Package Manager.
