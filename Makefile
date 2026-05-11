@@ -24,6 +24,9 @@ lint:
 	@! grep -rn "^using System\.Reflection;" recipes/ 2>/dev/null \
 		|| { echo "FAIL: fully-qualify reflection types (System.Reflection.MethodInfo etc.)"; exit 1; }
 	@echo "✓ lint passed"
+	@echo ""
+	@echo "note: lint is a soft signal — only the patterns above are checked."
+	@echo "      keep checks in sync with CLAUDE.md gotchas; passing here does not mean all traps cleared."
 
 tracker:
 	@sed -n '1,25p' docs/superpowers/notes/recipe-validation-tracker.md

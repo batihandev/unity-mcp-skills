@@ -6,7 +6,11 @@ It contains **skills** (per-system guardrails and routing) and **recipes** (read
 
 > **Work in progress.** Things may be incomplete or rough around the edges — use with that expectation.
 
-**Requires:** Unity 6000+ (Unity 6). Recipes use the new object-find APIs (`FindFirstObjectByType` / `FindObjectsByType`) and assume the single-package baseline versions documented in each domain skill's `## Requirements` block. Older Unity versions are not supported.
+**Requires:**
+
+- **Unity's `com.unity.ai.assistant` package** with its **Unity MCP Server** enabled in *Project Settings → AI → Unity MCP Server* — the hard dependency that provides `Unity_RunCommand` and the `IRunCommand` contract every recipe targets. Nothing in this pack runs without it.
+- **Unity 6000+ (Unity 6).** Recipes use `FindFirstObjectByType` / `FindObjectsByType`; older versions are not supported.
+- **Per-domain package baselines** listed in each `skills/<domain>/SKILL.md` `## Requirements` block. Domain skills tell the agent how to install missing ones via `Unity_PackageManager_ExecuteAction`.
 
 ---
 
@@ -42,13 +46,13 @@ ln -s ~/src/unity-mcp-skills ~/.claude/skills/unity-mcp-skills
 ## Update
 
 ```bash
-cd ~/.claude/skills/unity-mcp-skills && git pull
+cd <your-skills-dir>/unity-mcp-skills && git pull
 ```
 
 ## Uninstall
 
 ```bash
-rm -rf ~/.claude/skills/unity-mcp-skills
+rm -rf <your-skills-dir>/unity-mcp-skills
 ```
 
 ---
@@ -71,9 +75,9 @@ Only the top-level `SKILL.md` is registered with your agent — under the name `
 - **`references/`** — offline reference dumps used as a tertiary fallback when skills and recipes lack detail.
 - **`mcp-tools.md`** — routing matrix for native MCP tools vs `Unity_RunCommand`.
 
-## Works with
+## Format
 
-Skills follow the [superpowers](https://github.com/obra/superpowers) format.
+Skills follow the [superpowers](https://github.com/obra/superpowers) skill format.
 
 ## Credits
 
