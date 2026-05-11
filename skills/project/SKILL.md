@@ -3,8 +3,6 @@ name: unity-project
 description: "Use when users want to get project settings, quality settings, or shader lists."
 ---
 
-Recipe path rule: `../../recipes/project/<command>.md`
-
 # Project Skills
 
 ## Overview
@@ -99,3 +97,5 @@ Switch quality level by index or name.
 **Returns:** `{ success, level, name }`
 
 ---
+
+Recipe path rule: `../../recipes/project/<command>.md`

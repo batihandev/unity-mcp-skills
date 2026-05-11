@@ -12,7 +12,6 @@ result.SetResult(new { success = true, objects = found });
 
 ## Do not
 
-- Do not use `Newtonsoft.Json.*` in recipes — not available in `Unity_RunCommand`.
 - Do not use `JsonUtility.ToJson` for anonymous types — silently returns `"{}"`.
 
 ## Paste-in

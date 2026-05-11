@@ -37,7 +37,6 @@ internal class CommandScript : IRunCommand
     }
 
     // Hand-parse the "dependencies": { "id": "version", ... } section.
-    // Newtonsoft.Json is unavailable in the Unity_RunCommand dynamic compile context.
     private static Dictionary<string, string> ParseDependencies(string json)
     {
         var result = new Dictionary<string, string>();

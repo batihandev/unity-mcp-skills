@@ -57,7 +57,7 @@ internal class CommandScript : IRunCommand
     }
 }
 
-// Named serializable types so JsonUtility can round-trip them (no anonymous / Newtonsoft).
+// Named serializable types so JsonUtility can round-trip them.
 [System.Serializable]
 internal class _ImpulseParams { public _ImpulseVelocity velocity; }
 

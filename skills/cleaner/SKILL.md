@@ -3,8 +3,6 @@ name: unity-cleaner
 description: "Use when users want to find unused assets, duplicate files, or clean up the project."
 ---
 
-Recipe path rule: `../../recipes/cleaner/<command>.md`
-
 # Unity Cleaner Skills
 
 ## Overview
