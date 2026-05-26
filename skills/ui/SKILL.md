@@ -145,3 +145,115 @@ Recipe path rule: `../../recipes/ui/<command>.md`
 
 *See `../../recipes/ui/<command>.md` for C# templates.*
 
+---
+
+## UI Authoring Loop
+
+Standard 3-phase loop for running an editor authoring menu, capturing a screenshot, and verifying the result. Use whenever a [MenuItem] script modifies scene objects and requires visual confirmation.
+
+### Phase 1 — Wait for compile
+
+```csharp
+internal class CommandScript : IRunCommand
+{
+    public void Execute(ExecutionResult result)
+    {
+        result.Log("compiling=" + UnityEditor.EditorApplication.isCompiling);
+    }
+}
+```
+
+Poll until compiling=False. If True, wait 2–3 seconds and re-run.
+
+### Phase 2 — Run the authoring menu
+
+```csharp
+internal class CommandScript : IRunCommand
+{
+    public void Execute(ExecutionResult result)
+    {
+        bool ok = UnityEditor.EditorApplication.ExecuteMenuItem("Tools/Authoring/YourMenuName");
+        result.Log("menu ok=" + ok);
+    }
+}
+```
+
+Expected: menu ok=True plus any [Log] lines from the menu itself. If ok=False the menu path is wrong or the [MenuItem] attribute string does not match.
+
+### Phase 3 — Screenshot and verify
+
+> **Prerequisite:** `Tools/UI/Screenshot/` menu items must exist in the project. If they do not, install the screenshot Editor script first — see [`tooling/ui/ui_screenshot_tool.md`](../../tooling/ui/ui_screenshot_tool.md). Create the script via `Unity_CreateScript`, wait for Unity to recompile, then continue.
+
+```csharp
+internal class CommandScript : IRunCommand
+{
+    public void Execute(ExecutionResult result)
+    {
+        bool ok = UnityEditor.EditorApplication.ExecuteMenuItem("Tools/UI/Screenshot/ScreenName");
+        result.Log("screenshot ok=" + ok);
+    }
+}
+```
+
+After this call, use the Read tool on the output PNG to confirm the visual result.
+
+### Pitfalls
+
+- ExecuteMenuItem returns false silently if the path is wrong. Always log and check the return value.
+- isCompiling may stay true for several seconds after saving a file. Do not skip the poll.
+- Screenshot tools may modify CanvasScaler render mode temporarily. They should restore it — if they don't, the scene will be left dirty with wrong scaler settings.
+
+### Quality gate — always compare against a spec file
+
+When verifying screenshots, open the relevant design spec file (e.g. a .jsx or .css reference) and compare values directly. Do NOT derive the checklist from the screenshot — that produces a circular pass. Example:
+
+  Spec says xpBar.height: 54. Current screenshot bar height looks ~20px. → FAIL.
+
+Self-derived checklists ("button is not white") only catch regressions, not spec divergence.
+
+---
+
+## Mobile UI Sizing Principles
+
+Web spec px values do not map directly to Unity canvas pixels. Use these baselines instead of copying px numbers from a web design file.
+
+### Touch targets
+
+| Role | Minimum height |
+|------|---------------|
+| Primary action button (PLAY, CONFIRM) | 60 px |
+| Secondary button (SETTINGS, CANCEL) | 48 px |
+| Icon button (pause, close) | 44 × 44 px |
+| Toggle, checkbox | 28 × 28 px background |
+
+### HUD bars (mobile portrait baseline)
+
+Width as percentage of canvas width; height as design-unit minimums. These values assume a portrait mobile canvas — scale proportionally for landscape or tablet.
+
+| Bar | Width | Height |
+|-----|-------|--------|
+| XP / level bar | 80–85% canvas width | 48–56 px |
+| HP bar | 65–70% canvas width | 24–32 px |
+| Thin progress strip | 100% width | 8–12 px |
+
+Text inside a bar (e.g. "LVL 3") needs at minimum the bar's own height to be legible — a 24 px bar cannot hold 22 px text with padding.
+
+> **Minimum bar height when text is inside: 44 px.** If a design spec shows a smaller value, the spec is wrong for mobile — do not copy it.
+
+### Typography
+
+| Role | Font size range |
+|------|----------------|
+| Screen title (GAME OVER, PAUSED) | 34–44 px |
+| Card / panel title | 18–26 px |
+| Body / stat label | 13–16 px |
+| Stat value (large accent) | 18–24 px |
+| Badge / caption | 10–13 px |
+
+### Pitfalls
+
+- **Web spec values are starting points, not answers.** When the canvas reference width matches the spec's pixel width, the numbers are 1:1 — but web specs optimize for visual appearance, not touch targets or game-condition readability. Always check the value against the table above: if it's below the table minimum, use the minimum. If it's in range, verify it still meets the text-inside-bar rule (44 px floor) if text will be inside.
+- **Never use `enableAutoSizing` as a crutch for wrong sizes.** Auto-sizing down to the minimum means the size is wrong, not that auto-sizing fixed it.
+- **Set `enableAutoSizing = true` BEFORE `fontSizeMin` / `fontSizeMax`.** TMP silently ignores the size range if auto-sizing is enabled after the size fields are written.
+- **Safe area.** On iOS (notch / Dynamic Island) and Android (punch-hole), the top ~44 px and bottom ~34 px are unsafe. Use `Screen.safeArea` to inset any HUD elements that anchor to the screen edges.
+- **Project code is not the authority for sizing.** It may already contain under-sized values. Use the sizing tables above to verify existing implementation, especially the text-inside-bar floor (44 px).

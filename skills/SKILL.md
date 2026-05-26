@@ -15,6 +15,15 @@ This index lists all available domain modules for interacting with the Unity Edi
 
 > **MCP Tool Routing**: Pay attention to the **Tool Route** column. If a module lists a dedicated MCP tool (e.g. `Unity_ReadConsole`), use that tool directly. If it says `Unity_RunCommand`, use that tool and pull C# examples from the `recipes/` directory.
 
+## Execution trees
+
+Two trees, route by execution model first:
+
+- `recipes/<domain>/` — `Unity_RunCommand` one-shot bodies, compile/run-gated.
+- `tooling/<domain>/` — `Unity_CreateScript` install-once Editor scripts, no gate. See [`tooling`](./tooling/SKILL.md).
+
+The Functional Modules table below indexes `recipes/`. For install-once tools, route via the `tooling` module and then open `../tooling/<domain>/README.md` under the same domain name.
+
 ## Functional Modules
 
 | Module | Description | Tool Route |
@@ -28,6 +37,7 @@ This index lists all available domain modules for interacting with the Unity Edi
 | [ui](./ui/SKILL.md) | UGUI Canvas/UI creation | `Unity_RunCommand` |
 | [uitoolkit](./uitoolkit/SKILL.md) | UXML/USS/UIDocument | `Unity_RunCommand` |
 | [script](./script/SKILL.md) | Script edit/validate/SHA | `Unity_ScriptApplyEdits` |
+| [tooling](./tooling/SKILL.md) | Install-once Editor script templates | `Unity_CreateScript` |
 | [scene](./scene/SKILL.md) | Scene load/save/query | `Unity_RunCommand` |
 | [editor](./editor/SKILL.md) | Play/select/undo/redo | `Unity_RunCommand` |
 | [animator](./animator/SKILL.md) | Animator controllers | `Unity_RunCommand` |

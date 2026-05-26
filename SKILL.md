@@ -26,9 +26,19 @@ Do not attempt to work around missing files by fabricating recipe content.
 
 1. **Native MCP tool** — see `mcp-tools.md` (library root) for the routing matrix.
 2. **Topic skill + exact recipe** — load the matching domain skill below, then its recipe in `recipes/<domain>/`.
-3. **Closest recipe** — adapt the nearest recipe if no exact match exists.
-4. **`references/index.md`** — lists all available topics; consult `references/<topic>.md` as a tertiary fallback.
-5. **Fresh `Unity_RunCommand`** — last resort.
+3. **Install-once Editor tool** — if the task needs a persistent Editor script, check `tooling/<domain>/` via `skills/tooling/SKILL.md`.
+4. **Closest recipe** — adapt the nearest recipe if no exact match exists.
+5. **`references/index.md`** — lists all available topics; consult `references/<topic>.md` as a tertiary fallback.
+6. **Fresh `Unity_RunCommand`** — last resort.
+
+## Execution trees
+
+Two trees, route by execution model first:
+
+- `recipes/<domain>/` — `Unity_RunCommand` one-shot bodies, compile/run-gated.
+- `tooling/<domain>/` — `Unity_CreateScript` install-once Editor scripts, no gate. See [`tooling/README.md`](tooling/README.md).
+
+The Domain Skill Map below indexes `recipes/`. For install-once tools, open `tooling/<domain>/README.md` under the same domain name.
 
 ## Domain Skill Map
 
@@ -43,6 +53,7 @@ Do not attempt to work around missing files by fabricating recipe content.
 | ui | `skills/ui/SKILL.md` | `Unity_RunCommand` |
 | uitoolkit | `skills/uitoolkit/SKILL.md` | `Unity_RunCommand` |
 | script | `skills/script/SKILL.md` | Native MCP only (`Unity_CreateScript` / `Unity_ScriptApplyEdits` / `Unity_ValidateScript` / …) — no recipes |
+| tooling | `skills/tooling/SKILL.md` | `Unity_CreateScript` (install-once Editor templates under `tooling/<domain>/`) |
 | scene | `skills/scene/SKILL.md` | `Unity_RunCommand` |
 | editor | `skills/editor/SKILL.md` | `Unity_RunCommand` |
 | animator | `skills/animator/SKILL.md` | `Unity_RunCommand` |
@@ -75,5 +86,6 @@ All paths above are relative to the library root (this file's directory).
 - `skills/SKILL.md` — internal index of the same domain map (for cross-linking from domain skills).
 - `mcp-tools.md` — full routing matrix for native MCP tools vs `Unity_RunCommand`.
 - `recipes/README.md` — recipes intro and conventions.
+- `tooling/README.md` — install-once Editor script templates (not subject to RunCommand validation); domain subfolders mirror `recipes/`.
 - `recipes/_shared/README.md` — cross-domain C# helpers embedded by many recipes: `execution_result`, `validate`, `workflow_manager`, `gameobject_finder`, `skills_common`, `component_type_finder`, `value_converter`, `project_skills`, `perception_helpers`.
 - `references/index.md` — catalog of all `references/<topic>.md` fallback docs.

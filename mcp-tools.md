@@ -20,7 +20,7 @@ Use these tools directly. Do **not** reach for `Unity_RunCommand` when a dedicat
 |--------|------|-------|
 | Console / logs | `Unity_ReadConsole` | Read or clear console entries with filtering, formatting, and stack trace support |
 | Console / logs | `Unity_GetConsoleLogs` | Fetch Unity console log entries and stack traces in a simpler log-focused shape |
-| Script creation | `Unity_CreateScript` | Create a new C# script under `Assets/` |
+| Script creation | `Unity_CreateScript` | Create a new C# script under `Assets/`. For install-once Editor templates, see `tooling/<domain>/` (routed via `skills/tooling/SKILL.md`) |
 | Script deletion | `Unity_DeleteScript` | Delete a C# script by URI or `Assets/...` path |
 | Script search | `Unity_FindInFile` | Regex search within a script file with line-level matches |
 | Script discovery | `Unity_ListResources` | List project resources, commonly `*.cs` under `Assets/` |

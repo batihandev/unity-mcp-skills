@@ -146,4 +146,3 @@ Recipe path rule: `../../recipes/editor/<command>.md`
 3. Use undo for safe experimentation
 4. Use `editor_get_context` to get instanceId for batch operations
 5. Menu commands must match exact paths
-

@@ -19,6 +19,8 @@ description: "Use when creating, reading, editing, searching, validating, or del
 | Syntax + diagnostics check | `Unity_ValidateScript` | Call before and after edits; surfaces compile errors before they trigger a Domain Reload. |
 | Hash for concurrency | `Unity_GetSha` | Compare against your expected hash to detect conflicting edits before writing. |
 
+> **Install-once Editor scripts** (screenshot helpers, custom Editor windows, build steps, exporters): check [`../tooling/SKILL.md`](../tooling/SKILL.md) for ready-to-paste templates before writing one from scratch.
+
 ## Filename must match class name
 
 The `.cs` filename (without extension) must exactly match the top-level class name. Unity's asset database relies on the 1:1 mapping — mismatches silently break MonoBehaviour attachment and asset references.
