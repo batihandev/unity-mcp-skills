@@ -16,6 +16,7 @@ fi
 INCLUDE_PATHS=(
     "recipes"
     "skills"
+    "tooling"
     "references"
     "README.md"
     "SKILL.md"
