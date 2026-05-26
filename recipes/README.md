@@ -35,6 +35,10 @@ section immediately before its `csharp` code block. The agent reads that section
 pastes the helper class into the same `Unity_RunCommand` code block as
 `CommandScript`, then executes. Do not duplicate helper code inline.
 
+## Editor Script Templates
+
+For install-once Editor scripts (persistent project tooling that creates menu items, custom windows, or other Editor-side tools), see [`tooling/`](../tooling/README.md). These are not `Unity_RunCommand` templates and are not subject to compile/run validation gates.
+
 ## Golden Template
 
 ```csharp

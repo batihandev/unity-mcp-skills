@@ -72,6 +72,7 @@ Only the top-level `SKILL.md` is registered with your agent — under the name `
 - **`skills/<domain>/`** — per-system guidance (UI, Physics, Animation, …) telling the agent when and how to approach a task.
 - **`recipes/<domain>/`** — C# `IRunCommand` templates the agent fills in and runs; designed to support Editor Undo/Redo.
 - **`recipes/_shared/`** — cross-domain C# helpers embedded by recipes.
+- **`tooling/<domain>/`** — install-once Editor script templates installed via `Unity_CreateScript`; persistent project tools (menu items, custom windows), no compile/run gate.
 - **`references/`** — offline reference dumps used as a tertiary fallback when skills and recipes lack detail.
 - **`mcp-tools.md`** — routing matrix for native MCP tools vs `Unity_RunCommand`.
 

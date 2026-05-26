@@ -74,3 +74,37 @@ the error message alone.
 pre-publish gate. ~10 lines in Makefile, ~5 lines in publish.sh.
 
 **Status:** L1 — durable record written. Awaiting user decision on `make lint` gate.
+
+---
+
+## [2026-05-13] UI Authoring Loop re-derived per task (L0)
+
+**What repeated:**
+Every UI fix task (15+ tasks across a session) re-derived the same 3-step sequence:
+compile-wait → `ExecuteMenuItem(authoring menu)` → `ExecuteMenuItem(screenshot)`.
+Each subagent independently figured out the `isCompiling` polling pattern.
+
+**First known occurrence:** INEVITABLE v1-ui-launch session 2026-05-13.
+**Session count:** 1 session, 15+ occurrences.
+
+**Why costly:** ~6 MCP calls per task. Fragile polling implementations.
+**Addressed by:** Task A1 — UI Authoring Loop added to `skills/editor/SKILL.md` and `skills/ui/SKILL.md`.
+
+**Classification:** Tool / skill opportunity. Status: addressed in A1.
+
+---
+
+## [2026-05-13] Quality gate passed with self-derived checklist, missed spec divergence (L0)
+
+**What happened:**
+A quality gate loop reported "zero problems" across 6 screens. Checklist items were
+derived from prior observations ("button not white") — not from design spec JSX files.
+Three screens (HUD, Level Up, End Screen) had critical spec divergence the checklist never caught.
+
+**First known occurrence:** INEVITABLE v1-ui-launch session 2026-05-13. Count: 1 session.
+
+**Why costly:** Multiple subagent fix passes produced false confidence. User caught it immediately.
+
+**Addressed by:** Task A1 — spec-check note added to UI Authoring Loop section.
+
+**Classification:** Process / skill issue. Status: addressed in A1.

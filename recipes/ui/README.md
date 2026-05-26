@@ -2,6 +2,8 @@
 
 Recipe path rule: `../../recipes/ui/<command>.md`
 
+> **Install-once Editor scripts** (e.g. `ui_screenshot_tool`) live in [`../../tooling/ui/`](../../tooling/ui/README.md), not here. Recipes are `Unity_RunCommand` one-shot bodies; install-once tools use `Unity_CreateScript`.
+
 | Command | File | Description |
 |---------|------|-------------|
 | `ui_create_canvas` | [ui_create_canvas.md](ui_create_canvas.md) | Create a new Canvas with the specified render mode |
