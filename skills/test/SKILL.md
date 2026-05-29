@@ -14,15 +14,28 @@ in a later call.
 
 ## Mental model
 
-1. Trigger: `test_run` or `test_run_by_name` calls `TestRunnerApi.Execute(...)`
-   and returns `{ started: true }`.
-2. Unity runs the tests off-thread and writes an NUnit-format XML file to
-   `<project-root>/TestResults/EditMode-*.xml` or `PlayMode-*.xml`.
+1. Trigger: `test_run` or `test_run_by_name` registers a result callback, calls
+   `TestRunnerApi.Execute(...)`, and returns `{ started: true, resultsPath }`.
+2. **The run recipe's callback writes the XML — `TestRunnerApi.Execute` does
+   not.** When the run finishes, the registered `ICallbacks.RunFinished` calls
+   `TestRunnerApi.SaveResultToFile`, producing
+   `<project-root>/TestResults/<mode>-mcp.xml`. The api + callback are held in a
+   `static` so they survive the off-thread run. (No callback ⇒ no file: a bare
+   `Execute` starts the run but never writes a report.)
 3. Read: `test_get_result`, `test_get_last_result`, or `test_get_summary`
-   parse the XML and return counts + failed names.
+   parse the newest matching `TestResults/*.xml` and return counts + failed
+   names.
 
 Polling across calls is the caller's job, not a recipe's. Only one Test
 Runner run should be active at a time.
+
+**Precondition:** the Editor must be open and responsive on the intended
+project before triggering.
+
+**PlayMode caveat:** a PlayMode run may trigger a domain reload that discards
+the in-memory callback before it fires, so no XML is written. For reliable
+PlayMode reports, disable domain reload for the run or use a persistent
+(compiled) editor runner. EditMode runs do not reload the domain.
 
 ## Common Mistakes
 
@@ -46,7 +59,8 @@ Runner run should be active at a time.
 ## Skills
 
 ### `test_run`
-Kick off tests. Returns `{ success, started, mode, filter }` immediately.
+Kick off tests. Returns `{ success, started, mode, filter, resultsPath }`
+immediately; the callback writes `TestResults/<mode>-mcp.xml` when the run ends.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -55,7 +69,8 @@ Kick off tests. Returns `{ success, started, mode, filter }` immediately.
 
 ### `test_run_by_name`
 Kick off a single class or fully-qualified method. Returns
-`{ success, started, testName, mode }`.
+`{ success, started, testName, mode, resultsPath }`; the callback writes
+`TestResults/<mode>-mcp.xml` when the run ends.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
