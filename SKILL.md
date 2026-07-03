@@ -29,7 +29,11 @@ Do not attempt to work around missing files by fabricating recipe content.
 3. **Install-once Editor tool** — if the task needs a persistent Editor script, check `tooling/<domain>/` via `skills/tooling/SKILL.md`.
 4. **Closest recipe** — adapt the nearest recipe if no exact match exists.
 5. **`references/index.md`** — lists all available topics; consult `references/<topic>.md` as a tertiary fallback.
-6. **Fresh `Unity_RunCommand`** — last resort.
+6. **Fresh `Unity_RunCommand`** — last resort; allowed only under the RunCommand Contract below.
+
+## RunCommand Contract
+
+Before the first `Unity_RunCommand` in a domain, read that domain's `skills/<domain>/SKILL.md` and the recipe it routes to. Every `Unity_RunCommand` body either adapts a named recipe (`recipes/<domain>/<command>.md` — name it) or states that no recipe covers the case. Do not send a fresh body without saying which of the two applies.
 
 ## Execution trees
 
@@ -83,7 +87,7 @@ All paths above are relative to the library root (this file's directory).
 
 ## Other root files
 
-- `skills/SKILL.md` — internal index of the same domain map (for cross-linking from domain skills).
+- `skills/SKILL.md` — pointer to this domain map (kept for relative cross-links).
 - `mcp-tools.md` — full routing matrix for native MCP tools vs `Unity_RunCommand`.
 - `recipes/README.md` — recipes intro and conventions.
 - `tooling/README.md` — install-once Editor script templates (not subject to RunCommand validation); domain subfolders mirror `recipes/`.
