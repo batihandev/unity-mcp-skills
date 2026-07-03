@@ -46,48 +46,47 @@ The Domain Skill Map below indexes `recipes/`. For install-once tools, open `too
 
 ## Domain Skill Map
 
-| Domain | Skill file | Tool route |
-|--------|------------|------------|
-| gameobject | `skills/gameobject/SKILL.md` | `Unity_RunCommand` |
-| component | `skills/component/SKILL.md` | `Unity_RunCommand` |
-| material | `skills/material/SKILL.md` | `Unity_RunCommand` |
-| light | `skills/light/SKILL.md` | `Unity_RunCommand` |
-| prefab | `skills/prefab/SKILL.md` | `Unity_RunCommand` |
-| asset | `skills/asset/SKILL.md` | `Unity_RunCommand` |
-| ui | `skills/ui/SKILL.md` | `Unity_RunCommand` |
-| uitoolkit | `skills/uitoolkit/SKILL.md` | `Unity_RunCommand` |
-| script | `skills/script/SKILL.md` | Native MCP only (`Unity_CreateScript` / `Unity_ScriptApplyEdits` / `Unity_ValidateScript` / …) — no recipes |
-| tooling | `skills/tooling/SKILL.md` | `Unity_CreateScript` (install-once Editor templates under `tooling/<domain>/`) |
-| scene | `skills/scene/SKILL.md` | `Unity_RunCommand` |
-| editor | `skills/editor/SKILL.md` | `Unity_RunCommand` |
-| animator | `skills/animator/SKILL.md` | `Unity_RunCommand` |
-| shader | `skills/shader/SKILL.md` | `Unity_RunCommand` |
-| console | `skills/console/SKILL.md` | `Unity_ReadConsole` |
-| validation | `skills/validation/SKILL.md` | `Unity_RunCommand` |
-| importer | `skills/importer/SKILL.md` | `Unity_RunCommand` |
-| cinemachine | `skills/cinemachine/SKILL.md` | `Unity_RunCommand` |
-| probuilder | `skills/probuilder/SKILL.md` | `Unity_RunCommand` |
-| xr | `skills/xr/SKILL.md` | `Unity_RunCommand` |
-| terrain | `skills/terrain/SKILL.md` | `Unity_RunCommand` |
-| physics | `skills/physics/SKILL.md` | `Unity_RunCommand` |
-| navmesh | `skills/navmesh/SKILL.md` | `Unity_RunCommand` |
-| timeline | `skills/timeline/SKILL.md` | `Unity_RunCommand` |
-| cleaner | `skills/cleaner/SKILL.md` | `Unity_RunCommand` |
-| smart | `skills/smart/SKILL.md` | `Unity_RunCommand` |
-| perception | `skills/perception/SKILL.md` | `Unity_RunCommand` |
-| camera | `skills/camera/SKILL.md` | `Unity_Camera_Capture` (Scene View / in-memory); game-camera PNG at a path/resolution → `camera_screenshot` recipe — do not hand-roll a RenderTexture |
-| event | `skills/event/SKILL.md` | `Unity_RunCommand` |
-| package | `skills/package/SKILL.md` | Native MCP only (`Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData`) |
-| project | `skills/project/SKILL.md` | `Unity_GetProjectData` |
-| optimization | `skills/optimization/SKILL.md` | `Unity_RunCommand` |
-| test | `skills/test/SKILL.md` | `Unity_RunCommand` |
-| scriptableobject | `skills/scriptableobject/SKILL.md` | `Unity_RunCommand` |
+| Domain | What it covers | Skill file | Tool route |
+|--------|----------------|------------|------------|
+| gameobject | Object create/move/parent | `skills/gameobject/SKILL.md` | `Unity_RunCommand` |
+| component | Component add/remove/configure | `skills/component/SKILL.md` | `Unity_RunCommand` |
+| material | Material property edits | `skills/material/SKILL.md` | `Unity_RunCommand` |
+| light | Light create/configure | `skills/light/SKILL.md` | `Unity_RunCommand` |
+| prefab | Prefab create/apply/spawn | `skills/prefab/SKILL.md` | `Unity_RunCommand` |
+| asset | Asset refresh/find/info | `skills/asset/SKILL.md` | `Unity_RunCommand` |
+| ui | UGUI Canvas/UI creation | `skills/ui/SKILL.md` | `Unity_RunCommand` |
+| uitoolkit | UXML/USS/UIDocument | `skills/uitoolkit/SKILL.md` | `Unity_RunCommand` |
+| script | Script edit/validate/SHA | `skills/script/SKILL.md` | Native MCP only (`Unity_CreateScript` / `Unity_ScriptApplyEdits` / `Unity_ValidateScript` / …) — no recipes |
+| tooling | Install-once Editor script templates | `skills/tooling/SKILL.md` | `Unity_CreateScript` (templates under `tooling/<domain>/`) |
+| scene | Scene load/save/query | `skills/scene/SKILL.md` | `Unity_RunCommand` |
+| editor | Play/select/undo/redo | `skills/editor/SKILL.md` | `Unity_RunCommand` |
+| animator | Animator controllers | `skills/animator/SKILL.md` | `Unity_RunCommand` |
+| shader | Shader create/list | `skills/shader/SKILL.md` | `Unity_RunCommand` |
+| console | Log capture/debug | `skills/console/SKILL.md` | `Unity_ReadConsole` |
+| validation | Broken reference checks | `skills/validation/SKILL.md` | `Unity_RunCommand` |
+| importer | Texture/audio/model import | `skills/importer/SKILL.md` | `Unity_RunCommand` |
+| cinemachine | VCam operations | `skills/cinemachine/SKILL.md` | `Unity_RunCommand` |
+| probuilder | ProBuilder mesh edits | `skills/probuilder/SKILL.md` | `Unity_RunCommand` |
+| xr | XRI setup | `skills/xr/SKILL.md` | `Unity_RunCommand` |
+| terrain | Terrain create/paint | `skills/terrain/SKILL.md` | `Unity_RunCommand` |
+| physics | Raycast/overlap/gravity | `skills/physics/SKILL.md` | `Unity_RunCommand` |
+| navmesh | NavMesh bake/query | `skills/navmesh/SKILL.md` | `Unity_RunCommand` |
+| timeline | Timeline tracks/clips | `skills/timeline/SKILL.md` | `Unity_RunCommand` |
+| cleaner | Unused/duplicate assets | `skills/cleaner/SKILL.md` | `Unity_RunCommand` |
+| smart | Query/layout/auto-bind | `skills/smart/SKILL.md` | `Unity_RunCommand` |
+| perception | Scene/project analysis | `skills/perception/SKILL.md` | `Unity_RunCommand` |
+| camera | Scene View camera | `skills/camera/SKILL.md` | `Unity_Camera_Capture` (Scene View / in-memory); game-camera PNG at a path/resolution → `camera_screenshot` recipe — do not hand-roll a RenderTexture |
+| event | UnityEvent wiring | `skills/event/SKILL.md` | `Unity_RunCommand` |
+| package | UPM install/query | `skills/package/SKILL.md` | Native MCP only (`Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData`) |
+| project | Project info/settings | `skills/project/SKILL.md` | `Unity_GetProjectData` |
+| optimization | Asset optimization | `skills/optimization/SKILL.md` | `Unity_RunCommand` |
+| test | Unity Test Runner | `skills/test/SKILL.md` | `Unity_RunCommand` |
+| scriptableobject | ScriptableObject assets | `skills/scriptableobject/SKILL.md` | `Unity_RunCommand` |
 
 All paths above are relative to the library root (this file's directory).
 
 ## Other root files
 
-- `skills/SKILL.md` — pointer to this domain map (kept for relative cross-links).
 - `mcp-tools.md` — full routing matrix for native MCP tools vs `Unity_RunCommand`.
 - `recipes/README.md` — recipes intro and conventions.
 - `tooling/README.md` — install-once Editor script templates (not subject to RunCommand validation); domain subfolders mirror `recipes/`.
