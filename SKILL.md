@@ -71,7 +71,7 @@ The Domain Skill Map below indexes `recipes/`. For install-once tools, open `too
 | cleaner | `skills/cleaner/SKILL.md` | `Unity_RunCommand` |
 | smart | `skills/smart/SKILL.md` | `Unity_RunCommand` |
 | perception | `skills/perception/SKILL.md` | `Unity_RunCommand` |
-| camera | `skills/camera/SKILL.md` | `Unity_Camera_Capture` |
+| camera | `skills/camera/SKILL.md` | `Unity_Camera_Capture` (Scene View / in-memory); game-camera PNG at a path/resolution → `camera_screenshot` recipe — do not hand-roll a RenderTexture |
 | event | `skills/event/SKILL.md` | `Unity_RunCommand` |
 | package | `skills/package/SKILL.md` | Native MCP only (`Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData`) |
 | project | `skills/project/SKILL.md` | `Unity_GetProjectData` |
