@@ -80,7 +80,7 @@ The Domain Skill Map below indexes `recipes/`. For install-once tools, open `too
 | package | UPM install/query | `skills/package/SKILL.md` | Native MCP only (`Unity_PackageManager_ExecuteAction` / `Unity_PackageManager_GetData`) |
 | project | Project info/settings | `skills/project/SKILL.md` | `Unity_GetProjectData` |
 | optimization | Asset optimization | `skills/optimization/SKILL.md` | `Unity_RunCommand` |
-| test | Unity Test Runner | `skills/test/SKILL.md` | `Unity_RunCommand` |
+| test | Unity Test Runner | `skills/test/SKILL.md` | `Unity_CreateScript` once (`tooling/test/test_runner_tool`), then `Unity_RunCommand` to call it — never register a result callback from a RunCommand body |
 | scriptableobject | ScriptableObject assets | `skills/scriptableobject/SKILL.md` | `Unity_RunCommand` |
 
 All paths above are relative to the library root (this file's directory).

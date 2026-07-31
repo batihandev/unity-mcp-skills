@@ -30,6 +30,7 @@ If no tool covers the case, write one — but check first.
 
 | Domain | Folder | Tools |
 |--------|--------|-------|
+| test | [`../../tooling/test/`](../../tooling/test/README.md) | `test_runner_tool` |
 | ui | [`../../tooling/ui/`](../../tooling/ui/README.md) | `ui_screenshot_tool` |
 
 ## Common Mistakes
