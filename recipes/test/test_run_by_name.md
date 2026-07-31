@@ -1,57 +1,39 @@
 # test_run_by_name
 
-Kick off a specific test class or fully-qualified method via a
-`TestRunnerApi` filter. Fire-and-forget; the registered callback writes the
-NUnit XML report when the run finishes — read it via `test_get_result`.
+Kick off a specific test class or method, via the installed test runner tool.
 
-**Signature:** `TestRunByName(testName string, testMode string = "EditMode")`
+**Prerequisite:** install [`tooling/test/test_runner_tool`](../../tooling/test/test_runner_tool.md)
+once per project. Same reason as [`test_run`](test_run.md): a result callback registered from a
+`Unity_RunCommand` body cannot be cleaned up and silently rewrites earlier runs' reports. See
+[Why not inline](../../tooling/test/test_runner_tool.md#why-not-inline).
 
-**Returns:** `{ success, started, testName, mode, resultsPath }`
+**Signature:** `ProjectTestRunner.Run(resultFileName string, editMode bool = true, fullyQualifiedTestName string = null)`
+
+**Returns:** the absolute report path, or an `ERROR: ` string when the run cannot start.
 
 **Notes:**
-- `testName` is required. Pass an exact class name (e.g. `MyTestClass`) or
-  a fully qualified method name (e.g. `MyNamespace.MyTestClass.MyTest`).
-- Only one active Test Runner run at a time is safe.
-- **`TestRunnerApi.Execute` writes no file on its own.** Like `test_run`, this
-  recipe registers an `ICallbacks` whose `RunFinished` calls
-  `TestRunnerApi.SaveResultToFile`, writing `TestResults/<mode>-mcp.xml`; the
-  api + callback are held in a `static` so they survive the async run. See
-  `test_run` for the PlayMode domain-reload caveat and the editor-open
-  precondition.
+- **`fullyQualifiedTestName` must be fully qualified** — `Namespace.Class` or
+  `Namespace.Class.Method`. A bare class name such as `MyTestClass` matches **zero** tests, and a
+  run of zero tests reports as a pass. This is the single most common false green here.
+- Always assert the report's `total` is non-zero before believing a green result.
+- Fire-and-forget. Read the report in a *later* call, after it appears and its mtime settles.
+- Use a fresh `resultFileName` per run; never reuse one.
+- Only one active Test Runner run at a time.
+- See [`test_run`](test_run.md) for the editor-open precondition and the PlayMode domain-reload
+  caveat.
 
 **Prerequisites:** [`execution_result`](../_shared/execution_result.md), [`validate`](../_shared/validate.md)
 
 ```csharp
 using UnityEngine;
-using UnityEditor;
-using UnityEditor.TestTools.TestRunner.Api;
-
-// Keeps the api + callback alive for the async run (see test_run for rationale).
-internal static class _TestRunHold
-{
-    public static TestRunnerApi Api;
-    public static ResultWriter Writer;
-
-    internal sealed class ResultWriter : ICallbacks
-    {
-        private readonly string _path;
-        public ResultWriter(string path) { _path = path; }
-        public void RunStarted(ITestAdaptor testsToRun) { }
-        public void RunFinished(ITestResultAdaptor result)
-        {
-            TestRunnerApi.SaveResultToFile(result, _path);
-        }
-        public void TestStarted(ITestAdaptor test) { }
-        public void TestFinished(ITestResultAdaptor result) { }
-    }
-}
+using YourProject.Editor.Testing;   // namespace you installed the tool under
 
 internal class CommandScript : IRunCommand
 {
     public void Execute(ExecutionResult result)
     {
-        string testName = "MyTestClass";
-        string testMode = "EditMode";
+        // Fully qualified. "MyTestClass" alone would match nothing and report a pass.
+        string testName = "MyNamespace.MyTestClass";
 
         if (Validate.Required(testName, "testName") is object err)
         {
@@ -59,50 +41,17 @@ internal class CommandScript : IRunCommand
             return;
         }
 
-        TestMode mode;
-        if (string.Equals(testMode, "EditMode", System.StringComparison.OrdinalIgnoreCase))
-            mode = TestMode.EditMode;
-        else if (string.Equals(testMode, "PlayMode", System.StringComparison.OrdinalIgnoreCase))
-            mode = TestMode.PlayMode;
-        else
-        {
-            result.SetResult(new { error = $"testMode must be EditMode or PlayMode, got {testMode}" });
-            return;
-        }
-
-        // A stuck/leftover PlayMode blocks an EditMode run from ever starting
-        // (fails silently — no run, no XML). Surface it instead.
-        if (mode == TestMode.EditMode && EditorApplication.isPlayingOrWillChangePlaymode)
-        {
-            result.SetResult(new { error = "Editor is in PlayMode; exit PlayMode before running EditMode tests (the run would silently never start)." });
-            return;
-        }
-
-        var dir = System.IO.Path.Combine(
-            System.IO.Directory.GetParent(Application.dataPath).FullName, "TestResults");
-        System.IO.Directory.CreateDirectory(dir);
-        var resultsPath = System.IO.Path.Combine(dir, mode + "-mcp.xml");
-
-        var api = ScriptableObject.CreateInstance<TestRunnerApi>();
-        var writer = new _TestRunHold.ResultWriter(resultsPath);
-        api.RegisterCallbacks(writer);
-        _TestRunHold.Api = api;       // survive the async run
-        _TestRunHold.Writer = writer;
-
-        var runFilter = new Filter
-        {
-            testMode = mode,
-            testNames = new[] { testName }
-        };
-        api.Execute(new ExecutionSettings(runFilter));
+        string path = ProjectTestRunner.Run(
+            "EditMode-<task>-<red|green>.xml",
+            editMode: true,
+            fullyQualifiedTestName: testName);
 
         result.SetResult(new
         {
-            success = true,
-            started = true,
+            success = !path.StartsWith("ERROR:"),
+            started = !path.StartsWith("ERROR:"),
             testName,
-            mode = testMode,
-            resultsPath = resultsPath.Replace('\\', '/')
+            resultsPath = path
         });
     }
 }
