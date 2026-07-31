@@ -18,8 +18,8 @@ in a later call.
    per project, and start every run through it. Do **not** register a result callback from a
    `Unity_RunCommand` body: such a callback can never be cleaned up, and each one rewrites its own
    old report with every later run's results, so a report captured as "red" becomes a copy of a
-   later green one. Three repairs were measured and all three failed. See
-   [Why not inline](../../tooling/test/test_runner_tool.md#why-not-inline).
+   later green one. It cannot be repaired in place — the failed approaches are listed under
+   [Why not inline](../../tooling/test/test_runner_tool.md#why-not-inline); do not re-attempt them.
 1. Trigger: `test_run` or `test_run_by_name` calls `ProjectTestRunner.Run(...)`, which returns the
    report path immediately. `TestRunnerApi.Execute` writes no file on its own; the tool's single
    permanent callback writes it when the run finishes.
@@ -33,8 +33,9 @@ in a later call.
    `python3 -c "import xml.etree.ElementTree as ET;print(ET.parse('TestResults/<name>.xml').getroot().attrib)"`.
 
 Polling across calls is the caller's job, not a recipe's. Only one Test
-Runner run should be active at a time: wait for a report to appear **and** for its mtime to stop
-changing before starting the next.
+Runner run should be active at a time — the tool returns an `ERROR: ` string if a run it started is
+still pending. Wait for a report to appear **and** for its mtime to stop changing before starting
+the next.
 
 **Precondition:** the Editor must be open and responsive on the intended
 project before triggering.

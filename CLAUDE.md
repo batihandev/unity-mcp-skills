@@ -6,7 +6,8 @@ so it never ships with the skill pack.
 ## Branch layout
 
 - `main` — installable skill pack. Only `recipes/`, `skills/`, `references/`,
-  `README.md`, `SKILL.md`, `mcp-tools.md`, `LICENSE`, and its `.gitignore`.
+  `tooling/`, `README.md`, `SKILL.md`, `mcp-tools.md`, `LICENSE`, and its
+  `.gitignore`.
 - `dev` — everything above plus `tools/`, `docs/superpowers/`, `CLAUDE.md`,
   `AGENTS.md`, `Makefile`. All work happens here.
 

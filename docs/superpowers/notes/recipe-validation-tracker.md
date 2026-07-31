@@ -550,8 +550,8 @@ Cell values: `x` = done, `-` = pending, `B` = blocker (see notes), `R` = retired
 | test_list | x | x | x | x | 2026-04-22: Async redesign: fires TestRunnerApi.RetrieveTestList, callback writes Temp/test-list-<mode>.json. Paired with test_list_read + test_list_categories.; 2026-04-22: Task 21: live — test_list fired RetrieveTestList; callback wrote Temp/test-list-EditMode.json (42KB); reads parse cleanly |
 | test_list_categories | x | x | x | x | 2026-04-22: Async redesign: stateless read of Temp/test-list-<mode>.json cache. Uses List<string>+manual Contains (ISet<> gotcha).; 2026-04-22: Task 21: live — test_list fired RetrieveTestList; callback wrote Temp/test-list-EditMode.json (42KB); reads parse cleanly |
 | test_list_read | x | x | x | x | 2026-04-22: New recipe (Task 5 follow-up async split); stateless read of Temp/test-list-<mode>.json cache written by test_list.; 2026-04-22: Task 21: live — test_list fired RetrieveTestList; callback wrote Temp/test-list-EditMode.json (42KB); reads parse cleanly |
-| test_run | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
-| test_run_by_name | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign |
+| test_run | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign; 2026-07-31: rewritten to route through tooling/test/test_runner_tool; tool path verified live (run A intact after run B) |
+| test_run_by_name | x | x | x | - | 2026-04-21: scripted via inject_prerequisites.py; 2026-04-21: Task 5 async redesign; 2026-07-31: rewritten to route through tooling/test/test_runner_tool; tool path verified live (run A intact after run B) |
 | test_smoke_skills | R | R | R | - | 2026-04-21: retired — depended on upstream REST SkillRegistry; file deleted |
 
 ## timeline (12 recipes)

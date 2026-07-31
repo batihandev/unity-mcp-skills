@@ -14,7 +14,7 @@ Install via `Unity_CreateScript` with the C# content below.
 
 The file must land in an Editor assembly that references `UnityEditor.TestRunner`. If your project
 uses asmdefs, add that reference to the existing Editor asmdef rather than creating a new assembly
-for it — see `unity-asmdef-setup`, which caps a project at its default assembly set.
+for it.
 
 ## Post-install
 
@@ -43,7 +43,8 @@ for its mtime to stop changing, then parse it.
 ```bash
 F=TestResults/EditMode-mytask-red.xml
 for i in $(seq 1 12); do [ -f "$F" ] && break; sleep 8; done
-prev=""; for i in $(seq 1 6); do cur=$(stat -c %Y "$F"); [ "$cur" = "$prev" ] && break; prev=$cur; sleep 5; done
+# stat -c is GNU, stat -f is macOS
+prev=""; for i in $(seq 1 6); do cur=$(stat -c %Y "$F" 2>/dev/null || stat -f %m "$F"); [ "$cur" = "$prev" ] && break; prev=$cur; sleep 5; done
 python3 -c "import xml.etree.ElementTree as ET;r=ET.parse('$F').getroot();print(r.attrib)"
 ```
 
@@ -68,31 +69,26 @@ The obvious approach — declaring an `ICallbacks` in the `Unity_RunCommand` bod
 there — silently corrupts test evidence, and cannot be repaired in place.
 
 A RunCommand body compiles into a throwaway dynamic assembly whose statics do not survive to the
-next invocation. Measured: a static written by one invocation reads back null in the next. So a
-callback registered that way can never be found again, and never cleaned up. Every writer registered
-across a domain's lifetime keeps firing on every later run, each re-writing *its own* path with the
-new run's results.
+next invocation — a static written by one invocation reads back null in the next. So a callback
+registered that way can never be found again, and never cleaned up. Every writer registered across a
+domain's lifetime keeps firing on every later run, each re-writing *its own* path with the new run's
+results.
 
-The symptom is a set of differently-named reports that are byte-identical. A report captured as
+The symptom is a set of differently-named reports that are byte-identical: a report captured as
 "red" gets retroactively overwritten by a later green run, so a failing test reads as a passing
-red-green cycle that never happened. In one project's history this produced six identical reports
-from a single run, and a committed `-red`/`-green` pair that were the same bytes.
+red-green cycle that never happened.
 
-Three repairs were tried against this and all three were measured to fail:
+Repairs that do not fix it — do not re-attempt these:
 
 | Attempt | Result |
 |---|---|
 | Unregister the previous callback held in a `static` | Dead on arrival — the static does not survive to the next invocation, so there is nothing to unregister |
 | Self-unregister via `EditorApplication.delayCall` | Earlier report still overwritten |
-| Self-unregister synchronously inside `RunFinished` | Earlier report still overwritten; `UnregisterCallbacks` threw nothing and detached nothing |
+| Self-unregister synchronously inside `RunFinished` | Earlier report still overwritten; `UnregisterCallbacks` throws nothing and detaches nothing |
 
 The tool below sidesteps all of it. Its statics are real because the assembly is stable, so it
 registers exactly one callback for the lifetime of the domain and there is never a second writer to
-leak. This is the same conclusion `unity-asmdef-setup` reaches under "Cross-reload state in
-throwaway assemblies".
-
-Verified by the experiment that falsified the three attempts above: run A over 3 tests, let it
-settle, run B over 6 tests, confirm A still reads 3 with an unchanged hash.
+leak.
 
 ```csharp
 using System.IO;
@@ -153,6 +149,12 @@ namespace YourProject.Editor.Testing
                 return "ERROR: editor is in PlayMode; exit it before running EditMode tests.";
             if (EditorApplication.isCompiling)
                 return "ERROR: editor is compiling; retry once it settles.";
+
+            // A second Run() while one is active would re-point _pendingResultPath and land the
+            // active run's report on the new filename. A domain reload clears the flag, so a run
+            // that dies with the domain cannot wedge this permanently.
+            if (_pendingResultPath != null)
+                return "ERROR: a run is already pending; wait for its report to settle first.";
 
             string dir = Path.Combine(
                 Directory.GetParent(Application.dataPath).FullName, "TestResults");
