@@ -4,7 +4,7 @@ Recipe path rule: `../../recipes/test/<command>.md`
 
 | Command | File | Description |
 |---------|------|-------------|
-| `test_run` | [test_run.md](test_run.md) | Run Unity tests asynchronously; callback writes `TestResults/<mode>-mcp.xml` |
+| `test_run` | [test_run.md](test_run.md) | Run Unity tests asynchronously via the installed [`test_runner_tool`](../../tooling/test/test_runner_tool.md), which writes one report to a caller-supplied filename |
 | `test_get_result` | [test_get_result.md](test_get_result.md) | Parse the newest `TestResults/<mode>-*.xml` (stateless, no job ID) |
 | `test_list` | [test_list.md](test_list.md) | List available tests discovered from source files |
 | `test_cancel` | [test_cancel.md](test_cancel.md) | Cancel a running test job if supported |

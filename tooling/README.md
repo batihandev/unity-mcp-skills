@@ -21,4 +21,5 @@ Install-once Editor script templates for Unity projects.
 
 | Domain | Folder | Contents |
 |--------|--------|----------|
+| test | [`tooling/test/`](test/README.md) | Test Runner tools — install before running tests via MCP |
 | ui | [`tooling/ui/`](ui/README.md) | UGUI Editor tools |
