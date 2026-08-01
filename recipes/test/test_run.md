@@ -21,8 +21,8 @@ that do not fix it are in
 - Use a fresh `resultFileName` per run. A stale file from an earlier run is otherwise
   indistinguishable from this run's result.
 - Unity serializes the Test Runner — one run at a time. The tool refuses a `Run` while one it
-  started is still pending. Wait for the first report to appear *and* for its mtime to stop
-  changing before starting the next.
+  started is still pending. Wait for the first report to be whole and fresh — the poll loop below —
+  before starting the next.
 - `fullyQualifiedTestName` filters to one class or method and must be `Namespace.Class` or
   `Namespace.Class.Method`. A bare class name matches zero tests, and a run of zero tests reports as
   a pass. Assert `total` is non-zero before believing any green.
@@ -30,9 +30,10 @@ that do not fix it are in
   refuses to start and returns an `ERROR: ` string when the editor is compiling, or when it is in
   Play Mode and an EditMode run was asked for — that combination otherwise never starts and never
   writes a report, which looks exactly like a broken callback.
-- Confirm `EditorUtility.scriptCompilationFailed` is false before starting. A run against a failed
-  compile reports the previous run's numbers. Do not read that state from `Unity_ReadConsole`, which
-  can return an empty list while the compile is broken; read `Editor.log` for the errors.
+- `Run` refuses to start while `EditorUtility.scriptCompilationFailed` is true — the Test Runner
+  would execute the assemblies from the last successful compile and report their numbers as this
+  code's. Read the errors from `Editor.log`; `Unity_ReadConsole` can return an empty list while the
+  compile is broken.
 - **PlayMode caveat:** entering Play Mode can trigger a domain reload that discards the callback
   before `RunFinished` fires, so no report is written. Disable domain reload for the run or keep
   PlayMode runs on the Test Runner window. EditMode runs do not reload the domain.
@@ -60,12 +61,44 @@ internal class CommandScript : IRunCommand
 }
 ```
 
-Then, in a later call, poll from the shell and parse:
+Then, in a later call, poll from the shell and parse. Three reports can lie, so waiting for the
+file to merely exist is not enough:
+
+- a **leftover** from an earlier run under the same name, which reads as this run's result
+- a run that **matched no tests**, which NUnit reports as a pass
+- a **half-written** file caught mid-flush
 
 ```bash
 F=TestResults/EditMode-<task>-<red|green>.xml
-for i in $(seq 1 12); do [ -f "$F" ] && break; sleep 8; done
-# stat -c is GNU, stat -f is macOS
-prev=""; for i in $(seq 1 6); do cur=$(stat -c %Y "$F" 2>/dev/null || stat -f %m "$F"); [ "$cur" = "$prev" ] && break; prev=$cur; sleep 5; done
-python3 -c "import xml.etree.ElementTree as ET;r=ET.parse('$F').getroot();print(r.attrib)"
+MAX_AGE=120   # a report older than this belongs to an earlier run, not this one
+
+# The closing tag is the completion signal: Unity writes the report in one pass,
+# so its presence means the file is whole. stat -c is GNU, stat -f is macOS.
+for i in $(seq 1 150); do
+  if [ -f "$F" ] && grep -q '</test-run>' "$F" 2>/dev/null; then
+    MTIME=$(stat -c %Y "$F" 2>/dev/null || stat -f %m "$F")
+    [ $(( $(date +%s) - MTIME )) -le "$MAX_AGE" ] && break
+  fi
+  sleep 2
+done
+
+# On fall-through whatever is on disk is stale or half-written; parsing it would
+# report an older run's numbers as this one's.
+{ [ -f "$F" ] && grep -q '</test-run>' "$F" 2>/dev/null && \
+  [ $(( $(date +%s) - $(stat -c %Y "$F" 2>/dev/null || stat -f %m "$F") )) -le "$MAX_AGE" ]; } \
+  || { echo "no fresh report at $F" >&2; exit 1; }
+
+python3 - "$F" <<'PY'
+import sys, xml.etree.ElementTree as ET
+a = ET.parse(sys.argv[1]).getroot().attrib
+total = int(a.get("total") or a.get("testcasecount") or 0)
+failed, inconc = int(a.get("failed", 0)), int(a.get("inconclusive", 0))
+print("total=%d passed=%s failed=%d inconclusive=%d"
+      % (total, a.get("passed"), failed, inconc))
+if total == 0:
+    sys.exit(3)              # matched no tests - NUnit calls this a pass
+sys.exit(2 if failed or inconc else 0)
+PY
 ```
+
+Exit codes: `0` passed, `1` no fresh report arrived, `2` tests failed, `3` matched no tests.

@@ -34,8 +34,8 @@ in a later call.
 
 Polling across calls is the caller's job, not a recipe's. Only one Test
 Runner run should be active at a time — the tool returns an `ERROR: ` string if a run it started is
-still pending. Wait for a report to appear **and** for its mtime to stop changing before starting
-the next.
+still pending. Wait for the report to be whole and fresh — the poll loop in
+[`test_run`](../../recipes/test/test_run.md) — before starting the next.
 
 **Precondition:** the Editor must be open and responsive on the intended
 project before triggering.

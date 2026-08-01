@@ -16,7 +16,8 @@ once per project. Same reason as [`test_run`](test_run.md): a result callback re
   `Namespace.Class.Method`. A bare class name such as `MyTestClass` matches **zero** tests, and a
   run of zero tests reports as a pass. This is the single most common false green here.
 - Always assert the report's `total` is non-zero before believing a green result.
-- Fire-and-forget. Read the report in a *later* call, after it appears and its mtime settles.
+- Fire-and-forget. Read the report in a *later* call, once it is whole and fresh — the poll loop in
+  [`test_run`](test_run.md).
 - Use a fresh `resultFileName` per run; never reuse one.
 - Only one active Test Runner run at a time.
 - See [`test_run`](test_run.md) for the editor-open precondition and the PlayMode domain-reload
