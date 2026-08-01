@@ -93,6 +93,7 @@ leak.
 ```csharp
 using System.IO;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
 
@@ -134,9 +135,11 @@ namespace YourProject.Editor.Testing
         /// <param name="fullyQualifiedTestName">Optional filter. Must be Namespace.Class or
         /// Namespace.Class.Method — a bare class name matches nothing and a run of zero tests reads
         /// as a pass.</param>
+        /// <param name="assemblyName">Optional filter naming one test assembly, for running a whole
+        /// suite without naming every class in it.</param>
         /// <returns>The absolute report path, or an "ERROR: " string when the run cannot start.</returns>
         public static string Run(string resultFileName, bool editMode = true,
-            string fullyQualifiedTestName = null)
+            string fullyQualifiedTestName = null, string assemblyName = null)
         {
             if (string.IsNullOrWhiteSpace(resultFileName))
                 return "ERROR: resultFileName is required.";
@@ -161,19 +164,72 @@ namespace YourProject.Editor.Testing
             Directory.CreateDirectory(dir);
             string resultsPath = Path.Combine(dir, resultFileName);
 
+            SaveDirtyScenes();
+
             EnsureRegistered();
             _pendingResultPath = resultsPath;
             LastRequestedPath = resultsPath;
 
+            Filter filter = BuildFilter(editMode, fullyQualifiedTestName, assemblyName);
+
+            // A throw leaves no run behind to clear the flag, which would refuse every later Run()
+            // until the next domain reload.
+            try
+            {
+                _api.Execute(new ExecutionSettings(filter));
+            }
+            catch
+            {
+                _pendingResultPath = null;
+                throw;
+            }
+
+            return resultsPath.Replace('\\', '/');
+        }
+
+        /// <summary>
+        /// Builds the run's filter. An absent narrowing stays null rather than becoming an empty
+        /// array: an empty array is a filter that matches nothing, and a run of zero tests reports
+        /// as a pass.
+        /// </summary>
+        public static Filter BuildFilter(bool editMode, string fullyQualifiedTestName,
+            string assemblyName)
+        {
             var filter = new Filter
             {
                 testMode = editMode ? TestMode.EditMode : TestMode.PlayMode
             };
+
             if (!string.IsNullOrWhiteSpace(fullyQualifiedTestName))
                 filter.testNames = new[] { fullyQualifiedTestName };
+            if (!string.IsNullOrWhiteSpace(assemblyName))
+                filter.assemblyNames = new[] { assemblyName };
 
-            _api.Execute(new ExecutionSettings(filter));
-            return resultsPath.Replace('\\', '/');
+            return filter;
+        }
+
+        /// <summary>
+        /// Whether an open scene must be written to disk before a run starts.
+        /// </summary>
+        /// <remarks>
+        /// The Test Runner reloads scenes for the run, and an unsaved one makes Unity raise a
+        /// blocking "Save scene?" dialog. Nobody is there to dismiss it in an MCP or headless run, so
+        /// the run hangs until a human notices. An untitled scene is skipped because saving it has no
+        /// destination and opens a file dialog, which is the same stall by another route.
+        /// </remarks>
+        public static bool ShouldSaveBeforeRun(bool isDirty, string scenePath)
+        {
+            return isDirty && !string.IsNullOrEmpty(scenePath);
+        }
+
+        private static void SaveDirtyScenes()
+        {
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+            {
+                UnityEngine.SceneManagement.Scene scene = EditorSceneManager.GetSceneAt(i);
+                if (ShouldSaveBeforeRun(scene.isDirty, scene.path))
+                    EditorSceneManager.SaveScene(scene);
+            }
         }
 
         private static void EnsureRegistered()
@@ -209,6 +265,30 @@ namespace YourProject.Editor.Testing
     }
 }
 ```
+
+## Keep it the only registrar
+
+Installing this tool fixes nothing on its own if other project code also calls `RegisterCallbacks`
+on `TestRunnerApi`. Each extra registrar keeps writing its captured path for the rest of the
+domain's life, silently rewriting this tool's reports. After installing, search the project for
+other `RegisterCallbacks(` calls on `TestRunnerApi` and route those call sites through `Run` so
+they no longer register their own callback.
+
+## Verifying a run from an MCP session
+
+Two behaviours will otherwise hand you a false green:
+
+- **`Unity_ReadConsole` under-reports compile errors.** It can return zero entries, filtered and
+  unfiltered, while `EditorUtility.scriptCompilationFailed` is true and the editor log holds
+  `error CS` lines. Gate on `scriptCompilationFailed`, and read the errors themselves from
+  `Editor.log`. An empty console is not a clean compile — and a run started against a failed compile
+  reports the previous run's numbers.
+- **`AssetDatabase.DeleteAsset()` trips the MCP "user interactions are not supported" guard**, as do
+  `AssetDatabase.Refresh()`, `File.Delete()` and an inline `TestRunnerApi.Execute()`. To make Unity
+  notice a `.cs` written or deleted on disk, use
+  `AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate)` followed by fully-qualified
+  `UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation()`. The bare name resolves
+  against the dynamic wrapper namespace and fails to compile.
 
 ## PlayMode caveat
 

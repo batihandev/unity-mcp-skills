@@ -9,11 +9,14 @@ reports, turning a red report into a copy of a later green one. The failure mode
 that do not fix it are in
 [Why not inline](../../tooling/test/test_runner_tool.md#why-not-inline).
 
-**Signature:** `ProjectTestRunner.Run(resultFileName string, editMode bool = true, fullyQualifiedTestName string = null)`
+**Signature:** `ProjectTestRunner.Run(resultFileName string, editMode bool = true, fullyQualifiedTestName string = null, assemblyName string = null)`
 
 **Returns:** the absolute report path, or an `ERROR: ` string when the run cannot start.
 
 **Notes:**
+- `assemblyName` scopes the run to one test assembly, which is how to run a whole suite without
+  naming every class in it. It combines with `fullyQualifiedTestName`; leave both unset for the
+  entire mode.
 - Fire-and-forget. The report does not exist when the call returns; read it in a *later* call.
 - Use a fresh `resultFileName` per run. A stale file from an earlier run is otherwise
   indistinguishable from this run's result.
@@ -27,6 +30,9 @@ that do not fix it are in
   refuses to start and returns an `ERROR: ` string when the editor is compiling, or when it is in
   Play Mode and an EditMode run was asked for — that combination otherwise never starts and never
   writes a report, which looks exactly like a broken callback.
+- Confirm `EditorUtility.scriptCompilationFailed` is false before starting. A run against a failed
+  compile reports the previous run's numbers. Do not read that state from `Unity_ReadConsole`, which
+  can return an empty list while the compile is broken; read `Editor.log` for the errors.
 - **PlayMode caveat:** entering Play Mode can trigger a domain reload that discards the callback
   before `RunFinished` fires, so no report is written. Disable domain reload for the run or keep
   PlayMode runs on the Test Runner window. EditMode runs do not reload the domain.

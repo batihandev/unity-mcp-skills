@@ -7,7 +7,7 @@ once per project. Same reason as [`test_run`](test_run.md): a result callback re
 `Unity_RunCommand` body cannot be cleaned up and silently rewrites earlier runs' reports. See
 [Why not inline](../../tooling/test/test_runner_tool.md#why-not-inline).
 
-**Signature:** `ProjectTestRunner.Run(resultFileName string, editMode bool = true, fullyQualifiedTestName string = null)`
+**Signature:** `ProjectTestRunner.Run(resultFileName string, editMode bool = true, fullyQualifiedTestName string = null, assemblyName string = null)`
 
 **Returns:** the absolute report path, or an `ERROR: ` string when the run cannot start.
 
