@@ -37,16 +37,34 @@ internal class CommandScript : IRunCommand
 }
 ```
 
-Fire-and-forget: the file does not exist yet when the call returns. Poll for it from the shell, wait
-for its mtime to stop changing, then parse it.
+Fire-and-forget: the file does not exist yet when the call returns. Poll for it from the shell and
+parse it only once it is whole and fresh.
 
 ```bash
 F=TestResults/EditMode-mytask-red.xml
-for i in $(seq 1 12); do [ -f "$F" ] && break; sleep 8; done
-# stat -c is GNU, stat -f is macOS
-prev=""; for i in $(seq 1 6); do cur=$(stat -c %Y "$F" 2>/dev/null || stat -f %m "$F"); [ "$cur" = "$prev" ] && break; prev=$cur; sleep 5; done
-python3 -c "import xml.etree.ElementTree as ET;r=ET.parse('$F').getroot();print(r.attrib)"
+MAX_AGE=120   # a report older than this belongs to an earlier run, not this one
+
+# Wait for a report that is whole (closing tag) and fresh (not a leftover under
+# the same name). stat -c is GNU, stat -f is macOS.
+for i in $(seq 1 150); do
+  if [ -f "$F" ] && grep -q '</test-run>' "$F" 2>/dev/null; then
+    MTIME=$(stat -c %Y "$F" 2>/dev/null || stat -f %m "$F")
+    [ $(( $(date +%s) - MTIME )) -le "$MAX_AGE" ] && break
+  fi
+  sleep 2
+done
+
+# On fall-through whatever is on disk is stale or half-written; parsing it would
+# report an older run's numbers as this one's.
+{ [ -f "$F" ] && grep -q '</test-run>' "$F" 2>/dev/null && \
+  [ $(( $(date +%s) - $(stat -c %Y "$F" 2>/dev/null || stat -f %m "$F") )) -le "$MAX_AGE" ]; } \
+  || { echo "no fresh report at $F" >&2; exit 1; }
+
+python3 -c "import xml.etree.ElementTree as ET;print(ET.parse('$F').getroot().attrib)"
 ```
+
+See [`recipes/test/test_run`](../../recipes/test/test_run.md) for the version that also turns the
+counts into an exit code, including the zero-test run that NUnit reports as a pass.
 
 Two rules that decide whether the result means anything:
 
@@ -152,6 +170,11 @@ namespace YourProject.Editor.Testing
                 return "ERROR: editor is in PlayMode; exit it before running EditMode tests.";
             if (EditorApplication.isCompiling)
                 return "ERROR: editor is compiling; retry once it settles.";
+
+            // The Test Runner happily runs the assemblies from the last successful compile, which
+            // reports old code's numbers as this code's.
+            if (EditorUtility.scriptCompilationFailed)
+                return "ERROR: the last compile failed; read the errors from Editor.log and fix them first.";
 
             // A second Run() while one is active would re-point _pendingResultPath and land the
             // active run's report on the new filename. A domain reload clears the flag, so a run
@@ -280,9 +303,8 @@ Two behaviours will otherwise hand you a false green:
 
 - **`Unity_ReadConsole` under-reports compile errors.** It can return zero entries, filtered and
   unfiltered, while `EditorUtility.scriptCompilationFailed` is true and the editor log holds
-  `error CS` lines. Gate on `scriptCompilationFailed`, and read the errors themselves from
-  `Editor.log`. An empty console is not a clean compile — and a run started against a failed compile
-  reports the previous run's numbers.
+  `error CS` lines. `Run` refuses to start on that flag; read the errors themselves from
+  `Editor.log`. An empty console is not a clean compile.
 - **`AssetDatabase.DeleteAsset()` trips the MCP "user interactions are not supported" guard**, as do
   `AssetDatabase.Refresh()`, `File.Delete()` and an inline `TestRunnerApi.Execute()`. To make Unity
   notice a `.cs` written or deleted on disk, use
