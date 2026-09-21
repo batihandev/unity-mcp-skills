@@ -129,6 +129,9 @@ Full release verification is pending.
 
 ## Credits and license
 
-This project originated from [Besty0728/Unity-Skills](https://github.com/Besty0728/Unity-Skills).
-The direct-CLI implementation and verification are developed in this repository.
+The initial skills and recipes were adapted from
+[Besty0728/Unity-Skills](https://github.com/Besty0728/Unity-Skills) for direct agent use through Unity MCP.
+This project is evolving that approach around Unity’s official CLI, with consolidated workflows,
+additional commands, and verification.
+
 Licensed under the [MIT License](LICENSE).
