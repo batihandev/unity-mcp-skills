@@ -1,0 +1,13 @@
+{
+  "name": "com.batihandev.unity-cli-commands",
+  "version": "0.1.0",
+  "displayName": "BatihanDev Unity CLI Commands",
+  "description": "Optional typed Editor commands for direct Unity CLI and Pipeline workflows.",
+  "unity": "6000.6",
+  "unityRelease": "2f1",
+  "dependencies": {
+    "com.unity.pipeline": "0.7.0-exp.1",
+    "com.unity.inputsystem": "1.20.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
+  }
+}

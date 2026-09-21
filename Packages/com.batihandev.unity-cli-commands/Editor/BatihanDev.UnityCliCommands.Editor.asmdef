@@ -1,0 +1,12 @@
+{
+  "name": "BatihanDev.UnityCliCommands.Editor",
+  "rootNamespace": "BatihanDev.UnityCliCommands",
+  "references": [
+    "Unity.Pipeline",
+    "Unity.InputSystem",
+    "Unity.Nuget.Newtonsoft-Json"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}
