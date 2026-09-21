@@ -1,23 +1,23 @@
 # Unity CLI Commands
 
-This optional Unity package adds reusable Editor commands for scenes, assets, components,
-ScriptableObjects, console settings, and profiler analysis. Some recipes in `unity-cli-skills` use them.
-It is optional for workflows that use only Unity's built-in commands.
+An optional Editor-only package for scene, asset, component, ScriptableObject, console, and profiler
+commands used by `unity-cli-skills`. Install it per project when you need those recipes. Workflows
+using only Unity’s built-in commands do not require it. It is excluded from game builds.
 
-Installing the agent skill does not install this package. Install it once in each project that needs it.
-It runs only in the Editor and does not ship in your game.
+Agent skills and Unity packages are installed separately; neither Unity’s official skill nor this
+repository’s skill installs this package.
 
 ## Prerequisites
 
 Use **Unity 6000.6.2f1**, **Unity CLI 1.0.0-beta.10**, **Pipeline 0.7.0-exp.1**, and
 **Input System 1.20.0**. This preview package checks the exact Editor/Pipeline/Input versions.
-For initial CLI and skill setup, start with the [main README](../../README.md).
+Git must be available to Unity for package downloads. For CLI and agent skill setup,
+start with the [main README](../../README.md).
 
 ## Install
 
-1. Open **`Packages/manifest.json`** in your Unity project's folder. It lists the project's packages.
-2. Add or update these three entries **inside the existing `dependencies` object**. Keep all other
-   entries. Separate entries with commas; do not add a comma after the last entry.
+1. Open the project's package manifest, **`Packages/manifest.json`**.
+2. Merge these entries into its existing `dependencies` object, preserving other packages and valid JSON:
 
    ```json
    "com.unity.pipeline": "0.7.0-exp.1",
@@ -25,9 +25,8 @@ For initial CLI and skill setup, start with the [main README](../../README.md).
    "com.batihandev.unity-cli-commands": "https://github.com/batihandev/unity-mcp-skills.git?path=/Packages/com.batihandev.unity-cli-commands#0f9df79a66a7fc5811d2e695cbd58fc1264fd58f"
    ```
 
-   The commit ID pins the tested WIP revision. Listing Pipeline and Input System separately keeps them
-   installed if you later remove this command package. Git must be installed and available to Unity
-   so it can download the package.
+   The URL pins the tested package revision independently of your skill checkout. Keep Pipeline and
+   Input System as direct dependencies so removing this package leaves built-in CLI commands available.
 3. Save the file, open the project in Unity, and wait for package installation and compilation.
 4. Leave Unity open and run the check below. Replace `PROJECT_PATH` with the full project folder path
    (the folder containing `Assets`, `Packages`, and `ProjectSettings`). Keep the quotes.
@@ -40,13 +39,11 @@ For initial CLI and skill setup, start with the [main README](../../README.md).
    A compatibility error means the required versions do not match. From WSL, use the Windows project
    path and Windows Unity CLI.
 
-After this check, your agent can discover and use the package commands. The JSON response format and
-command safety rules are documented in the [agent reference](../../unity-cli-skills/references/domains/foundation.md).
+Response formats and command safety rules are documented in the [agent reference](../../unity-cli-skills/references/domains/foundation.md).
 
 ## Verify the package tests
 
-Run these when validating a first installation or changing the package revision. They are not a step
-for every agent session.
+Run the tests after the first installation and when changing the package revision.
 
 Add the following property at the **top level** of `Packages/manifest.json`, alongside `dependencies`:
 
