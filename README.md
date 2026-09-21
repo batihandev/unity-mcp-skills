@@ -1,85 +1,65 @@
-# Unity MCP Skills Library
+# Unity CLI Skills
 
-A documentation-only skill pack for AI agents working inside Unity via the official Unity MCP. No C# plugin, no REST server, no Python client — just markdown that teaches your agent how Unity actually works.
+`unity-cli-skills` teaches coding agents to inspect, test, and author Unity projects through the standalone
+Unity CLI and the Editor's live Pipeline command catalog. The skill itself is Markdown-only and has no Unity
+package, server, or managed-client dependency.
 
-It contains **skills** (per-system guardrails and routing) and **recipes** (ready-to-run C# `IRunCommand` templates) so the agent can act predictably without wrecking your scene.
+This is a work-in-progress preview. The migration has accepted 213 of 585 tracked artifacts; 372 remain open,
+including incomplete importer workflows. Release acceptance gates for the whole migration have not run.
 
-> **Work in progress.** Things may be incomplete or rough around the edges — use with that expectation.
+The current baseline compatibility stack is Unity `6000.6.2f1`, Unity CLI `1.0.0-beta.10`,
+`com.unity.pipeline@0.7.0-exp.1`, and `com.unity.inputsystem@1.20.0`. Discover the live surface before use;
+exact compatibility is intentionally revalidated at each migration or release gate.
 
-**Requires:**
+## Install the skill
 
-- **Unity's `com.unity.ai.assistant` package** with its **Unity MCP Server** enabled in *Project Settings → AI → Unity MCP Server* — the hard dependency that provides `Unity_RunCommand` and the `IRunCommand` contract every recipe targets. Nothing in this pack runs without it.
-- **Unity 6000+ (Unity 6).** Recipes use `FindFirstObjectByType` / `FindObjectsByType`; older versions are not supported.
-- **Per-domain package baselines** listed in each `skills/<domain>/SKILL.md` `## Requirements` block. Domain skills tell the agent how to install missing ones via `Unity_PackageManager_ExecuteAction`.
-
----
-
-## Install
-
-Clone this repo as a single folder inside your agent's skills directory. The whole repo is the install unit — domain skills depend on shared helpers (`recipes/_shared/`), tool routing (`mcp-tools.md`), and fallback docs (`references/`) that ship together.
-
-### Claude Code
+Clone the public WIP branch, record the reviewed commit, and copy only the skill directory into your agent's
+skill home:
 
 ```bash
-git clone https://github.com/batihandev/unity-mcp-skills.git ~/.claude/skills/unity-mcp-skills
+git clone --branch wip/unity-cli --single-branch https://github.com/batihandev/unity-mcp-skills.git
+cd unity-mcp-skills
+git rev-parse HEAD
+# For a repeatable install, check out that reviewed commit before copying.
+git checkout <reviewed-wip-commit>
+cp -a unity-cli-skills "$AGENT_SKILLS_HOME/unity-cli-skills"
 ```
 
-### Codex
+Installing the skill does not edit `Packages/manifest.json`. Update it by replacing that directory from a
+reviewed checkout, and remove it by deleting only `$AGENT_SKILLS_HOME/unity-cli-skills`.
+
+## Use
+
+Name the target project and discover exact arguments before execution:
 
 ```bash
-git clone https://github.com/batihandev/unity-mcp-skills.git ~/.codex/skills/unity-mcp-skills
+unity --json command --project-path "$PROJECT_PATH" \
+  --query find_gameobjects --detail full
+unity --json command find_gameobjects --project-path "$PROJECT_PATH" \
+  --name Player --include_inactive true
 ```
 
-### Antigravity / Gemini CLI
+CLI beta.10 wraps a connected Pipeline response as
+`{"success":true,"data":{"command":...,"parameters":...,"result":...,"target":...},"errors":[],"warnings":[]}`.
+A public package `CommandResult<T>` appears at `data.result` with established PascalCase
+`Schema`/`Ok`/`Result`/`Error` properties. Verify the returned identity and resulting Unity state.
 
-```bash
-git clone https://github.com/batihandev/unity-mcp-skills.git ~/.gemini/antigravity/skills/unity-mcp-skills
-```
+## Optional typed-command package
 
-### Symlink alternative (for hacking on the library)
+`Packages/com.batihandev.unity-cli-commands/` is an optional, Editor-only UPM package for reusable typed
+commands. It is not installed with the skill. After explicit authorization, add a reviewed WIP commit
+with Unity's Git-subdirectory syntax. The recommended full-CLI host declares
+`com.unity.pipeline@0.7.0-exp.1` and `com.unity.inputsystem@1.20.0` directly first, so removing only the optional
+package leaves Pipeline built-ins installed. A package-only host is also supported; use exact
+`unity command --project-path` discovery and execution. Removing the optional package from that shape may also remove its transitive
+Pipeline/Input dependencies and ends Editor-command access. Verify `unity_cli_commands_smoke` and the package
+tests after installation. See the [package README](Packages/com.batihandev.unity-cli-commands/README.md).
 
-```bash
-git clone https://github.com/batihandev/unity-mcp-skills.git ~/src/unity-mcp-skills
-ln -s ~/src/unity-mcp-skills ~/.claude/skills/unity-mcp-skills
-```
+Start with [the skill router](unity-cli-skills/SKILL.md) and its
+[foundation reference](unity-cli-skills/references/domains/foundation.md).
 
-## Update
+## Credits and license
 
-```bash
-cd <your-skills-dir>/unity-mcp-skills && git pull
-```
-
-## Uninstall
-
-```bash
-rm -rf <your-skills-dir>/unity-mcp-skills
-```
-
----
-
-## Prerequisites
-
-- A Unity MCP-compatible server running in your Unity Editor; the Editor must be open during use.
-- An AI agent that can read local files and execute MCP tools (e.g. `Unity_RunCommand`).
-
-## How discovery works
-
-Only the top-level `SKILL.md` is registered with your agent — under the name `unity-mcp-skills`. That skill routes to domain-specific skills under `skills/<domain>/SKILL.md` internally. You will **not** see `unity-scene`, `unity-physics`, etc. as separate skills in your agent — they are loaded on demand by the library.
-
-## What's in here
-
-- **`SKILL.md`** — the discoverable entry point; routes to the right domain.
-- **`skills/<domain>/`** — per-system guidance (UI, Physics, Animation, …) telling the agent when and how to approach a task.
-- **`recipes/<domain>/`** — C# `IRunCommand` templates the agent fills in and runs; designed to support Editor Undo/Redo.
-- **`recipes/_shared/`** — cross-domain C# helpers embedded by recipes.
-- **`tooling/<domain>/`** — install-once Editor script templates installed via `Unity_CreateScript`; persistent project tools (menu items, custom windows), no compile/run gate.
-- **`references/`** — offline reference dumps used as a tertiary fallback when skills and recipes lack detail.
-- **`mcp-tools.md`** — routing matrix for native MCP tools vs `Unity_RunCommand`.
-
-## Format
-
-Skills follow the [superpowers](https://github.com/obra/superpowers) skill format.
-
-## Credits
-
-Skill library structure and data originally curated by [Besty0728](https://github.com/Besty0728/Unity-Skills).
+The original skill-library structure and source material were curated by
+[Besty0728/Unity-Skills](https://github.com/Besty0728/Unity-Skills). This migration's direct-CLI contracts and
+verification are maintained in this repository. Licensed under the [MIT License](LICENSE).
