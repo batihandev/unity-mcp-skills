@@ -1,13 +1,13 @@
-# Extra commands for Unity CLI
+# Unity CLI Commands
 
 This optional Unity package adds reusable Editor commands for scenes, assets, components,
 ScriptableObjects, console settings, and profiler analysis. Some recipes in `unity-cli-skills` use them.
-**You can skip it if you only need Unity's built-in commands.**
+It is optional for workflows that use only Unity's built-in commands.
 
 Installing the agent skill does not install this package. Install it once in each project that needs it.
 It runs only in the Editor and does not ship in your game.
 
-## Before installing
+## Prerequisites
 
 Use **Unity 6000.6.2f1**, **Unity CLI 1.0.0-beta.10**, **Pipeline 0.7.0-exp.1**, and
 **Input System 1.20.0**. This preview package checks the exact Editor/Pipeline/Input versions.
@@ -25,8 +25,8 @@ For initial CLI and skill setup, start with the [main README](../../README.md).
    "com.batihandev.unity-cli-commands": "https://github.com/batihandev/unity-mcp-skills.git?path=/Packages/com.batihandev.unity-cli-commands#0f9df79a66a7fc5811d2e695cbd58fc1264fd58f"
    ```
 
-   The long ID pins the tested WIP revision. Listing Pipeline and Input System separately keeps them
-   installed if you later remove this extra package. Git must be installed and available to Unity
+   The commit ID pins the tested WIP revision. Listing Pipeline and Input System separately keeps them
+   installed if you later remove this command package. Git must be installed and available to Unity
    so it can download the package.
 3. Save the file, open the project in Unity, and wait for package installation and compilation.
 4. Leave Unity open and run the check below. Replace `PROJECT_PATH` with the full project folder path
@@ -40,7 +40,7 @@ For initial CLI and skill setup, start with the [main README](../../README.md).
    A compatibility error means the required versions do not match. From WSL, use the Windows project
    path and Windows Unity CLI.
 
-After this check, your agent can discover and use the extra commands. The JSON response format and
+After this check, your agent can discover and use the package commands. The JSON response format and
 command safety rules are documented in the [agent reference](../../unity-cli-skills/references/domains/foundation.md).
 
 ## Verify the package tests
@@ -71,7 +71,7 @@ Reopen Unity afterward. A successful compilation alone does not verify the comma
 Let Unity resolve it, then repeat the connection check and package tests.
 
 **Remove:** delete the `com.batihandev.unity-cli-commands` entry from `dependencies` and, if added,
-from `testables`. Keep other entries. Let Unity finish resolving the change. Its extra commands should
+from `testables`. Keep other entries. Let Unity finish resolving the change. Its commands should
 be absent; Pipeline's built-in commands should remain available with the recommended setup above.
 The package creates no project assets that require cleanup.
 
