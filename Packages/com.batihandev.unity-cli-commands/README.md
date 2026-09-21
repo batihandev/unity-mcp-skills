@@ -1,54 +1,85 @@
-# BatihanDev Unity CLI Commands
+# Extra commands for Unity CLI
 
-This optional Editor-only UPM package provides focused typed commands for standalone Unity CLI and Pipeline
-workflows. Version `0.1.0` accepts exactly Unity `6000.6.2f1`, `com.unity.pipeline@0.7.0-exp.1`, and
-`com.unity.inputsystem@1.20.0`; the smoke command returns a structured incompatibility error before mutation
-when that contract is not met.
+This optional Unity package adds reusable Editor commands for scenes, assets, components,
+ScriptableObjects, console settings, and profiler analysis. Some recipes in `unity-cli-skills` use them.
+**You can skip it if you only need Unity's built-in commands.**
+
+Installing the agent skill does not install this package. Install it once in each project that needs it.
+It runs only in the Editor and does not ship in your game.
+
+## Before installing
+
+Use **Unity 6000.6.2f1**, **Unity CLI 1.0.0-beta.10**, **Pipeline 0.7.0-exp.1**, and
+**Input System 1.20.0**. This preview package checks the exact Editor/Pipeline/Input versions.
+For initial CLI and skill setup, start with the [main README](../../README.md).
 
 ## Install
 
-For the recommended full-CLI host, directly declare the exact CLI foundation before adding the optional
-package:
+1. Open **`Packages/manifest.json`** in your Unity project's folder. It lists the project's packages.
+2. Add or update these three entries **inside the existing `dependencies` object**. Keep all other
+   entries. Separate entries with commas; do not add a comma after the last entry.
 
-```json
-"com.unity.inputsystem": "1.20.0",
-"com.unity.pipeline": "0.7.0-exp.1"
-```
+   ```json
+   "com.unity.pipeline": "0.7.0-exp.1",
+   "com.unity.inputsystem": "1.20.0",
+   "com.batihandev.unity-cli-commands": "https://github.com/batihandev/unity-mcp-skills.git?path=/Packages/com.batihandev.unity-cli-commands#0f9df79a66a7fc5811d2e695cbd58fc1264fd58f"
+   ```
 
-Add a reviewed commit from the public `wip/unity-cli` branch. Replace the placeholder with its full commit ID;
-the package URL uses Unity's Git-subdirectory syntax:
+   The long ID pins the tested WIP revision. Listing Pipeline and Input System separately keeps them
+   installed if you later remove this extra package. Git must be installed and available to Unity
+   so it can download the package.
+3. Save the file, open the project in Unity, and wait for package installation and compilation.
+4. Leave Unity open and run the check below. Replace `PROJECT_PATH` with the full project folder path
+   (the folder containing `Assets`, `Packages`, and `ProjectSettings`). Keep the quotes.
 
-```json
-"com.batihandev.unity-cli-commands": "https://github.com/batihandev/unity-mcp-skills.git?path=/Packages/com.batihandev.unity-cli-commands#<reviewed-wip-commit>"
-```
+   ```sh
+   unity --json command unity_cli_commands_smoke --project-path "PROJECT_PATH"
+   ```
 
-The package also declares both dependencies for compilation and version coherence, so a package-only host is
-supported. Use exact `unity command --project-path` discovery and execution. Let Unity resolve the project,
-enable its tests with this top-level entry in the consuming `Packages/manifest.json` (alongside `dependencies`):
+   Look for `success: true`, then `Ok: true` and `Status: "ready"` inside the result.
+   A compatibility error means the required versions do not match. From WSL, use the Windows project
+   path and Windows Unity CLI.
+
+After this check, your agent can discover and use the extra commands. The JSON response format and
+command safety rules are documented in the [agent reference](../../unity-cli-skills/references/domains/foundation.md).
+
+## Verify the package tests
+
+Run these when validating a first installation or changing the package revision. They are not a step
+for every agent session.
+
+Add the following property at the **top level** of `Packages/manifest.json`, alongside `dependencies`:
 
 ```json
 "testables": ["com.batihandev.unity-cli-commands"]
 ```
 
-Preserve any existing entries in `testables`. Run the package EditMode tests, discover
-`unity_cli_commands_smoke` with `unity command --query ... --detail full`, and assert its returned versions.
-Package installation is explicit and independent from installing `unity-cli-skills`.
+If `testables` already exists, add the package name to that array, preserving its other entries.
+Save your scene and close the project's Editor before running:
 
-The package supplies typed commands for console settings and entries, project defines, Editor context,
-scene and asset operations, component and ScriptableObject members, and profiler analysis. Discover each
-command's live schema before use. It also extends `foundation.path.validate` with
-`allowEmbeddedPackages=true` for a project-contained, existing embedded package. The default path policy
-is Assets-only.
+```sh
+unity --json test "PROJECT_PATH" --editor-version 6000.6.2f1 --mode EditMode --output "package-tests.xml" --timeout 600
+```
 
-## Update
+Replace `PROJECT_PATH` as above. The command writes `package-tests.xml`; verify that it includes the
+package tests and has a nonzero test count with no failures, skipped, or inconclusive tests.
+Reopen Unity afterward. A successful compilation alone does not verify the commands.
 
-Replace only the revision after `#`, resolve from a clean project, and repeat the tests and live smoke check.
-Do not claim a revision is supported from compilation alone.
+## Update or remove
 
-## Remove
+**Update:** replace the commit ID after `#` in the package URL with a reviewed WIP revision.
+Let Unity resolve it, then repeat the connection check and package tests.
 
-Remove only `com.batihandev.unity-cli-commands` from the consuming manifest, then resolve and reload. In a
-full-CLI host, confirm its commands are absent while directly declared Pipeline/Input and built-ins remain;
-removing that foundation is separate. In a package-only host, removal may also remove transitive
-Pipeline/Input and ends Editor-command access. The package creates no project assets or migration hooks, so
-no compatibility shim or cleanup command is required.
+**Remove:** delete the `com.batihandev.unity-cli-commands` entry from `dependencies` and, if added,
+from `testables`. Keep other entries. Let Unity finish resolving the change. Its extra commands should
+be absent; Pipeline's built-in commands should remain available with the recommended setup above.
+The package creates no project assets that require cleanup.
+
+<details>
+<summary>Advanced: projects that only declare this package</summary>
+
+The package also declares Pipeline and Input System as dependencies, so this arrangement is supported.
+However, removing it may also remove those dependencies and end CLI access to Editor commands.
+List them directly as shown in the recommended installation if you want them to remain installed.
+
+</details>
