@@ -1,8 +1,7 @@
 # Script authoring, search, and validation
 
-Read [foundation routing and safety](foundation.md) first. Keep the legacy script entrypoint while its active
-component, ScriptableObject, asset, validation, UI, and tooling consumers migrate. The routes below define
-the direct CLI/host workflow; no generic script wrapper is added.
+Read [foundation routing and safety](foundation.md) first. Use the reviewed host authoring transaction for
+script publication and editing, terminal compilation for readiness, and the exact asset removal owner for deletion.
 
 ## Create and delete
 
@@ -12,10 +11,23 @@ a legal non-keyword C# identifier and a matching file name. Use the shared autho
 explicit existing embedded-package option, no-overwrite atomic publication, owned-partial cleanup, import,
 and terminal compilation. New templates use UTF-8 without BOM and LF; return actual verified paths.
 
-Delete only through a complete guarded native `delete_asset` after exact path, SHA-256, and confirmation,
-with its actual Undo behavior stated. If live discovery does not prove that whole contract, retain the
-capability gap and do not substitute destructive eval. Never delete a preexisting target during failure
-cleanup.
+Delete an exact script through the optional `asset.trash` command, with `expectedSha256` required for this
+script route. Capture the source bytes, encoding/newlines, SHA-256, exact project path, `.meta` bytes/hash,
+and GUID outside the project before removal. Preview with `dryRun=true` and the captured source hash, verify
+that both files are unchanged, then use the same hash and explicit `confirm=true` for the authorized deletion.
+A malformed hash, changed source, or changed path confinement refuses. The command hashes the exact regular
+file again and revalidates source/meta paths immediately before moving both files to recoverable OS trash.
+The public AssetDatabase operation is not an atomic compare-and-delete; an uncooperative filesystem writer
+can still race the final checks. Serialize cooperating authoring workflows and retain the snapshots.
+
+Removal is non-Undo. Verify source/meta absence and an unloadable script, then wait for terminal compilation
+and verify affected component/type/menu postconditions. Recover through the captured file/meta snapshots or
+OS trash only after proving the destination source and meta are absent; refuse a new or changed external file.
+Publish the exact source bytes through the confined authoring owner, restore the exact captured meta, import
+synchronously, and require identical source/meta hashes, original GUID, correct MonoScript/type resolution,
+and terminal compilation. Use [asset metadata recovery](asset.md#external-import) for the metadata lifecycle.
+If recovery cannot finish, retain every external snapshot and report the incomplete state. Never delete a
+preexisting target during failure cleanup.
 
 ## List, search, and edit
 
@@ -33,3 +45,10 @@ before publication.
 Group related edits before one compile boundary. Post-edit verification uses terminal compiler diagnostics,
 exact source hash/content, and test/discovery results where relevant. Do not begin another mutation while
 compilation or reload is active. Retain failed invocations and remove only owned staging files.
+
+## Script structure
+
+Choose a meaningful class name, its MonoBehaviour, ScriptableObject, Editor, or plain-class role, and a
+feature folder such as `Assets/Scripts/<Feature>/`. Keep the structure small, make dependencies explicit,
+and use events for notifications. Avoid Update polling, repeated GameObject.Find calls, reflection in hot
+paths, and avoidable allocations. Class renames require the matching file rename in the reviewed operation.

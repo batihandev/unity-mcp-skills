@@ -1,0 +1,15 @@
+{
+  "name": "BatihanDev.UnityCliCommands.Timeline.Editor",
+  "rootNamespace": "BatihanDev.UnityCliCommands.TimelineAuthoring",
+  "references": [
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.Pipeline",
+    "Unity.Pipeline.Attributes",
+    "Unity.Timeline"
+  ],
+  "includePlatforms": ["Editor"],
+  "defineConstraints": ["BATIHANDEV_TIMELINE_6"],
+  "versionDefines": [
+    { "name": "com.unity.timeline", "expression": "[6.6.0,7.0.0)", "define": "BATIHANDEV_TIMELINE_6" }
+  ]
+}

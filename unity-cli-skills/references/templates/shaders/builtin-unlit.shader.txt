@@ -1,0 +1,40 @@
+Shader "{{SHADER_NAME}}"
+{
+    Properties
+    {
+        _MainTex ("Texture", 2D) = "white" {}
+        _Color ("Color", Color) = (1,1,1,1)
+    }
+    SubShader
+    {
+        Tags { "RenderType"="Opaque" }
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "UnityCG.cginc"
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            fixed4 _Color;
+
+            struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; };
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
+
+            Varyings vert(Attributes input)
+            {
+                Varyings output;
+                output.positionCS = UnityObjectToClipPos(input.positionOS);
+                output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+                return output;
+            }
+
+            fixed4 frag(Varyings input) : SV_Target
+            {
+                return tex2D(_MainTex, input.uv) * _Color;
+            }
+            ENDCG
+        }
+    }
+}

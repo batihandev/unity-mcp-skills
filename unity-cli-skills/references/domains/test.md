@@ -12,18 +12,66 @@ explicit status; apply a validated caller-side limit after discovery. Category l
 set of nonempty categories. A new test must appear after compilation and disappear after owned deletion and
 reload; there is no source-regex cache.
 
-Prefer top-level `unity test <exact-project> --mode EditMode|PlayMode --filter <fully-qualified-name>
---output <unique-exact-path> --timeout <bound>`. The Editor must be closed first. Require a fresh output file,
-exact project identity, nonzero expected test IDs, zero failed/skipped/inconclusive results when success is
-required, and propagation of compile failures, timeouts, and zero matches. `unity@1.0.0-beta.9` can exit zero
-after a zero-match filter, so parse the fresh XML and reject `total=0` or a missing exact expected
-identity even when the invocation envelope says success. Explicit tests run only when the caller deliberately
-selected them. Retain the first structured invocation and exact NUnit report.
+Use the public host gate for an exact method, exact class, exact assembly, or their intersection. Omitting
+all selectors runs the entire requested mode; omitting `--mode` selects EditMode.
 
-Connected `run_tests` remains valid after the same clean-scene preflight. Submit one exact discovered full
-name with `async_tests=true`, then poll `test_status` with a bounded timeout to a terminal state and verify the
-exact report/test identity. Zero or multiple exact-name matches refuse before submission. A request
-acknowledgement is not completion.
+```text
+python3 unity-cli-skills/scripts/unity_workflow.py test --project <exact-project> --route connected \
+  --test-class <namespace.class> --assembly <exact-assembly> --source <file.cs> --output <new-report.json>
+```
+
+Use `--test-name <exact-FullName>` for a method, `--test-class <namespace.class>` for every discovered method
+in that class, and `--assembly <exact-assembly>` for an assembly. Name and class are mutually exclusive;
+either can combine with assembly. Repeat `--source` for each explicit source input. The connected route
+compiles and freezes a nonzero native discovery set, then submits one asynchronous native suite and polls to
+fresh terminal status. The SDK accepts one case-insensitive partial name or assembly filter. The gate refuses
+any selection that this filter would widen, including identical fullnames in separate assemblies: the native
+SDK passes only fullnames to its runner. Use offline execution for such a selection.
+
+Prepare a bound discovery plan while the exact project Editor is connected, then stop that owned Editor
+before offline execution:
+
+```text
+python3 unity-cli-skills/scripts/unity_workflow.py test-plan --project <exact-project> \
+  --test-name <exact-FullName> --assembly <exact-assembly> --source <file.cs> --output <new-plan.json>
+python3 unity-cli-skills/scripts/unity_workflow.py test --project <exact-project> --route offline \
+  --test-name <exact-FullName> --assembly <exact-assembly> --discovery <new-plan.json> \
+  --source <file.cs> --output <new-report.xml>
+```
+
+The plan freezes native rows, exact selected assembly/fullname pairs, project, mode, Editor identity/version,
+source hashes, and the source/assembly/DLL inventory. Offline execution requires matching selectors, project,
+mode, version, and unchanged inputs; a raw discovery response cannot substitute for a plan. Offline class,
+assembly, combined, and whole-mode selections require this plan. An offline single exact fullname can run
+without a plan and validates the sole exact leaf. Native offline names use anchored escaped regex filters;
+assembly selection forwards `-assemblyNames` after the CLI's `--` separator. Whole-mode runs pass no filter.
+The offline runner performs its own compile step, so no separate connected compile proof is claimed.
+
+Both routes require the complete nonzero frozen selection, consistent summary counts, and every selected
+leaf passed, with no failed, skipped, or inconclusive leaves. Offline XML identifies each leaf through its
+Assembly parent suite; distinct assemblies with the same fullname remain distinct identities. Missing,
+extra, or duplicate identities fail even when a failing report is retained. A successful acknowledgement is
+not completion. Explicit connected tests require `--include-explicit`; the offline CLI exposes no inclusion
+switch and refuses that option.
+
+Choose an initially absent report path in a persistent directory outside the project's `Assets`, `Packages`,
+`Library`, and `Temp` trees. The helper stages native output in a private sibling directory and publishes
+without replacing an existing target. Connected output is sanitized JSON. Offline output is the raw NUnit XML,
+which may contain test messages, stack traces, and project-local paths; treat it as local diagnostic data.
+Failures with a valid report preserve that report. Do not use Unity's temporary report location or select a
+newest report from a shared directory.
+
+Connected tests have no native run ID. Freshness is established through the rewritten status file, exact
+Editor/source checks, and a cooperating per-project host lock. An uncooperative writer outside that lock
+cannot be ruled out. On a connected wall-clock timeout, the test may still be running; the helper does not
+cancel it automatically. Inspect the request/status files before attempting another run. Offline execution
+reserves time for Unity's native timeout/cleanup before the host deadline; if the host itself times out, Editor
+cleanup remains unverified.
+
+Connected `run_tests` uses the same clean-scene preflight. Set `async_tests=true`, poll `test_status` with
+a bounded timeout, and compare every terminal leaf against the frozen native discovery set. The requested
+mode is bound through discovery and the native acknowledgement; native connected leaves omit assembly and
+mode metadata. A supplied mode that conflicts with the request fails validation.
 
 Parse only the caller-owned report path with a standard XML parser. Return its requested mode, counts,
 failures, start/end time, duration, and exact test identities. Missing or malformed XML fails. Summary accepts

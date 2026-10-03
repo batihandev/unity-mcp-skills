@@ -1,0 +1,16 @@
+{
+  "name": "BatihanDev.UnityCliCommands.ProBuilder.Editor",
+  "rootNamespace": "BatihanDev.UnityCliCommands.ProBuilderAuthoring",
+  "references": [
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.Pipeline",
+    "Unity.Pipeline.Attributes",
+    "Unity.ProBuilder",
+    "Unity.Nuget.Newtonsoft-Json"
+  ],
+  "includePlatforms": ["Editor"],
+  "defineConstraints": ["BATIHANDEV_PROBUILDER_6"],
+  "versionDefines": [
+    { "name": "com.unity.probuilder", "expression": "[6.1.2,7.0.0)", "define": "BATIHANDEV_PROBUILDER_6" }
+  ]
+}

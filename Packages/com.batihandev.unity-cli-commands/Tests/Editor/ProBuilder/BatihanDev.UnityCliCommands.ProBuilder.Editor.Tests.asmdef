@@ -1,0 +1,15 @@
+{
+  "name": "BatihanDev.UnityCliCommands.ProBuilder.Editor.Tests",
+  "rootNamespace": "BatihanDev.UnityCliCommands.Tests.ProBuilder",
+  "references": [
+    "BatihanDev.UnityCliCommands.ProBuilder.Editor",
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.ProBuilder"
+  ],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "defineConstraints": ["BATIHANDEV_PROBUILDER_6"],
+  "versionDefines": [
+    { "name": "com.unity.probuilder", "expression": "[6.1.2,7.0.0)", "define": "BATIHANDEV_PROBUILDER_6" }
+  ]
+}

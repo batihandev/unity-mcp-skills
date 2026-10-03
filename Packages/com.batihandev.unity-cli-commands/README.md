@@ -1,16 +1,31 @@
 # Unity CLI Commands
 
-An optional Editor-only package for scene, asset, component, ScriptableObject, console, and profiler
-commands used by `unity-cli-skills`. Install it per project when you need those recipes. Workflows
-using only Unity’s built-in commands do not require it. It is excluded from game builds.
+An optional Editor-only package for scene, asset, component, ScriptableObject, lighting, camera,
+Animator runtime, UnityEvent listener, physics layer collision, NavMesh surface and area-cost, global shader keyword, console, and profiler commands used by `unity-cli-skills`. It includes Sprite Atlas V2 creation, membership
+and packing plus focused Scene View framing owners. Install it per project when you need those
+recipes. Workflows using only Unity’s built-in commands do not require it. It is excluded from game
+builds.
+
+Timeline binding, source-free clip, track removal, fixed duration, and Director transport commands are available when `com.unity.timeline` 6.6.x is installed. See the [Timeline guide](../../unity-cli-skills/references/domains/timeline.md) for native composition and exact command boundaries.
+
+Cinemachine stage replacement, target-group membership, and transient impulse commands are available when `com.unity.cinemachine` 6.6.x is installed. See the [Cinemachine guide](../../unity-cli-skills/references/domains/cinemachine.md) for native composition and exact command boundaries.
+
+ProBuilder shape creation, inspection, topology and vertex editing, face materials, UV box projection, and mesh combination are available when `com.unity.probuilder` 6.1.2 through 6.x is installed. See the [ProBuilder guide](../../unity-cli-skills/references/domains/probuilder.md) for exact targets, confirmation, Undo, and scene-save steps.
+
+XR scene authoring commands are available with XRI 3.6.1 through 3.x and XR Core Utils 2.6 through 2.x. The XR assembly is optional and the core package has no XR reference. See the [XR guide](../../unity-cli-skills/references/domains/xr.md) for exact scene targets, input/provider prerequisites, locomotion, tracked UI, event feedback, layers, Undo and persistence.
+
+NavMesh surface commands are available when the project has `com.unity.ai.navigation` 2.x.
+The package's other commands do not require AI Navigation. The surface build produces
+session NavMesh data and does not save a NavMesh asset; surface data removal unregisters
+the runtime instance while retaining the surface's data reference.
 
 Agent skills and Unity packages are installed separately; neither Unity’s official skill nor this
 repository’s skill installs this package.
 
 ## Prerequisites
 
-Use **Unity 6000.6.2f1**, **Unity CLI 1.0.0-beta.10**, **Pipeline 0.7.0-exp.1**, and
-**Input System 1.20.0**. This preview package checks the exact Editor/Pipeline/Input versions.
+Use **Unity 6000.6.2f1**, **Unity CLI 1.0.0-beta.12**, **Pipeline 0.8.0-exp.1**, and
+**Input System 1.20.0**. This package checks the exact Editor/Pipeline/Input versions.
 Git must be available to Unity for package downloads. For CLI and agent skill setup,
 start with the [main README](../../README.md).
 
@@ -20,12 +35,12 @@ start with the [main README](../../README.md).
 2. Merge these entries into its existing `dependencies` object, preserving other packages and valid JSON:
 
    ```json
-   "com.unity.pipeline": "0.7.0-exp.1",
+   "com.unity.pipeline": "0.8.0-exp.1",
    "com.unity.inputsystem": "1.20.0",
-   "com.batihandev.unity-cli-commands": "https://github.com/batihandev/unity-mcp-skills.git?path=/Packages/com.batihandev.unity-cli-commands#0f9df79a66a7fc5811d2e695cbd58fc1264fd58f"
+   "com.batihandev.unity-cli-commands": "https://github.com/batihandev/unity-cli-skills.git?path=/Packages/com.batihandev.unity-cli-commands#RELEASE_COMMIT"
    ```
 
-   The URL pins the tested package revision independently of your skill checkout. Keep Pipeline and
+   Replace `RELEASE_COMMIT` with the published, reviewed package commit matching the versions above. Keep Pipeline and
    Input System as direct dependencies so removing this package leaves built-in CLI commands available.
 3. Save the file, open the project in Unity, and wait for package installation and compilation.
 4. Leave Unity open and run the check below. Replace `PROJECT_PATH` with the full project folder path
@@ -39,7 +54,10 @@ start with the [main README](../../README.md).
    A compatibility error means the required versions do not match. From WSL, use the Windows project
    path and Windows Unity CLI.
 
-Response formats and command safety rules are documented in the [agent reference](../../unity-cli-skills/references/domains/foundation.md).
+Terrain creation, heightmap editing, and existing-layer painting are documented in the [Terrain guide](../../unity-cli-skills/references/domains/terrain.md).
+Shader source, templates, inspection, recoverable removal, and `shader.global-keyword-set` are documented in the [Shader guide](../../unity-cli-skills/references/domains/shader.md). The keyword command previews with `dryRun=true`, requires `confirm=true` to change global state, reports before and after, and is non-Undo.
+
+Response formats and command safety rules are documented in the [agent reference](../../unity-cli-skills/references/domains/foundation.md). UnityEvent inspection, persistent listener edits, and confirmed invocation are documented in the [Event guide](../../unity-cli-skills/references/domains/event.md).
 
 ## Verify the package tests
 
@@ -64,7 +82,7 @@ Reopen Unity afterward. A successful compilation alone does not verify the comma
 
 ## Update or remove
 
-**Update:** replace the commit ID after `#` in the package URL with a reviewed WIP revision.
+**Update:** replace the commit ID after `#` in the package URL with a reviewed release revision.
 Let Unity resolve it, then repeat the connection check and package tests.
 
 **Remove:** delete the `com.batihandev.unity-cli-commands` entry from `dependencies` and, if added,

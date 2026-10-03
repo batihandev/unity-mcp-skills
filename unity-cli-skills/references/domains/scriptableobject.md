@@ -42,7 +42,7 @@ return new { source = UnityEditor.AssetDatabase.GetAssetPath(source), destinatio
 
 ## Inspect public members
 
-`scriptableobject.member-set` owns one writable public instance field or non-indexer property with a public setter. Its discovered input is `asset`, `member`, optional scalar `value`, optional exact Unity-object `reference`, `dryRun=false`, and `confirm=false`. Use the command's typed conversion rules; do not invent a universal text format. `dryRun=true` previews conversion without changing state. A non-dry-run request requires `confirm=true`, records Undo, marks the object dirty, and calls `AssetDatabase.SaveAssets()`.
+`scriptableobject.member-set` owns one writable public instance field or non-indexer property with a public setter. Its discovered input is `asset`, `member`, optional scalar `value`, optional exact Unity-object `reference`, `dryRun=false`, and `confirm=false`. Use the command's typed conversion rules; do not invent a universal text format. `dryRun=true` previews conversion without changing state. A non-dry-run request requires `confirm=true`, records Undo, marks the selected object dirty, and saves only that asset with `AssetDatabase.SaveAssetIfDirty(asset)`.
 
 Read it back with the evaluation below. The command's returned `ValueSet` is a display string, so it is not authoritative for Unity object or vector-like values. Undo covers serialized backing state. Nonserialized fields and properties without serialized backing require an explicit inverse; saving does not make them persistent. Verify disk state through reload when persistence matters.
 

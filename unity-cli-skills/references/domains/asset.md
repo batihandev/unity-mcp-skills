@@ -93,7 +93,24 @@ return new {
 
 ## Recoverable removal, labels, reimport, and refresh
 
-Use `asset.trash` for a recoverable deletion. Its exact captured input is `asset`, optional `dryRun=false`, optional `confirm=false`, and optional `allowEmbeddedPackages=false`. A real removal requires `confirm=true`; it moves the exact asset and meta file to OS trash and returns the pre-removal GUID. Verify that the asset is absent after the call. Capture file and meta bytes, hashes, and GUID before removal. Restore through OS trash or the exact captured file/meta snapshot, then import and verify the original GUID and loadability. It is non-Undo.
+Use `asset.trash` for a recoverable deletion. Its input is `asset`, optional `dryRun=false`, `confirm=false`,
+`allowEmbeddedPackages=false`, and `expectedSha256=null`. A supplied hash must be exactly 64 ASCII hex
+characters and binds one exact regular file; case is ignored. A malformed hash or source mismatch refuses,
+including during preview. A folder cannot carry a file hash; generic folder removal uses the un-hashed
+folder route with a complete owned inventory and explicit confirmation. The [script deletion route](script.md#create-and-delete)
+requires the hash.
+
+A real removal requires `confirm=true`. The command repeats the source hash check when supplied and
+revalidates the source and meta paths through `ProjectPathPolicy` before moving them to OS trash. It returns
+the pre-removal GUID and is non-Undo. Preview takes precedence over confirmation and does not mutate. Verify
+physical file/folder and meta absence plus an unloadable main asset after removal; a cached GUID alone does
+not establish absence. These checks do not make AssetDatabase deletion an atomic filesystem compare-and-delete.
+
+Capture exact file and meta bytes/hashes and GUID outside the project before removal. Restore through OS
+trash or the captured snapshot only while both destinations remain absent, import synchronously, then verify
+identical bytes, original GUID, main type and loadability. Preserve changed external destinations and retained
+snapshots when recovery refuses. For folders, capture and restore every owned file/meta path and GUID; no
+single-file SHA pretends to cover a tree.
 
 For multiple removals, use native `batch(transactional=false,on_error=continue)` with ordered `asset.trash` items after discovery confirms the typed command is accepted. Inspect the outer item and nested `Ok` for every result; a later item proceeds after an earlier failure. Each successful owned removal retains its own recovery record. This file-operation batch is nontransactional and non-Undo.
 
@@ -115,6 +132,15 @@ return new { success = true, refreshed = true };
 External import has two owners. The canonical host authoring transaction publishes bytes to a confined project path; Unity's explicit `AssetDatabase.ImportAsset(destination)` owns the later import lifecycle. The native `import_asset` command is not a substitute because its captured inputs are `source`, `path`, optional `confirm`, and optional `dry_run`; it cannot bind the required source or destination hashes.
 
 The host request operation is `asset-import`. It provides an absolute `sourcePath`, `expectedSourceSha256`, `destinationPath`, `expectedDestinationState`, and `replaceAuthorized`, with the common project and CLI fields unchanged. Relative source paths refuse before the source is read or the destination is validated. It reads the selected source exactly once into a byte snapshot, hashes that snapshot, refuses a mismatch, and publishes those same bytes. The destination expectation is either `{kind:"absent"}` or `{kind:"existing",sha256:"..."}`. An absent target requires `replaceAuthorized=false`; an existing target requires `replaceAuthorized=true` and must still have the expected hash immediately before publication. The transaction applies its normal confinement, staging, reparse-point, and recovery rules.
+
+The executable one-asset metadata lifecycle is
+[`unity_cli.authoring.import_asset_lifecycle`](../../scripts/unity_cli/authoring.py). A caller
+holds one exact Editor workflow lease and supplies native path validation, observe, synchronous
+import and refresh callbacks, an expected main type, and an external snapshot directory. It
+accepts one normal `operation="write"` request and uses the same `transact` publisher. The
+[host capture workflow](../../scripts/unity_cli/capture.py) supplies these callbacks through
+native eval. Physical parent guards are shared with the report owner; the report output policy
+continues to apply to reports independently.
 
 Before publication, capture the destination file and `.meta` bytes and hashes plus the AssetDatabase GUID,
 main type, and loadability. An expected-new destination requires both files to be absent and its main asset
@@ -139,6 +165,11 @@ A successful item returns `{success:true, imported:<destination>}` plus `filePub
 item with `filePublished` and `importComplete` set to the observed stages. A fully recovered failure has
 `partialFailure=false`; incomplete recovery sets it true and lists every retained recoverable path. Never
 report import completion or a GUID from host publication alone.
+
+An import acknowledgement is not proof that a caller's loaded object or prefab reference is valid. Resolve
+the imported asset again from its exact path and verify its type and content. When a replacement is intended,
+rebind references from freshly resolved objects and verify them after save and reload; do not trust a cached
+object or an unchanged GUID/local file ID by itself. Do not use fixed sleeps as import-completion evidence.
 
 For a batch, perform this complete lifecycle serially per item. Each item has its own source snapshot hash,
 destination expectation, replacement authorization, and recovery record. Return

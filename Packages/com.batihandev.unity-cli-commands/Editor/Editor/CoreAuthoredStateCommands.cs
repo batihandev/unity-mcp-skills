@@ -183,7 +183,8 @@ namespace BatihanDev.UnityCliCommands.Transform
             });
         }
 
-        private static Float3 Vector(Vector3 value) => new Float3 { X = value.x, Y = value.y, Z = value.z };
+        internal static Float3 Vector(Vector3 value) => new Float3 { X = value.x, Y = value.y, Z = value.z };
+        internal static Float4 Rotation(Quaternion value) => new Float4 { X = value.x, Y = value.y, Z = value.z, W = value.w };
         internal static CommandResult<T> Failure<T>(string schema, string code, string target) =>
             CommandResult<T>.Failure(schema, code, "The exact target could not be resolved.",
                 new Dictionary<string, object> { ["target"] = target ?? string.Empty });
@@ -223,6 +224,7 @@ namespace BatihanDev.UnityCliCommands.Transform
     }
 
     [Serializable] public sealed class Float2 { public float X { get; set; } public float Y { get; set; } }
+    [Serializable] public sealed class Float4 { public float X { get; set; } public float Y { get; set; } public float Z { get; set; } public float W { get; set; } }
     [Serializable] public sealed class Float3 { public float X { get; set; } public float Y { get; set; } public float Z { get; set; } }
     [Serializable] public sealed class TransformWorldResult
     {
@@ -351,12 +353,15 @@ namespace BatihanDev.UnityCliCommands.Component
                 return CommandResult<ComponentMemberSetResult>.Failure(MemberSchema, "VALUE_CONVERSION_FAILED",
                     "The value could not be converted to the selected public member type.",
                     new Dictionary<string, object> { ["member"] = selected.Name, ["valueType"] = targetType.FullName });
+            using var undoScope = new Unity.Pipeline.Editor.Authoring.AuthoringUndoScope("Set Component Member");
+            var undoGroup = Undo.GetCurrentGroup();
             Undo.RecordObject(component, "Set Component Member");
             try
             {
                 if (selected is PropertyInfo property) property.SetValue(component, converted);
                 else ((FieldInfo)selected).SetValue(component, converted);
                 EditorUtility.SetDirty(component);
+                Undo.FlushUndoRecordObjects();
                 return CommandResult<ComponentMemberSetResult>.Success(MemberSchema, new ComponentMemberSetResult
                 {
                     GameObject = component.gameObject.name,
@@ -368,7 +373,9 @@ namespace BatihanDev.UnityCliCommands.Component
             }
             catch (Exception exception)
             {
-                Undo.PerformUndo();
+                Undo.FlushUndoRecordObjects();
+                Undo.RevertAllDownToGroup(undoGroup);
+                undoScope.Cancel();
                 return Failure<ComponentMemberSetResult>(MemberSchema, "MEMBER_SET_FAILED", target, null, exception);
             }
         }
@@ -465,7 +472,8 @@ namespace BatihanDev.UnityCliCommands.Asset
 
         [CliCommand("asset.trash", "Preview or move one exact project asset and its meta file to recoverable OS trash.", Tags = new[] { "unity-cli-commands", "asset" })]
         public static CommandResult<AssetTrashResult> Trash(string asset,
-            bool dryRun = false, bool confirm = false, bool allowEmbeddedPackages = false)
+            bool dryRun = false, bool confirm = false, bool allowEmbeddedPackages = false,
+            string expectedSha256 = null)
         {
             var compatibility = CompatibilityPolicy.CheckInstalled();
             if (!compatibility.Ok) return CommandResult<AssetTrashResult>.Failure(TrashSchema, compatibility.Error);
@@ -473,14 +481,44 @@ namespace BatihanDev.UnityCliCommands.Asset
             if (!path.Ok) return CommandResult<AssetTrashResult>.Failure(TrashSchema, path.Error);
             if (!path.Result.Exists || AssetDatabase.LoadMainAssetAtPath(path.Result.Path) == null)
                 return Failure<AssetTrashResult>(TrashSchema, "ASSET_NOT_FOUND", asset);
-            if (!dryRun && !confirm) return Failure<AssetTrashResult>(TrashSchema, "CONFIRMATION_REQUIRED", asset);
-            var guid = AssetDatabase.AssetPathToGUID(path.Result.Path);
-            if (!dryRun && !AssetDatabase.MoveAssetToTrash(path.Result.Path))
-                return Failure<AssetTrashResult>(TrashSchema, "TRASH_FAILED", asset);
-            if (!dryRun && AssetDatabase.LoadMainAssetAtPath(path.Result.Path) != null)
-                return Failure<AssetTrashResult>(TrashSchema, "READBACK_MISMATCH", asset);
-            return CommandResult<AssetTrashResult>.Success(TrashSchema, new AssetTrashResult
-            { Path = path.Result.Path, Guid = guid, Applied = !dryRun, DryRun = dryRun, Recoverable = true, Undoable = false });
+            if (expectedSha256 != null && (expectedSha256.Length != 64 || expectedSha256.Any(character =>
+                    !((character >= '0' && character <= '9') || (character >= 'a' && character <= 'f') ||
+                      (character >= 'A' && character <= 'F')))))
+                return Failure<AssetTrashResult>(TrashSchema, "EXPECTED_SHA256_INVALID", asset);
+            try
+            {
+                var fullPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, path.Result.Path);
+                if (expectedSha256 != null)
+                {
+                    if (Directory.Exists(fullPath))
+                        return Failure<AssetTrashResult>(TrashSchema, FoundationErrorCode.NotRegularFile, asset);
+                    if (!string.Equals(BatihanDev.UnityCliCommands.Scene.SceneAuthoringCommands.FileSha256(fullPath), expectedSha256, StringComparison.OrdinalIgnoreCase))
+                        return Failure<AssetTrashResult>(TrashSchema, "SOURCE_SHA256_MISMATCH", asset);
+                }
+                if (!dryRun && !confirm) return Failure<AssetTrashResult>(TrashSchema, "CONFIRMATION_REQUIRED", asset);
+                var guid = AssetDatabase.AssetPathToGUID(path.Result.Path);
+                if (!dryRun)
+                {
+                    if (expectedSha256 != null &&
+                        !string.Equals(BatihanDev.UnityCliCommands.Scene.SceneAuthoringCommands.FileSha256(fullPath), expectedSha256, StringComparison.OrdinalIgnoreCase))
+                        return Failure<AssetTrashResult>(TrashSchema, "SOURCE_SHA256_MISMATCH", asset);
+                    path = ProjectPathPolicy.Validate(path.Result.Path, allowEmbeddedPackages);
+                    if (!path.Ok) return CommandResult<AssetTrashResult>.Failure(TrashSchema, path.Error);
+                    var meta = ProjectPathPolicy.Validate(path.Result.Path + ".meta", allowEmbeddedPackages);
+                    if (!meta.Ok) return CommandResult<AssetTrashResult>.Failure(TrashSchema, meta.Error);
+                    if (!AssetDatabase.MoveAssetToTrash(path.Result.Path))
+                        return Failure<AssetTrashResult>(TrashSchema, "TRASH_FAILED", asset);
+                    if (File.Exists(fullPath) || Directory.Exists(fullPath) || File.Exists(fullPath + ".meta") ||
+                        AssetDatabase.LoadMainAssetAtPath(path.Result.Path) != null)
+                        return Failure<AssetTrashResult>(TrashSchema, "READBACK_MISMATCH", asset);
+                }
+                return CommandResult<AssetTrashResult>.Success(TrashSchema, new AssetTrashResult
+                { Path = path.Result.Path, Guid = guid, Applied = !dryRun, DryRun = dryRun, Recoverable = true, Undoable = false });
+            }
+            catch (Exception exception) when (ProjectPathPolicy.IsExpectedPathException(exception))
+            {
+                return ProjectPathPolicy.FileSystemFailure<AssetTrashResult>(TrashSchema, asset, exception);
+            }
         }
 
         private static CommandResult<T> Failure<T>(string schema, string code, string path) =>
@@ -623,7 +661,7 @@ namespace BatihanDev.UnityCliCommands.ScriptableObject
                 if (selected is PropertyInfo property) property.SetValue(resolved, converted);
                 else ((FieldInfo)selected).SetValue(resolved, converted);
                 EditorUtility.SetDirty(resolved);
-                AssetDatabase.SaveAssets();
+                AssetDatabase.SaveAssetIfDirty(resolved);
             }
             return CommandResult<ScriptableObjectMemberResult>.Success(MemberSchema, new ScriptableObjectMemberResult
             {
@@ -760,7 +798,7 @@ namespace BatihanDev.UnityCliCommands.ScriptableObject
                     }
                     EditorUtility.SetDirty(resolved);
                     dirtyBeforeSave = EditorUtility.IsDirty(resolved);
-                    AssetDatabase.SaveAssets();
+                    AssetDatabase.SaveAssetIfDirty(resolved);
                     var dirtyAfterSave = EditorUtility.IsDirty(resolved);
                     var reloaded = AssetDatabase.LoadMainAssetAtPath(asset) as UnityEngine.ScriptableObject;
                     if (reloaded == null)
@@ -1295,7 +1333,7 @@ namespace BatihanDev.UnityCliCommands.ScriptableObject
                 case SerializedPropertyType.Float: return property.doubleValue.ToString("R", CultureInfo.InvariantCulture);
                 case SerializedPropertyType.String: return property.stringValue ?? string.Empty;
                 case SerializedPropertyType.ObjectReference: return Editor.ExactObjectReference.ExactId(property.objectReferenceValue);
-                case SerializedPropertyType.Enum: return property.enumValueIndex.ToString(CultureInfo.InvariantCulture);
+                case SerializedPropertyType.Enum: return property.intValue.ToString(CultureInfo.InvariantCulture);
                 case SerializedPropertyType.Vector2: return property.vector2Value.ToString("R");
                 case SerializedPropertyType.Vector3: return property.vector3Value.ToString("R");
                 case SerializedPropertyType.Vector4: return property.vector4Value.ToString("R");
@@ -1496,7 +1534,7 @@ namespace BatihanDev.UnityCliCommands.Scene
             return string.Equals(ProjectFullPath(left), ProjectFullPath(right), ProjectPathPolicy.PathComparison());
         }
 
-        private static string FileSha256(string path)
+        internal static string FileSha256(string path)
         {
             using (var stream = File.OpenRead(path))
             using (var sha = SHA256.Create())

@@ -1,7 +1,7 @@
 # Profiler capture analysis
 
-These workflows are verified against Unity `6000.4.2f1`, Unity CLI `1.0.0-beta.9`, Pipeline
-`0.7.0-exp.1`, and Input System `1.20.0`. Read [foundation routing and safety](foundation.md) first. Discover
+These workflows target Unity `6000.6.2f1`, Unity CLI `1.0.0-beta.11`, Pipeline
+`0.8.0-exp.1`, and Input System `1.20.0`. Read [foundation routing and safety](foundation.md) first. Discover
 each command with `unity command --project-path "$PROJECT_PATH" --query <name> --detail full` because the
 installed catalog owns the request syntax.
 

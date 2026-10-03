@@ -17,7 +17,7 @@ namespace BatihanDev.UnityCliCommands.Tests
             Assert.That(result.Result.PackageVersion, Is.EqualTo("0.1.0"));
             Assert.That(result.Result.Status, Is.EqualTo("ready"));
             Assert.That(result.Result.UnityVersion, Is.EqualTo("6000.6.2f1"));
-            Assert.That(result.Result.PipelineVersion, Is.EqualTo("0.7.0-exp.1"));
+            Assert.That(result.Result.PipelineVersion, Is.EqualTo("0.8.0-exp.1"));
             Assert.That(result.Result.InputSystemVersion, Is.EqualTo("1.20.0"));
         }
     }

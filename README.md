@@ -3,9 +3,6 @@
 Unity workflows and verified recipes for coding agents, extending Unity’s official `unity-cli` skill
 with scene, asset, authoring, and testing guidance.
 
-**Work-in-progress preview.** Coverage is incomplete and full release verification is pending.
-The stable MCP version remains on `main`. See [migration status](#migration-status) for current progress.
-
 ## Requirements
 
 | Component | Installation scope | Required? |
@@ -22,15 +19,15 @@ Skill installation and Unity project configuration are separate steps.
 
 ### 1. Check Unity and the CLI
 
-This preview is tested with **Unity 6000.6.2f1** and **Unity CLI 1.0.0-beta.10**.
+Use **Unity 6000.6.2f1** and **Unity CLI 1.0.0-beta.12**.
 If the CLI is already installed, check it:
 
 ```sh
 unity --version
 ```
 
-If the command is missing, follow [Unity's CLI installation instructions](https://github.com/Unity-Technologies/skills/blob/950064eb1de5c62e68909cbbc7e416dddaa29567/skills/unity-cli/SKILL.md#install-the-cli-if-not-already-installed).
-Other versions have not been verified for this preview; the optional package requires the exact versions listed below.
+If the command is missing, follow [Unity's CLI installation instructions](https://github.com/Unity-Technologies/skills/blob/cb1dccb8f5adffcca43a5a26993fdeb8eae59433/skills/unity-cli/SKILL.md#install-the-cli-if-not-already-installed).
+The compatibility table identifies verified versions and platform routes; the optional package requires the exact Editor and package versions listed below.
 
 ### 2. Install Unity's official skill
 
@@ -53,20 +50,20 @@ skill, manage it there instead.
 
 ### 3. Install this repository's skill
 
-Clone the current WIP branch:
+Clone the release branch:
 
 ```sh
-git clone --branch wip/unity-cli --single-branch https://github.com/batihandev/unity-mcp-skills.git unity-cli-preview
-cd unity-cli-preview
+git clone --branch main --single-branch https://github.com/batihandev/unity-cli-skills.git unity-cli-skills-release
+cd unity-cli-skills-release
 ```
 
-The repository retains its MCP name during migration; `unity-cli-preview` is the local checkout folder.
+`unity-cli-skills-release` is the local checkout folder.
 Copy the complete `unity-cli-skills` directory into your agent's documented skills directory.
 The installed entry point is `unity-cli-skills/SKILL.md`. Start a new agent session after installation.
 Configuration-manager users should install and update through their manager.
 
-This checkout follows the evolving WIP branch. Record `git rev-parse HEAD` if you need to reproduce
-an installation. The optional Unity package uses a separate, tested commit pin.
+Record `git rev-parse HEAD` to reproduce the installed skill revision. The optional Unity package
+uses a separate reviewed commit pin.
 
 ## Project setup
 
@@ -78,7 +75,7 @@ Open the project's **`Packages/manifest.json`** in a text editor. This is Unity'
 Inside its existing `dependencies` object, add or update these entries, preserving all other packages:
 
 ```json
-"com.unity.pipeline": "0.7.0-exp.1",
+"com.unity.pipeline": "0.8.0-exp.1",
 "com.unity.inputsystem": "1.20.0"
 ```
 
@@ -113,19 +110,39 @@ Specify the target project and task:
 > Use unity-cli-skills with my open Unity project. Inspect the current scene and summarize its objects.
 
 The [agent instructions](unity-cli-skills/SKILL.md) cover command discovery and execution.
+For Canvas widgets, layout and component edits, read the [uGUI guide](unity-cli-skills/references/domains/ui.md).
+For UXML/USS, UIDocument, PanelSettings and UI Toolkit starters, read the [UI Toolkit guide](unity-cli-skills/references/domains/uitoolkit.md).
 
 ## Update or uninstall
 
 - **Official skill:** after updating the CLI, run `unity skill refresh` for CLI-managed installations.
-- **This skill:** run `git pull --ff-only` in the preview checkout, review the changes, and replace the
+- **This skill:** run `git pull --ff-only` in the checkout, review the changes, and replace the
   installed `unity-cli-skills` directory. Use your configuration manager for managed installations.
 - **Uninstall the skill:** remove only that installed folder. This leaves your Unity project untouched.
 - **Update/remove the command package:** follow its [package guide](Packages/com.batihandev.unity-cli-commands/README.md#update-or-remove).
 
-## Migration status
+## Compatibility
 
-213 of 585 migration items are accepted; 372 remain open, including importer workflows.
-Full release verification is pending.
+Runtime evidence covers Unity **6000.6.2f1**, Pipeline **0.8.0-exp.1**, and
+Input System **1.20.0**. The semantic matrix uses CLI **1.0.0-beta.11**;
+Git installation lifecycle and baseline restoration use **1.0.0-beta.12**.
+The exercised route is a graphics-enabled Windows Editor controlled from a WSL/Linux shell.
+The host Python helpers require **Python 3.10+** and use the standard library.
+
+| Editor / CLI / Pipeline | OS and shell route | Renderer | Status |
+|---|---|---|---|
+| 6000.6.2f1 / 1.0.0-beta.11 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | Built-in core and seven isolated package integrations | semantic matrix verified |
+| 6000.6.2f1 / 1.0.0-beta.11 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | HDRP 17.6.0 and isolated URP 17.6.0 overlays | verified |
+| 6000.6.2f1 / 1.0.0-beta.12 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | Built-in; two Git installation ownership cases | lifecycle verified (22 passing tests per case) |
+| Same exact versions | Native Windows shell | Same renderer versions | expected-unverified |
+| Same exact versions | Native Linux or macOS Editor and shell | Same renderer versions | expected-unverified |
+| Other Editor, CLI, Pipeline or renderer versions | Any | Any | expected-unverified |
+
+The HDRP/URP row covers retained domain cases. The native fixture matrix records 40 passing core leaves and seven isolated package integration leaves under Built-in, including exact resolved pins and HDRP restoration reconciliation. The original fixture baseline restoration passed separately on CLI `1.0.0-beta.12`; the core/overlay tests retain beta.11 provenance. The Git-subdirectory installation lifecycle passed in two ownership cases on beta.12, with 21 foundation tests and one smoke test per case. The native matrix evidence records source bindings, removal behavior, and exact baseline restoration.
+Optional integrations require their own package and isolated verification; a core workflow
+passing does not verify an optional overlay. The optional command package's exact requirements
+and version are owned by its [package guide](Packages/com.batihandev.unity-cli-commands/README.md).
+No canonical renamed HTTPS package installation is claimed before the repository release.
 
 ## Credits and license
 

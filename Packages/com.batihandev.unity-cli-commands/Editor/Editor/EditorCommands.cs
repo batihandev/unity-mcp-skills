@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using BatihanDev.UnityCliCommands.Foundation;
+using Newtonsoft.Json;
 using Unity.Pipeline.Commands;
 using UnityEditor;
 
@@ -12,7 +13,8 @@ namespace BatihanDev.UnityCliCommands.Editor
 
         [CliCommand("editor.context.details", "Return focused-window and current-selection details keyed by exact identities.",
             Tags = new[] { "unity-cli-commands", "editor" })]
-        public static CommandResult<EditorContextDetailsResult> ContextDetails()
+        public static CommandResult<EditorContextDetailsResult> ContextDetails(
+            bool includeComponents = false, bool includeChildren = false)
         {
             var compatibility = CompatibilityPolicy.CheckInstalled();
             if (!compatibility.Ok)
@@ -30,7 +32,15 @@ namespace BatihanDev.UnityCliCommands.Editor
                     LayerIndex = gameObject.layer,
                     LayerName = UnityEngine.LayerMask.LayerToName(gameObject.layer),
                     ActiveSelf = gameObject.activeSelf,
-                    ActiveInHierarchy = gameObject.activeInHierarchy
+                    ActiveInHierarchy = gameObject.activeInHierarchy,
+                    Components = includeComponents ? gameObject.GetComponents<UnityEngine.Component>()
+                        .Where(component => component != null).Select(component => component.GetType().Name).ToArray() : null,
+                    Children = includeChildren ? gameObject.transform.Cast<UnityEngine.Transform>()
+                        .Select(child => new SelectedChildDetails
+                        {
+                            Name = child.name,
+                            InstanceId = ExactObjectReference.ExactId(child.gameObject)
+                        }).ToArray() : null
                 };
             }).ToArray();
             var assets = Selection.assetGUIDs.Select(guid =>
@@ -75,6 +85,17 @@ namespace BatihanDev.UnityCliCommands.Editor
         public string LayerName { get; set; }
         public bool ActiveSelf { get; set; }
         public bool ActiveInHierarchy { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string[] Components { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public SelectedChildDetails[] Children { get; set; }
+    }
+
+    [Serializable]
+    public sealed class SelectedChildDetails
+    {
+        public string Name { get; set; }
+        public string InstanceId { get; set; }
     }
 
     [Serializable]

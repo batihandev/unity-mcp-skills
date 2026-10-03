@@ -14,7 +14,7 @@ Use the native commands for ordinary scene work:
 | List open scenes | `list_open_scenes` | no parameters |
 | Set active scene | `set_active_scene` | `path` of an already-open scene |
 
-`create_scene` is the owner for an empty saved scene and, when requested, the native default template. Confirm the returned path and the new scene's identity. `save_scene` without a path refuses for an unsaved active scene; a supplied path selects an already-open scene and is not Save As. The typed `scene.save-as` owner supplies persistent Save As after the same path preflight and target-state checks. Its request requires the exact loaded scene handle string in `scene` and a project-relative `.unity` `destination`; optional `dryRun`, `confirm`, `allowEmbeddedPackages`, and `expectedDestinationSha256` retain their native meanings. An existing destination requires `confirm=true` and its current SHA-256; a new destination rejects an expected destination hash. Read `list_open_scenes` after create, open, save, Save As, or active-scene changes when the workflow needs current load, active, or dirty state.
+`create_scene` is the owner for an empty saved scene and, when requested, the native default template. Confirm the returned path and the new scene's identity. `save_scene` without a path refuses for an unsaved active scene; a supplied path selects an already-open scene and is not Save As. The typed `scene.save-as` owner supplies persistent Save As after the same path preflight and target-state checks. Its request requires the exact loaded scene handle string in `scene`: obtain it from the selected loaded scene with `scene.handle.GetRawData().ToString(System.Globalization.CultureInfo.InvariantCulture)`, not `SceneHandle.ToString()`. Supply a project-relative `.unity` `destination`; optional `dryRun`, `confirm`, `allowEmbeddedPackages`, and `expectedDestinationSha256` retain their native meanings. An existing destination requires `confirm=true` and its current SHA-256; a new destination rejects an expected destination hash. Read `list_open_scenes` after create, open, save, Save As, or active-scene changes when the workflow needs current load, active, or dirty state.
 
 Every supplied path is an exact authoring-root-relative path. Before `create_scene` or supplied-path `save_scene`, validate foundation confinement and require a case-insensitive `.unity` suffix; before create, also require that the exact target is absent. Native extension normalization and replacement behavior do not satisfy these baseline safeguards. Do not select an open scene from a display name, a suffix, or the first matching path.
 
@@ -23,6 +23,15 @@ Before `open_scene` or `create_scene` with `additive=false`, inspect all open sc
 `scene.unload(scene, dirtyAction=null)` is the narrow typed owner for closing one already-open scene. `scene` must identify exactly one loaded scene, it refuses when it is the only loaded scene, and a dirty scene requires the existing authorized `dirtyAction` of `"save"` or `"discard"`. `save` refuses for an unsaved scene; `discard` closes only the selected scene. A clean scene accepts the default null action. Read `list_open_scenes` afterward and require the selected scene to be absent.
 
 ## Read-only scene views
+
+For Scene View framing, use the optional package commands documented in
+[Lighting and camera workflows](lighting-camera.md#scene-view). `scene.view-info` samples the
+active view, `scene.view-frame` sets a world pivot plus optional Euler rotation and size, and
+`scene.view-align` aligns to an exact GameObject transform. These commands do not create a view;
+they refuse when there is no current active Scene View. Scene View state is editor state and does
+not participate in scene Undo. For animated framing or alignment, poll `scene.view-info` after
+subsequent Editor updates until the camera pose settles. Keep the reported requested pivot separate
+from the Scene View camera position.
 
 The native catalog supplies open-scene metadata but not the old root summaries, hierarchy projection, or active-scene object filter. Use the following read-only bodies with discovered `eval` or `eval_file`. They do not select a later mutation target; callers select an exact returned identity when needed.
 
@@ -134,33 +143,40 @@ return new { success = true, count = objects.Length, objects };
 
 ## Screenshot workflow
 
-The screenshot workflow defaults to `source="screen"`, `filename="screenshot.png"`, `width=1920`, and `height=1080`, and publishes a PNG at `Assets/Screenshots/<basename>`. `filename` is a basename; normalize an extensionless name to `.png` and refuse separators or a non-PNG extension. Validate positive requested dimensions and verify the PNG IHDR width and height equal the request before publication.
+The host screenshot workflow defaults to `source="screen"`, `filename="screenshot.png"`, `width=1920`, and `height=1080`, and publishes a PNG at `Assets/Screenshots/<basename>`. `filename` is a basename; normalize an extensionless name to `.png` and refuse separators or a non-PNG extension. Validate positive requested dimensions and verify the PNG IHDR width and height equal the request before publication.
 
-For `source="screen"`, call native `capture_game_view` with `source="screen"`, the requested `width` and `height`, and an inline-image result. Screen capture is available only when Play Mode is already authorized and active; this operation never enters Play Mode. It includes composited overlay UI when the Editor has a functioning Game View compositor. Verify the returned PNG pixels when overlay inclusion matters; a camera `RenderTexture` remains a separate batch-capable path and does not prove screen composition.
+The host screenshot publisher and native `capture_game_view` have separate inputs and outputs. This workflow consumes the inline image result; `capture_game_view.save_path` asks Unity to write at a path and does not publish through the host screenshot contract. Do not treat an inline image as proof that a saved file exists, or a save path as the requested `filename`.
 
-For `source="camera"`, resolve an exact `Camera` ObjectRef before rendering. The body below renders to a temporary `RenderTexture`, encodes the requested pixels, and restores both `Camera.targetTexture` and `RenderTexture.active` in `finally`. It does not claim overlay UI capture.
+For `source="screen"`, call native `capture_game_view` with `source="screen"`, the requested `width` and `height`, and an inline-image result. Screen capture works in Edit Mode and Play Mode when the Editor has a functioning Game View render target; a batch Editor without one refuses the capture. This operation never enters Play Mode. It includes composited overlay UI when the Game View compositor is available. Verify the returned PNG pixels when overlay inclusion matters; a camera `RenderTexture` remains a separate batch-capable path and does not prove screen composition.
 
-```csharp
-string cameraEntityId = "REPLACE_WITH_SELECTED_CAMERA_DECIMAL_ID";
-int width = 1920, height = 1080;
-if (width <= 0 || height <= 0) throw new System.ArgumentOutOfRangeException("width and height must be positive");
-if (!ulong.TryParse(cameraEntityId, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var rawId))
-    throw new System.ArgumentException("camera must be an unsigned decimal EntityId string");
-var camera = UnityEditor.EditorUtility.EntityIdToObject(UnityEngine.EntityId.FromULong(rawId)) as UnityEngine.Camera;
-if (camera == null) throw new System.ArgumentException("camera is stale or does not resolve to a Camera");
-var previousTarget = camera.targetTexture;
-var previousActive = UnityEngine.RenderTexture.active;
-var target = UnityEngine.RenderTexture.GetTemporary(width, height, 24, UnityEngine.RenderTextureFormat.ARGB32);
-try {
-    camera.targetTexture = target;
-    camera.Render();
-    UnityEngine.RenderTexture.active = target;
-    var pixels = new UnityEngine.Texture2D(width, height, UnityEngine.TextureFormat.RGBA32, false);
-    try { pixels.ReadPixels(new UnityEngine.Rect(0, 0, width, height), 0, 0); pixels.Apply(false, false); return new { pngBase64 = System.Convert.ToBase64String(UnityEngine.ImageConversion.EncodeToPNG(pixels)), width, height }; }
-    finally { UnityEngine.Object.DestroyImmediate(pixels); }
-} finally { camera.targetTexture = previousTarget; UnityEngine.RenderTexture.active = previousActive; UnityEngine.RenderTexture.ReleaseTemporary(target); }
+For `source="camera"`, resolve an exact `Camera` ObjectRef before rendering. The portable body renders to a temporary `RenderTexture`, encodes the requested pixels, and restores both `Camera.targetTexture` and `RenderTexture.active` in `finally`. It does not claim overlay UI capture.
+The `camera-capture` action defaults `--save-path` to `Assets/screenshot.png`;
+an explicit caller path overrides it. This path is separate from this section's general
+`Assets/Screenshots/<basename>` host screenshot default. Normalize an extensionless camera
+path to `.png`, require a project-relative path beneath `Assets/`, and use the normalized path
+as the host authoring transaction destination. Check PNG IHDR before publication; the host capture action then performs synchronous import and exact readback.
+
+The [portable camera body](../../scripts/camera_capture.cs) is the single pixel owner. The
+[host capture workflow](../../scripts/unity_cli/capture.py) supplies the selected unsigned
+camera ID and dimensions and reads that body verbatim into native `eval`. Invoke it with:
+
+```bash
+python3 <skill-root>/scripts/unity_workflow.py camera-capture --project <exact-project> \
+  --camera <unsigned-camera-entity-id> --width 1920 --height 1080 \
+  --save-path Assets/screenshot.png
 ```
 
-Decode the inline Base64 PNG and pass its actual bytes to the existing [host authoring transaction](console.md#executable-host-authoring-transaction) as `operation="write"` with `writes: [{ path, content: Base64 }]` for the normalized project-relative path. Use its normal confinement, staged publication, replacement authorization, and hash-bound replacement policy. Do not publish through a second transaction. The writer executes only explicitly supplied `postCommands`; it does not itself imply asset import. If import or AssetDatabase readback is needed, discover and invoke the actual owner as a separate step, then report the project-relative path and requested dimensions after IHDR verification.
+The host holds the existing project workflow lease, verifies ready Edit mode and fresh compiler
+state, checks PNG signature/IHDR/requested dimensions, publishes through the host authoring owner,
+and completes the [asset file/meta/GUID lifecycle](asset.md#external-import). Existing targets
+require `--replace-sha256 <authorized-current-file-hash>`. Native camera pixels work with CLI/Pipeline
+and the skill; they do not require the optional command package. Success reports the generated
+PNG dimensions and the imported Texture2D dimensions separately.
+
+
+For an independently consumed inline capture, use the same host authoring and complete asset
+lifecycle before claiming publication or import. Inline pixels alone do not establish a saved asset.
 
 Report screenshot dimensions from the PNG itself. Unity's texture importer can rescale the imported `Texture2D`; report that size separately and use the importer workflow when a runtime texture must preserve the original pixel dimensions.
+
+An image does not prove project-specific observer framing. When camera placement depends on room bounds or line of sight, verify that consuming project's observer behavior and capture the intended view; generic camera targeting does not own those rules.

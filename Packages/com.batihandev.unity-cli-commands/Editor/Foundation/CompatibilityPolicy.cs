@@ -9,7 +9,7 @@ namespace BatihanDev.UnityCliCommands.Foundation
     public static class CompatibilityPolicy
     {
         public const string UnityVersion = "6000.6.2f1";
-        public const string PipelineVersion = "0.7.0-exp.1";
+        public const string PipelineVersion = "0.8.0-exp.1";
         public const string InputSystemVersion = "1.20.0";
         public const string PackageId = "com.batihandev.unity-cli-commands";
         public const string PackageVersion = "0.1.0";

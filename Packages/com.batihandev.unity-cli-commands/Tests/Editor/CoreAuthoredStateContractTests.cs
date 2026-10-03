@@ -14,7 +14,6 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using UnityEngine.TestTools;
 using UnityObject = UnityEngine.Object;
 
@@ -44,7 +43,7 @@ namespace BatihanDev.UnityCliCommands.Tests
             var parent = new GameObject("Task10Parent");
             var child = new GameObject("Task10Child");
             var canvas = new GameObject("Task10Canvas", typeof(RectTransform), typeof(Canvas));
-            var rectObject = new GameObject("Task10Rect", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var rectObject = new GameObject("Task10Rect", typeof(RectTransform), typeof(CanvasRenderer));
             try
             {
                 parent.transform.position = new Vector3(10f, 0f, 0f);
@@ -83,7 +82,7 @@ namespace BatihanDev.UnityCliCommands.Tests
         {
             var source = new GameObject("Task10Source", typeof(AudioSource));
             var destination = new GameObject("Task10Destination");
-            var ui = new GameObject("Task10Ui", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var dependent = new GameObject("Task10RequiredComponent", typeof(HingeJoint));
             try
             {
                 source.GetComponent<AudioSource>().volume = 0.37f;
@@ -91,16 +90,16 @@ namespace BatihanDev.UnityCliCommands.Tests
                 Assert.That(copy.Ok, Is.True, copy.Error?.Code);
                 Assert.That(destination.GetComponent<AudioSource>().volume, Is.EqualTo(0.37f).Within(0.001f));
 
-                var required = ui.GetComponent<CanvasRenderer>();
+                var required = dependent.GetComponent<Rigidbody>();
                 var refused = ComponentAuthoringCommands.Remove(Exact(required));
                 Assert.That(refused.Ok, Is.False);
                 Assert.That(refused.Error.Code, Is.EqualTo("REQUIRED_COMPONENT"));
-                Assert.That(ui.GetComponent<CanvasRenderer>(), Is.SameAs(required));
-                Assert.That(ui.GetComponent<Image>(), Is.Not.Null);
+                Assert.That(dependent.GetComponent<Rigidbody>(), Is.SameAs(required));
+                Assert.That(dependent.GetComponent<HingeJoint>(), Is.Not.Null);
             }
             finally
             {
-                UnityObject.DestroyImmediate(ui);
+                UnityObject.DestroyImmediate(dependent);
                 UnityObject.DestroyImmediate(destination);
                 UnityObject.DestroyImmediate(source);
             }

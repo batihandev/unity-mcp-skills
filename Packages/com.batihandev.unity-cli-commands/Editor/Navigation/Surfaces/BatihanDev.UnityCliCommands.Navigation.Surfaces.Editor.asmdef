@@ -1,0 +1,23 @@
+{
+  "name": "BatihanDev.UnityCliCommands.Navigation.Surfaces.Editor",
+  "rootNamespace": "BatihanDev.UnityCliCommands.Navigation",
+  "references": [
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.Pipeline",
+    "Unity.Pipeline.Attributes",
+    "Unity.AI.Navigation"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "defineConstraints": [
+    "BATIHANDEV_AI_NAVIGATION_2"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.ai.navigation",
+      "expression": "[2.0.0,3.0.0)",
+      "define": "BATIHANDEV_AI_NAVIGATION_2"
+    }
+  ]
+}

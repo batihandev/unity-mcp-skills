@@ -1,7 +1,7 @@
 # Foundation routing and safety
 
-This baseline reference is verified against Unity `6000.6.2f1`, Unity CLI `1.0.0-beta.10`, Pipeline
-`0.7.0-exp.1`, and Input System `1.20.0`. Live discovery wins when a later installed surface differs. This
+This baseline reference targets Unity `6000.6.2f1`, Unity CLI `1.0.0-beta.11`, Pipeline
+`0.8.0-exp.1`, and Input System `1.20.0`. Live discovery wins when a later installed surface differs. This
 baseline gate does not reverify the separate profiler, test, or optional-overlay matrices.
 
 ## Exact project targeting
@@ -17,17 +17,21 @@ unity --json status --project-path "$PROJECT_PATH"
 
 ## Live discovery
 
-Discover the exact registered command before calling it:
+Discover the exact registered command before calling it. Use `--query NAME --detail full` for its parameter
+schema; `unity command --help` is not a substitute for the live schema:
 
 ```bash
 unity --json command --project-path "$PROJECT_PATH" \
   --query find_gameobjects --detail full
 ```
 
-In CLI beta.10, `--detail full` supplies the exact parameter metadata and JSON schema. The schema may describe
+In CLI beta.11, `--detail full` supplies the exact parameter metadata and JSON schema. The schema may describe
 Newtonsoft `JObject`, `JArray`, `JToken`, or a structured Pipeline input as a JSON-valued CLI string. Pass the
 raw JSON value required by the discovered argument; do not reconstruct Pipeline's internal DTO or command
 handler types in a public package.
+
+On CLI beta.12, `unity command` without a command name lists tags. Use `--tag TAG` to list that tag's
+commands, then `--query NAME --detail full` to inspect the selected command before invocation.
 
 Use this route order:
 
@@ -36,22 +40,30 @@ Use this route order:
 3. Registered `unity command eval` or `eval_file` for a narrow one-off operation.
 4. Registered `run_script` for bounded, reviewable multi-statement authoring with a static entry point.
 
-Pass method-body statements and local functions to `eval`/`eval_file`. Put class declarations, including TestRunner callbacks, in a source file and invoke its static entry point with `run_script`.
+Pass method-body statements and local functions to `eval`/`eval_file`. Keep callback classes that must survive later invocations or domain reload in normally imported project source. Invoke an already compiled static entry point through a narrow `eval` call; do not recreate its callbacks in transient code. `run_script` compiles its input into an ephemeral assembly, so use it for bounded authoring whose code and state may be discarded after execution.
 
 There is no top-level `unity eval` verb. If no discovered route owns the whole operation, report the missing
 capability instead of composing a weaker approximation.
 
 ## Results and argument failures
 
-CLI beta.10 wraps connected Pipeline results under `data.result` and reports transport `errors` and `warnings`
+CLI beta.11 wraps connected Pipeline results under `data.result` and reports transport `errors` and `warnings`
 beside `data`. A public `CommandResult<T>` at `data.result` uses the established PascalCase properties
 `Schema`, `Ok`, `Result`, and `Error`; its versioned `CommandError` is distinct from a transport or argument
 failure. Keep transport warnings separate from the domain result.
 
+CLI beta.12 may also include top-level `notifications`. Treat them as informational and inspect
+`success`, transport errors, and the domain result independently. A successful envelope alone does not
+prove the requested Unity state.
+
+CLI beta.12 waits for temporary Editor unavailability within the command's `--timeout` and resends only
+commands rejected before execution. Do not add a host retry for an uncertain mutation outcome; verify the
+target state and process identity before deciding what to do next.
+
 Raw positional values, named flags, and JSON-valued structured inputs are bound by the CLI/Pipeline boundary.
-For beta.10, locally invalid arguments are reported in the top-level `errors` array with
+For beta.11, locally invalid arguments are reported in the top-level `errors` array with
 `INVALID_COMMAND_ARGS`. Discover the schema separately. Do not parse error prose or require fields absent from
-the returned beta.10 envelope.
+the returned beta.11 envelope.
 
 ## Object and type discovery
 
@@ -92,7 +104,7 @@ required confinement and sentinel-preservation cases.
 ## Mutation contract
 
 One reversible scene change stays with its Pipeline built-in and must create one Unity Undo group. Use
-Pipeline 0.7 `batch` for supported multi-operation scene transactions: transactional mode is the default,
+Pipeline `batch` for supported multi-operation scene transactions: transactional mode is the default,
 groups the operations into one Undo step, and rolls back applied operations on failure, cancellation, or time
 budget exhaustion.
 
@@ -103,8 +115,8 @@ Undo from a successful envelope.
 
 ### Typed results inside a batch
 
-Pipeline 0.7.0-exp.1 does not interpret a custom command's nested `Ok:false` as a batch
-failure. An outer item can report `success:true`, increment `applied`, and allow later
+Treat a custom command's nested `Ok:false` separately from a batch's outer
+success. An outer item can report `success:true`, increment `applied`, and allow later
 items to run even with `transactional=true`. Derive each item's success from both the
 outer result and its typed `Ok`; compute counts from those combined outcomes.
 
@@ -136,7 +148,7 @@ and machine-specific paths.
 The skill has no Unity dependency and never edits a manifest. If live discovery lacks a required reusable
 typed command, the optional `com.batihandev.unity-cli-commands` package may be proposed with its exact tested
 revision and compatibility. Wait for explicit authorization. The recommended full-CLI host first declares
-Pipeline `0.7.0-exp.1` and Input System `1.20.0` directly, then adds the optional Git-subdirectory package.
+Pipeline `0.8.0-exp.1` and Input System `1.20.0` directly, then adds the optional Git-subdirectory package.
 A package-only host is also supported because the package declares both dependencies. Require exact
 `unity command --project-path` discovery/execution. Run package tests and
 `unity_cli_commands_smoke`. On full-CLI removal, delete only the optional package and prove Pipeline built-ins

@@ -1,0 +1,15 @@
+{
+  "name": "BatihanDev.UnityCliCommands.Cinemachine.Editor.Tests",
+  "rootNamespace": "BatihanDev.UnityCliCommands.Tests.Cinemachine",
+  "references": [
+    "BatihanDev.UnityCliCommands.Cinemachine.Editor",
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.Cinemachine"
+  ],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "defineConstraints": ["BATIHANDEV_CINEMACHINE_6"],
+  "versionDefines": [
+    { "name": "com.unity.cinemachine", "expression": "[6.6.0,7.0.0)", "define": "BATIHANDEV_CINEMACHINE_6" }
+  ]
+}

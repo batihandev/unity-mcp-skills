@@ -12,7 +12,7 @@ Validate inputs before changing the component and read back the requested result
 
 Use this when the native component list does not return ordered decimal handles, missing-script slots, or the enabled-state profile. Set `gameObjectHandle` to the exact unsigned-decimal GameObject handle returned by discovery. The body resolves only that handle; an unknown, stale, or non-GameObject handle throws. It preserves `GetComponents<Component>()` order, including `null` missing-script slots and duplicate component types. `enabled` is emitted only for `Behaviour`, `Renderer`, and `Collider`.
 
-Discover `eval` first, then pass the body as `code`. The captured beta.10 form is:
+Discover `eval` first, then pass the body as `code`:
 
 ```bash
 unity --json command --project-path "$PROJECT_PATH" --query eval --detail full

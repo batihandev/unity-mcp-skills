@@ -36,6 +36,7 @@ namespace BatihanDev.UnityCliCommands.Tests
         public int PrivateSetter { get; private set; } = 5;
         public int Collision { get => integer; set => integer = value; }
         public int collision { get => integer; set => integer = value; }
+        public float ThrowAfterWrite { get => number; set { number = value; throw new System.InvalidOperationException("Fixture setter failure"); } }
         public int ThrowingGetter => throw new System.InvalidOperationException("Fixture getter failure");
         public int this[int index] { get => integer; set => integer = value; }
         public static int StaticValue;

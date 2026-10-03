@@ -64,6 +64,35 @@ namespace BatihanDev.UnityCliCommands.Tests
             Assert.That(property.GetValue(component), Is.EqualTo(before));
         }
 
+        [Test]
+        public void MemberUndoPreservesThePrecedingUnrelatedEdit()
+        {
+            Undo.RecordObject(component, "Earlier edit");
+            component.Integer = 7;
+            Undo.FlushUndoRecordObjects();
+            var before = component.Number;
+            var result = ComponentAuthoringCommands.MemberSet(target, "Number", "0.375");
+            Assert.That(result.Ok, Is.True, result.Error?.Code);
+            Undo.FlushUndoRecordObjects();
+            Undo.PerformUndo();
+            Assert.That(component.Number, Is.EqualTo(before));
+            Assert.That(component.Integer, Is.EqualTo(7));
+        }
+
+        [Test]
+        public void SetterFailureRestoresOnlyItsOwnMutation()
+        {
+            Undo.RecordObject(component, "Earlier edit");
+            component.Integer = 7;
+            Undo.FlushUndoRecordObjects();
+            var before = component.Number;
+            var result = ComponentAuthoringCommands.MemberSet(target, "ThrowAfterWrite", "0.375");
+            Assert.That(result.Ok, Is.False);
+            Assert.That(result.Error.Code, Is.EqualTo("MEMBER_SET_FAILED"));
+            Assert.That(component.Number, Is.EqualTo(before));
+            Assert.That(component.Integer, Is.EqualTo(7));
+        }
+
         [TestCase("Immutable")]
         [TestCase("PrivateSetter")]
         [TestCase("StaticValue")]

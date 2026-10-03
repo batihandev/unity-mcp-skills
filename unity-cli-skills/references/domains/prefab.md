@@ -14,6 +14,19 @@ Both creation commands can overwrite an existing destination while retaining its
 
 Use `instantiate_prefab(prefab,scene_path?,name?)`. `prefab` is the selected prefab asset reference; `scene_path` selects a loaded destination scene and defaults to the active scene; `name` is optional and defaults to the prefab name. The command has no parent or transform fields, so it does not provide a parent-relative or world-transform input. For parent-relative placement, instantiate first, retain its exact identity, use the [validated parenting evaluation](gameobject.md#validated-parenting-evaluation) with `worldPositionStays=false`, then use `set_transform` for the requested local position, rotation, and scale. For world placement, use `set_transform` without parenting. Read local and world transforms back after those steps.
 
+## Model orientation and asset references
+
+Inspect the selected model's visible geometry, importer metadata, and prefab root transform before choosing a
+facing direction. Measure the asset's visible front and back and adjust only the asset- or prefab-specific
+root. Do not assume a universal importer or authoring-tool forward axis; verify the intended view after
+placement.
+
+For prefab references, prefer an in-place asset edit when the task preserves asset identity. Replacing the
+object at an occupied path can invalidate a cached reference even when GUID and local file ID observations
+appear unchanged. After an intentional replacement, resolve the new object by exact path, explicitly rebind
+the intended serialized reference, save the prefab, reload it, and read the reference and target value back.
+Never save a loaded prefab based on a stale cached reference.
+
 For two or more instances, use the native ordered batch form of `instantiate_prefab`. Each item uses that command's selected `prefab` and optional `scene_path`/`name` fields. Preserve order and inspect each result, including any nested typed `Ok` result. Use continuation when earlier successful instances should remain after a later failure; an S-F-S request must create the first and third instances and report the middle failure. Default transactional batch has different semantics: it must be used only when every item is eligible for its supported scene transaction and its returned rollback/Undo outcome is verified. A typed `Ok:false` does not itself fail Pipeline's transaction; follow [the typed batch restoration workflow](foundation.md#typed-results-inside-a-batch).
 
 ## Find instances and inspect overrides

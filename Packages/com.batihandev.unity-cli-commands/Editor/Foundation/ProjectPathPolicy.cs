@@ -41,8 +41,28 @@ namespace BatihanDev.UnityCliCommands.Foundation
             }
         }
 
+        internal static CommandResult<ProjectPathResult> ValidateReadOnlyDirectory(string path, string projectRoot = null)
+        {
+            try
+            {
+                projectRoot = projectRoot ?? Directory.GetParent(Application.dataPath)?.FullName;
+                var result = ValidateCore(path, projectRoot, false, true);
+                if (!result.Ok) return result;
+                var fullPath = Path.Combine(projectRoot, result.Result.Path);
+                if (!result.Result.Exists)
+                    return Failure(FoundationErrorCode.FileNotFound, "The scan directory was not found.", path);
+                if (!Directory.Exists(fullPath))
+                    return Failure("PATH_NOT_DIRECTORY", "Select an existing project directory to scan.", path);
+                return result;
+            }
+            catch (Exception exception) when (IsExpectedPathException(exception))
+            {
+                return FileSystemFailure<ProjectPathResult>(Schema, path, exception);
+            }
+        }
+
         private static CommandResult<ProjectPathResult> ValidateCore(
-            string path, string projectRoot, bool allowEmbeddedPackages)
+            string path, string projectRoot, bool allowEmbeddedPackages, bool allowAssetsRoot = false)
         {
             if (string.IsNullOrWhiteSpace(path))
                 return Failure(FoundationErrorCode.PathRequired, "A project-relative Assets path is required.", path);
@@ -70,7 +90,7 @@ namespace BatihanDev.UnityCliCommands.Foundation
             var underPackages = string.Equals(compact[0], "Packages", StringComparison.Ordinal);
             if (!underAssets && (!allowEmbeddedPackages || !underPackages))
                 return Failure(FoundationErrorCode.PathOutsideRoot, "The path must be under Assets.", path);
-            if (underAssets && compact.Count == 1)
+            if (underAssets && compact.Count == 1 && !allowAssetsRoot)
                 return Failure(FoundationErrorCode.PathRootForbidden, "The Assets root is not an authoring target.", path);
             if (underPackages && compact.Count < 3)
                 return Failure(FoundationErrorCode.PathRootForbidden,
@@ -87,7 +107,8 @@ namespace BatihanDev.UnityCliCommands.Foundation
                 Path.Combine(fullProjectRoot, normalized.Replace('/', Path.DirectorySeparatorChar)));
             var allowedPrefix = allowedRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) +
                 Path.DirectorySeparatorChar;
-            if (!fullTarget.StartsWith(allowedPrefix, PathComparison()))
+            if (!(allowAssetsRoot && underAssets && string.Equals(fullTarget, allowedRoot, PathComparison())) &&
+                !fullTarget.StartsWith(allowedPrefix, PathComparison()))
                 return Failure(FoundationErrorCode.PathOutsideRoot,
                     "The canonical path must remain under the selected authoring root.", path);
 
@@ -113,26 +134,8 @@ namespace BatihanDev.UnityCliCommands.Foundation
                 current = parent.FullName;
             }
 
-            for (var cursor = new DirectoryInfo(fullProjectRoot); cursor != null; cursor = cursor.Parent)
-            {
-                if ((cursor.Attributes & FileAttributes.ReparsePoint) != 0)
-                    return Failure(FoundationErrorCode.PathReparsePoint, "The project root or an ancestor is a reparse point.", path);
-            }
-
-            var relativeExisting = Path.GetRelativePath(fullProjectRoot, current);
-            var existingSegments = relativeExisting.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            var inspected = fullProjectRoot;
-            foreach (var segment in existingSegments)
-            {
-                if (string.IsNullOrEmpty(segment) || segment == ".")
-                    continue;
-                inspected = Path.Combine(inspected, segment);
-                if ((File.GetAttributes(inspected) & FileAttributes.ReparsePoint) != 0)
-                    return Failure(
-                        FoundationErrorCode.PathReparsePoint,
-                        "The path crosses a link, junction, or reparse point.",
-                        path);
-            }
+            var physical = ValidatePhysicalAncestors(fullProjectRoot, fullTarget, path);
+            if (!physical.Ok) return physical;
 
             return CommandResult<ProjectPathResult>.Success(
                 Schema,
@@ -209,21 +212,8 @@ namespace BatihanDev.UnityCliCommands.Foundation
                 return Failure(FoundationErrorCode.PathOutsideRoot,
                     "The canonical path must remain under the project root.", path);
 
-            for (var cursor = new DirectoryInfo(fullRoot); cursor != null; cursor = cursor.Parent)
-                if ((cursor.Attributes & FileAttributes.ReparsePoint) != 0)
-                    return Failure(FoundationErrorCode.PathReparsePoint,
-                        "The project root or an ancestor is a reparse point.", path);
-
-            var inspected = fullRoot;
-            foreach (var segment in compact)
-            {
-                inspected = Path.Combine(inspected, segment);
-                if (!File.Exists(inspected) && !Directory.Exists(inspected))
-                    break;
-                if ((File.GetAttributes(inspected) & FileAttributes.ReparsePoint) != 0)
-                    return Failure(FoundationErrorCode.PathReparsePoint,
-                        "The path crosses a link, junction, or reparse point.", path);
-            }
+            var physical = ValidatePhysicalAncestors(fullRoot, fullTarget, path);
+            if (!physical.Ok) return physical;
 
             if (Directory.Exists(fullTarget))
                 return Failure(FoundationErrorCode.NotRegularFile, "A regular file is required.", path);
@@ -237,6 +227,94 @@ namespace BatihanDev.UnityCliCommands.Foundation
             return CommandResult<ProjectPathResult>.Success(
                 Schema,
                 new ProjectPathResult { Path = normalized, Exists = true });
+        }
+
+        internal const string PackageOperationDirectory = "Library/unity-cli-package-operations";
+
+        internal static CommandResult<ProjectPathResult> ValidatePackageOperationFile(string path, string projectRoot)
+        {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(path ?? "", "^" + System.Text.RegularExpressions.Regex.Escape(PackageOperationDirectory) + @"/[a-f0-9]{32}\.json(?:\.[a-f0-9]{32}\.tmp)?$"))
+                return Failure(FoundationErrorCode.PathOutsideRoot, "Select an exact owned package-operation journal.", path);
+            return ValidatePhysicalAncestors(projectRoot, Path.Combine(projectRoot, path), path);
+        }
+
+        internal static CommandResult<ProjectPathResult> ValidatePackageRoot(string name, string projectRoot)
+        {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name ?? "", @"^[a-z0-9]+(?:[.-][a-z0-9]+)+$"))
+                return Failure(FoundationErrorCode.PathInvalid, "Select an exact UPM package name.", name);
+            var reportedPath = "Packages/" + name;
+            try
+            {
+                var parent = Path.Combine(Path.GetFullPath(projectRoot), "Packages");
+                var physical = ValidatePhysicalAncestors(projectRoot, parent, reportedPath);
+                if (!physical.Ok) return physical;
+                var exists = false;
+                if (physical.Result.Exists)
+                {
+                    // Unity VFS maps logical registry roots into the cache; physical parent entries own Embed destinations.
+                    foreach (var entry in new DirectoryInfo(parent).GetFileSystemInfos())
+                    {
+                        if (!string.Equals(entry.Name, name, PathComparison())) continue;
+                        if ((entry.Attributes & FileAttributes.ReparsePoint) != 0)
+                            return Failure(FoundationErrorCode.PathReparsePoint,
+                                "The path crosses a link, junction, or reparse point.", reportedPath);
+                        exists = true;
+                        break;
+                    }
+                }
+                return CommandResult<ProjectPathResult>.Success(Schema,
+                    new ProjectPathResult { Path = reportedPath, Exists = exists });
+            }
+            catch (Exception exception) when (IsExpectedPathException(exception))
+            { return FileSystemFailure<ProjectPathResult>(Schema, reportedPath, exception); }
+        }
+
+        internal static CommandResult<ProjectPathResult> ValidatePackageSource(string path, string packageRoot)
+        {
+            try
+            {
+                var root = Path.GetFullPath(packageRoot);
+                var full = Path.GetFullPath(path);
+                if (!string.Equals(root, full, PathComparison()) &&
+                    !full.StartsWith(root.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, PathComparison()))
+                    return Failure(FoundationErrorCode.PathOutsideRoot, "The source must remain inside the exact resolved package.", "<package-source>");
+                return ValidatePhysicalAncestors(root, full, "<package-source>");
+            }
+            catch (Exception exception) when (IsExpectedPathException(exception))
+            { return FileSystemFailure<ProjectPathResult>(Schema, "<package-source>", exception); }
+        }
+
+        private static CommandResult<ProjectPathResult> ValidatePhysicalAncestors(string root, string target, string reportedPath)
+        {
+            try
+            {
+                root = Path.GetFullPath(root);
+                target = Path.GetFullPath(target);
+                for (var cursor = new DirectoryInfo(root); cursor != null; cursor = cursor.Parent)
+                {
+                    if ((cursor.Exists || File.Exists(cursor.FullName)) &&
+                        (File.GetAttributes(cursor.FullName) & FileAttributes.ReparsePoint) != 0)
+                        return Failure(FoundationErrorCode.PathReparsePoint, "The root or an ancestor is linked.", reportedPath);
+                }
+                var inspected = root;
+                foreach (var segment in Path.GetRelativePath(root, target).Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+                {
+                    if (string.IsNullOrEmpty(segment) || segment == ".") continue;
+                    if (segment == "..") return Failure(FoundationErrorCode.PathOutsideRoot, "The target escapes its selected root.", reportedPath);
+                    inspected = Path.Combine(inspected, segment);
+                    // GetAttributes also observes dangling links that Exists omits.
+                    FileAttributes attributes;
+                    try { attributes = File.GetAttributes(inspected); }
+                    catch (FileNotFoundException) { break; }
+                    catch (DirectoryNotFoundException) { break; }
+                    if ((attributes & FileAttributes.ReparsePoint) != 0)
+                        return Failure(FoundationErrorCode.PathReparsePoint, "The path crosses a link, junction, or reparse point.", reportedPath);
+                }
+                return CommandResult<ProjectPathResult>.Success(Schema,
+                    new ProjectPathResult { Path = reportedPath, Exists = File.Exists(target) || Directory.Exists(target) });
+            }
+            catch (Exception exception) when (IsExpectedPathException(exception))
+            { return FileSystemFailure<ProjectPathResult>(Schema, reportedPath, exception); }
         }
 
         internal static CommandResult<T> FileSystemFailure<T>(string schema, string path, Exception exception)

@@ -3,6 +3,8 @@
   "rootNamespace": "BatihanDev.UnityCliCommands",
   "references": [
     "Unity.Pipeline",
+    "Unity.Pipeline.Attributes",
+    "Unity.Pipeline.Editor",
     "Unity.InputSystem",
     "Unity.Nuget.Newtonsoft-Json"
   ],

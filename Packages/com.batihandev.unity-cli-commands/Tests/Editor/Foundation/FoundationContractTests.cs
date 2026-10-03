@@ -9,6 +9,19 @@ namespace BatihanDev.UnityCliCommands.Tests.Foundation
     public sealed class FoundationContractTests
     {
         [Test]
+        public void ReadOnlyAssetsDirectoryAllowsScanningWithoutRelaxingAuthoringRoot()
+        {
+            using (var fixture = new PathFixture())
+            {
+                var scan = ProjectPathPolicy.ValidateReadOnlyDirectory("Assets", fixture.ProjectRoot);
+                Assert.That(scan.Ok, Is.True);
+                Assert.That(scan.Result.Exists, Is.True);
+                Assert.That(ValidatePath("Assets", fixture.ProjectRoot).Error.Code, Is.EqualTo("PATH_ROOT_FORBIDDEN"));
+                Assert.That(File.ReadAllText(fixture.InsideSentinel), Is.EqualTo("inside"));
+            }
+        }
+
+        [Test]
         public void CommandResultPreservesNestedDataAndVersionedTypedError()
         {
             var success = CommandResult<ResultFixture>.Success(
@@ -43,11 +56,11 @@ namespace BatihanDev.UnityCliCommands.Tests.Foundation
         }
 
         [Test]
-        public void CompatibilityAcceptsOnlyTheVerifiedEditorAndPackageTuple()
+        public void CompatibilityAcceptsOnlyTheCurrentEditorAndPackageTuple()
         {
             var accepted = CompatibilityPolicy.Evaluate(
                 "6000.6.2f1",
-                "0.7.0-exp.1",
+                "0.8.0-exp.1",
                 "1.20.0");
 
             Assert.That(accepted.Ok, Is.True);
@@ -55,28 +68,28 @@ namespace BatihanDev.UnityCliCommands.Tests.Foundation
 
             var unsupportedEditor = CompatibilityPolicy.Evaluate(
                 "6000.6.3f1",
-                "0.7.0-exp.1",
+                "0.8.0-exp.1",
                 "1.20.0");
             Assert.That(unsupportedEditor.Ok, Is.False);
             Assert.That(unsupportedEditor.Error.Code, Is.EqualTo("UNSUPPORTED_UNITY_VERSION"));
 
             var missingPackage = CompatibilityPolicy.Evaluate(
                 "6000.6.2f1",
-                "0.7.0-exp.1",
+                "0.8.0-exp.1",
                 null);
             Assert.That(missingPackage.Ok, Is.False);
             Assert.That(missingPackage.Error.Code, Is.EqualTo("REQUIRED_PACKAGE_MISSING"));
 
             var mismatchedPipeline = CompatibilityPolicy.Evaluate(
                 "6000.6.2f1",
-                "0.6.0-exp.1",
+                "0.7.0-exp.1",
                 "1.20.0");
             Assert.That(mismatchedPipeline.Ok, Is.False);
             Assert.That(mismatchedPipeline.Error.Code, Is.EqualTo("REQUIRED_PACKAGE_MISSING"));
 
             var mismatchedInput = CompatibilityPolicy.Evaluate(
                 "6000.6.2f1",
-                "0.7.0-exp.1",
+                "0.8.0-exp.1",
                 "1.19.0");
             Assert.That(mismatchedInput.Ok, Is.False);
             Assert.That(mismatchedInput.Error.Code, Is.EqualTo("REQUIRED_PACKAGE_MISSING"));

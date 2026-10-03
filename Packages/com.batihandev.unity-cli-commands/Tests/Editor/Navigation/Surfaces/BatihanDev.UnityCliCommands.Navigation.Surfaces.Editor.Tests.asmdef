@@ -1,0 +1,25 @@
+{
+  "name": "BatihanDev.UnityCliCommands.Navigation.Surfaces.Editor.Tests",
+  "rootNamespace": "BatihanDev.UnityCliCommands.Tests.Navigation",
+  "references": [
+    "BatihanDev.UnityCliCommands.Navigation.Surfaces.Editor",
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.AI.Navigation"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "defineConstraints": [
+    "BATIHANDEV_AI_NAVIGATION_2"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.ai.navigation",
+      "expression": "[2.0.0,3.0.0)",
+      "define": "BATIHANDEV_AI_NAVIGATION_2"
+    }
+  ]
+}
