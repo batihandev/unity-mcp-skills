@@ -229,9 +229,11 @@ class CliTransport:
                 canonical = self.platform.canonicalize_external_project(raw_project, deadline=deadline)
             except subprocess.TimeoutExpired as exc:
                 return CommandResult.failed("CLI_TIMEOUT", "Editor registry path conversion reached its deadline", stderr=_bounded(exc.stderr))
+            port = instance.get("port")
+            pipeline_port = port if isinstance(port, int) and not isinstance(port, bool) and 1 <= port <= 65535 else None
             observations.append(RegistryObservation(
                 canonical, pid,
-                _optional_string(instance.get("startedAt") or instance.get("startTime")), "editors-running",
+                _optional_string(instance.get("startedAt") or instance.get("startTime")), "editors-running", pipeline_port,
             ))
         return CommandResult.ok(observations, **result.diagnostics)
 
@@ -242,6 +244,9 @@ class CliTransport:
         result = self._invoke(["command", "eval", code, "--project-path", target_project, "--format", "json"], timeout, deadline=deadline)
         if result.code == "CLI_TIMEOUT":
             return result
+        authentication = _authentication_refusal(result, identity, "identity")
+        if authentication is not None:
+            return authentication
         value = _pipeline_result(result.data) if result.success else None
         if not isinstance(value, dict):
             return CommandResult.ok({"ready": False, "pid": identity.pid, "project": identity.project})
@@ -257,6 +262,9 @@ class CliTransport:
                                      "startedAt": identity.started_at}, identityObservation=identity_observation,
                                     identityTransport=result.diagnostics)
         status_result = self.invoke_command(identity.project, "editor_status", {}, deadline=deadline)
+        authentication = _authentication_refusal(status_result, identity, "editor_status")
+        if authentication is not None:
+            return authentication
         diagnostics = {"identityObservation": identity_observation, "identityTransport": result.diagnostics,
                        "nativeEnvelope": status_result.data, "nativeTransport": status_result.diagnostics}
         if status_result.code == "CLI_TIMEOUT":
@@ -314,7 +322,7 @@ class CliTransport:
             "command", "eval", code, "--project-path", target_project, "--format", "json",
         ], timeout, deadline=deadline)
         if not result.success:
-            return result
+            return _authentication_refusal(result, identity, "dirty_scenes") or result
         value = _pipeline_result(result.data)
         if not isinstance(value, list):
             return CommandResult.failed("DIRTY_STATE_INVALID", "Dirty-scene inspection returned an unexpected result", payload=_redact_value(result.data))
@@ -356,7 +364,7 @@ class CliTransport:
             "command", "eval", code, "--project-path", target_project, "--format", "json",
         ], timeout, deadline=deadline)
         if not result.success:
-            return result
+            return _authentication_refusal(result, identity, "editor_exit") or result
         value = _pipeline_result(result.data)
         if not isinstance(value, dict) or value.get("requested") is not True:
             return CommandResult.failed("CLOSE_NOT_ACCEPTED", "The exact Editor did not accept a guarded close request", payload=_redact_value(result.data))
@@ -557,3 +565,17 @@ def _redact_value(value: Any) -> Any:
             redacted[safe_key] = "<redacted>" if sensitive_key else _redact_value(item)
         return redacted
     return value
+
+
+def _authentication_refusal(result: CommandResult, identity: SessionIdentity, phase: str) -> CommandResult | None:
+    if result.success or not (result.code in {"HTTP_401", "UNAUTHORIZED"} or re.search(
+        r"(?i)\b(?:HTTP(?:/\d(?:\.\d)?)?\s+401\b|401\s*\(Unauthorized\)|status(?:\s+code)?\s*[:=]\s*401\b)",
+        result.message or "",
+    )):
+        return None
+    return CommandResult.failed(
+        "PIPELINE_AUTHENTICATION_FAILED",
+        "Pipeline rejected authentication for the exact project; inspect its registry endpoint and native unity status before choosing recovery",
+        process=identity.as_dict(), httpStatus=401, phase=phase,
+        transport=_redact_value(result.diagnostics),
+    )

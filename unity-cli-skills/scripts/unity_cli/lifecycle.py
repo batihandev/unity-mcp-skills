@@ -151,10 +151,10 @@ class SessionController:
         snapshot = self._snapshot(deadline)
         registry_result = self.transport.registry(self.project, timeout=self._remaining(deadline), deadline=Deadline(deadline, self.clock)) if deadline is not None else self.transport.registry(self.project)
         observations = registry_result.data if registry_result.success and isinstance(registry_result.data, list) else []
-        unique: dict[tuple[str, int, str | None], RegistryObservation] = {}
+        unique: dict[tuple[str, int, str | None, int | None], RegistryObservation] = {}
         duplicates = 0
         for observation in observations:
-            key = (self.platform.canonicalize_project(observation.project), observation.pid, observation.started_at)
+            key = (self.platform.canonicalize_project(observation.project), observation.pid, observation.started_at, observation.pipeline_port)
             if key in unique:
                 duplicates += 1
             unique[key] = observation
@@ -170,7 +170,8 @@ class SessionController:
             )
         target = primaries[0] if primaries else None
         stale = 0
-        for project, pid, started_at in unique:
+        live: list[tuple[str, int, str | None, int | None]] = []
+        for project, pid, started_at, port in unique:
             matched = any(
                 record.role == "editor" and record.pid == pid
                 and self.platform.canonicalize_project(record.project) == project
@@ -179,12 +180,26 @@ class SessionController:
             )
             if not matched:
                 stale += 1
+            else:
+                live.append((project, pid, started_at, port))
+        target_ports = {port for project, pid, started_at, port in live
+                        if target is not None and project == self.project and pid == target.pid and port is not None}
+        collisions = [{"project": project, "pid": pid, "startedAt": started_at, "port": port}
+                      for project, pid, started_at, port in live
+                      if project != self.project and port in target_ports]
+        if collisions:
+            raise SessionRefusal(
+                "PIPELINE_ENDPOINT_COLLISION",
+                "Live Editors for different projects advertise the same Pipeline port; inspect exact-project registry and native unity status before choosing recovery",
+                {"process": target.identity_dict(), "collisions": collisions},
+            )
         auxiliaries = tuple(
             record for record in snapshot.records
             if record.role != "editor" and target is not None and record.parent_pid == target.pid
         )
         return _Discovery(target, {
             "observations": len(unique), "duplicates": duplicates, "stale": stale,
+            "collisions": collisions, "endpointUnknown": sum(port is None for _, _, _, port in unique),
             "available": int(registry_result.success),
             "diagnostic": None if registry_result.success else {"code": registry_result.code, "message": registry_result.message},
         }, auxiliaries)
@@ -251,6 +266,8 @@ class SessionController:
     def _readiness_once(self, identity: SessionIdentity, deadline: float) -> bool:
         self._require_identity_current(identity, deadline)
         result = self.transport.readiness(identity, timeout=self._remaining(deadline), deadline=Deadline(deadline, self.clock))
+        if result.code == "PIPELINE_AUTHENTICATION_FAILED":
+            raise SessionRefusal(result.code, result.message or "Pipeline authentication failed", result.diagnostics)
         if not result.success or not isinstance(result.data, dict) or not result.data.get("ready"):
             return False
         project = result.data.get("project")
@@ -382,13 +399,13 @@ class SessionController:
             self._require_expected_identity(identity, expected_identity, deadline)
         dirty = self.transport.dirty_scenes(identity, timeout=self._remaining(deadline), deadline=Deadline(deadline, self.clock))
         if not dirty.success:
-            raise SessionRefusal(dirty.code or "DIRTY_STATE_UNKNOWN", dirty.message or "Dirty-scene state could not be inspected")
+            raise SessionRefusal(dirty.code or "DIRTY_STATE_UNKNOWN", dirty.message or "Dirty-scene state could not be inspected", dirty.diagnostics)
         if dirty.data:
             raise SessionRefusal("DIRTY_SCENES", "The Editor has dirty scenes; save or discard them explicitly before closing", {"scenes": dirty.data})
         self._require_identity_current(identity, deadline)
         requested = self.transport.request_editor_exit(identity, timeout=self._remaining(deadline), deadline=Deadline(deadline, self.clock))
         if not requested.success:
-            raise SessionRefusal(requested.code or "CLOSE_FAILED", requested.message or "The Editor refused the close request")
+            raise SessionRefusal(requested.code or "CLOSE_FAILED", requested.message or "The Editor refused the close request", requested.diagnostics)
         self._wait_identity_absent(identity, deadline)
         return {
             "ok": True, "action": "close", "project": self.project, "state": "closed",

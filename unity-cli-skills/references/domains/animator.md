@@ -4,6 +4,11 @@ Read [foundation routing and safety](foundation.md), [the optional package bound
 
 ## Controller assets
 
+Before diagnosing a pose, identify the exact Animator, active controller state, avatar validity,
+and update phase that produced it. For imported rigs, verify exporter axes, stable bone identities,
+and the generated clip through real Animator playback. Compare measurements from the same frame
+and phase; a compensating root rotation does not establish that the import or retargeting is correct.
+
 The Unity Pipeline package owns controller assets through six native commands. Discover their current schemas with `unity --json command --project-path "$PROJECT_PATH" --query animation/animator --detail full` before using them:
 
 | Intent | Native command | Contract |

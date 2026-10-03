@@ -111,6 +111,14 @@ of packing. Restore any fixture-only packer settings and atlas membership after 
 
 ## Model clips and metadata
 
+After external authoring, wait for import and compilation to finish before loading the asset or
+running a scene builder. Preserve its `.meta` identity when replacing source bytes. Read the
+imported GUID, rig mapping, exporter axes, generated clips, and saved importer state back; an
+asset-refresh acknowledgement alone does not prove the new source was imported. When validating
+animation, use actual Animator playback with the project's real domain/scene reload settings and
+record the measurement phase. Translate every path argument passed to a Windows authoring process
+at the host boundary, including output and auxiliary file arguments.
+
 Model mesh, rig, animation, and embedded-material information is read-only public API composition because the importer getter does not contain that metadata. Keep each evaluation bounded to one exact asset or one already-selected scene component, verify its type first, and return plain projection values. Do not use a metadata evaluation to change importer state.
 
 For model animation metadata, load clips at the exact model path, omit names beginning `__preview__`, and return each remaining clip's name, length, frame rate, wrap mode, and looping state. For rig information, read the exact `ModelImporter` and its avatar state. For mesh information, load the exact mesh subasset or require an exact selected `MeshFilter` or `SkinnedMeshRenderer` component handle. For material information, distinguish embedded material subassets from remapped materials; include mesh association and stable local file identifiers where available.

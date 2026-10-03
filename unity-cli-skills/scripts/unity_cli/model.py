@@ -58,6 +58,7 @@ class RegistryObservation:
     pid: int
     started_at: str | None
     source: str
+    pipeline_port: int | None = None
 
 
 @dataclass(frozen=True)

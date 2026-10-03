@@ -27,6 +27,19 @@ identified by canonical project path, process ID, and process start identity. Du
 collapsed. Stale rows do not prove that an Editor exists, and an empty CLI status response does not prove that
 one is absent. If the OS inventory is unavailable, lifecycle mutations refuse.
 
+Registry endpoint metadata is advisory. The helper preserves a valid Pipeline port and correlates
+registrations with live project processes. If the exact target and another canonical project advertise the
+same port, it refuses with `PIPELINE_ENDPOINT_COLLISION` before connected commands or recovery. Inspect the
+reported identities, `unity editors running --format json`, and `unity status --project-path PROJECT
+--format json` for each project. Stale rows and missing or invalid ports cannot establish a live collision.
+An absent port means endpoint ownership is unknown; PID, start identity, and project checks remain required.
+
+A Pipeline authentication rejection returns `PIPELINE_AUTHENTICATION_FAILED` with the exact process,
+HTTP status, command phase, and sanitized transport evidence. Inspect the registry and exact-project status
+before choosing a recovery action. A restart is not evidence that endpoint ownership was repaired. Registry
+collisions and authentication failures describe observed routing evidence; they do not establish an upstream
+Pipeline defect or authorize closing a neighboring Editor.
+
 The process scanner excludes CLI authentication brokers and classifies Asset Import workers separately from
 the primary Editor. It extracts only the project and identity fields needed for targeting; raw Unity command
 lines are never returned because Hub launch arguments can contain credentials.
@@ -74,6 +87,13 @@ ambiguous buttons, changed process identity, and changed dialog identity are rep
 Logs from a default per-user location have `attribution: unverified` because another Editor may write the
 same file. A log selected from the target process's `-logFile` launch argument has
 `attribution: launch-argument`.
+
+Before writing scene files outside Unity, establish who owns the loaded scene and any unsaved edits.
+Save the intended Editor state or obtain the owner's explicit discard decision, then close and verify the
+exact project is stopped before an external write. Reopen and read back the scene afterward. If an external
+write meets a loaded or dirty scene, pause for the owner's save/reload decision; do not choose Reload or
+Ignore automatically. Recovery leaves unknown dialogs untouched and never targets windows by title or
+process name alone.
 
 Recovery does not close the Editor by default. If diagnosis and safe modal cancellation do not restore
 readiness, the result names `--graceful-close` as an explicit next action:

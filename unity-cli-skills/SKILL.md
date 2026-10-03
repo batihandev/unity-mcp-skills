@@ -22,6 +22,8 @@ For compile, connected or offline tests, and console capture, use the documented
 `python scripts/unity_workflow.py` and their respective [editor](references/domains/editor.md),
 [test](references/domains/test.md), and [console](references/domains/console.md) guides. Do not duplicate
 host process, identity, or session recovery logic in a domain command.
+For ephemeral C# probes and compile-only checks, use [probe execution](references/domains/probe.md)
+and `python scripts/unity_probe.py`. Require current-sequence completion and preserve its raw report.
 Read [profiler capture analysis](references/domains/profiler.md) for explicit profiler sessions, timing and
 allocation drill-down, range triage, related-thread evidence, and package-free marker-to-source investigation.
 Read the matching canonical reference before editor or project work:
