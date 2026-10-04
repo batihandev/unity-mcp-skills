@@ -125,7 +125,9 @@ Each panel defaults to 390×844 and `Assets/Screenshots/UI/<filename>.png`; an o
 uses the panel name. Override `--width`, `--height`, or `--save-path` for a single panel, or
 `width`, `height`, `path` per batch item. Names and filenames must be unique in a batch. Existing
 outputs require explicit current-file hash authorization: `--replace-sha256`, or
-`replace_sha256` per item. Batches run sequentially and retain one ordered outcome per requested
+`replace_sha256` per item. One exact Editor lease and timeout cover a batch. Readiness
+and restoration are checked independently for each panel. Batches run sequentially
+and retain one ordered outcome per requested
 panel, including native capture and publication/import failures; any failure produces nonzero exit.
 
 The eval snapshots Canvas mode/camera/plane, complete scaler state, descendant RectTransforms,

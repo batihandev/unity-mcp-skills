@@ -65,6 +65,17 @@ class ImportWorkflow:
 
     def run(self, *, asset: str, kind: str, settings: dict[str, Any], platform: str = "Default",
             dry_run: bool = False, quality_unit: str = "normalized", profile: str = "rich") -> dict[str, Any]:
+        request = self._request(asset=asset, kind=kind, settings=settings, platform=platform,
+                                dry_run=dry_run, quality_unit=quality_unit, profile=profile)
+        try:
+            with self.session.workflow_session() as lease:
+                return self.run_with_lease(lease, **request)
+        except ImportWorkflowRefusal:
+            raise
+        except SessionRefusal as exc:
+            raise ImportWorkflowRefusal(exc.code, str(exc), exc.details) from exc
+
+    def _request(self, *, asset, kind, settings, platform, dry_run, quality_unit, profile):
         if not isinstance(dry_run, bool):
             raise ImportWorkflowRefusal("INVALID_ARGUMENT", "dry_run must be Boolean")
         if not isinstance(kind, str) or kind not in self.KINDS:
@@ -74,14 +85,8 @@ class ImportWorkflow:
         asset = self._asset(asset)
         platform = self._platform(platform)
         settings = self._settings(settings)
-        try:
-            with self.session.workflow_session() as lease:
-                return self.run_with_lease(lease, asset=asset, kind=kind, settings=settings,
-                                           platform=platform, dry_run=dry_run, quality_unit=quality_unit, profile=profile)
-        except ImportWorkflowRefusal:
-            raise
-        except SessionRefusal as exc:
-            raise ImportWorkflowRefusal(exc.code, str(exc), exc.details) from exc
+        return dict(asset=asset, kind=kind, settings=settings, platform=platform,
+                    dry_run=dry_run, quality_unit=quality_unit, profile=profile)
 
     def restore(self, *, capture: dict[str, Any], dry_run: bool = False) -> dict[str, Any]:
         if not isinstance(capture, dict) or not isinstance(capture.get("assetPath"), str) or not isinstance(capture.get("kind"), str) or not isinstance(capture.get("settings"), dict):
@@ -127,18 +132,33 @@ class ImportWorkflow:
     def run_batch(self, *, items: list[dict[str, Any]], platform: str = "Default", quality_unit: str = "normalized", profile: str = "rich") -> dict[str, Any]:
         if not isinstance(items, list) or not items:
             raise ImportWorkflowRefusal("INVALID_ARGUMENT", "items must be a nonempty ordered array")
-        outcomes = []
+        outcomes, prepared = [], []
         for index, item in enumerate(items):
-            if not isinstance(item, dict):
-                outcomes.append({"index": index, "ok": False, "error": {"code": "INVALID_ARGUMENT", "message": "item must be an object"}})
-                continue
             try:
-                result = self.run(asset=item.get("asset"), kind=item.get("kind"), settings=item.get("settings"),
-                                  platform=item.get("platform", platform), quality_unit=item.get("quality_unit", quality_unit),
-                                  profile=item.get("profile", profile))
-                outcomes.append({"index": index, "ok": True, "result": result})
+                if not isinstance(item, dict):
+                    raise ImportWorkflowRefusal("INVALID_ARGUMENT", "item must be an object")
+                request = self._request(asset=item.get("asset"), kind=item.get("kind"), settings=item.get("settings"),
+                    platform=item.get("platform", platform), dry_run=False,
+                    quality_unit=item.get("quality_unit", quality_unit), profile=item.get("profile", profile))
+                prepared.append((index, request))
             except ImportWorkflowRefusal as exc:
                 outcomes.append({"index": index, "ok": False, "error": exc.as_dict()["error"]})
+        completed = set()
+        if prepared:
+            try:
+                with self.session.workflow_session() as lease:
+                    for index, request in prepared:
+                        try:
+                            result = self.run_with_lease(lease, **request)
+                            outcomes.append({"index": index, "ok": True, "result": result})
+                        except (ImportWorkflowRefusal, SessionRefusal) as exc:
+                            outcomes.append({"index": index, "ok": False, "error": exc.as_dict()["error"]})
+                        completed.add(index)
+            except SessionRefusal as exc:
+                for index, _ in prepared:
+                    if index not in completed:
+                        outcomes.append({"index": index, "ok": False, "error": exc.as_dict()["error"]})
+        outcomes.sort(key=lambda row: row["index"])
         return {"ok": all(row["ok"] for row in outcomes), "action": "importer-batch", "transactional": False, "outcomes": outcomes}
 
     def run_with_lease(self, lease, *, asset: str, kind: str, settings: dict[str, Any], platform: str,

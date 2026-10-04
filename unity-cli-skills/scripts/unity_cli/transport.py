@@ -31,6 +31,7 @@ class CliTransport:
         self._launchers: dict[int, tuple[Any, pathlib.Path]] = {}
         self.command_timeout = command_timeout
         self.cli_path: str | None = None
+        self._project_paths: dict[tuple[str, str], str] = {}
 
     def _budget(self, timeout: float | None, deadline: Deadline | None) -> Deadline:
         if deadline is not None:
@@ -100,11 +101,22 @@ class CliTransport:
             return CommandResult.failed(_bounded(code or "CLI_COMMAND_FAILED", 500), _bounded(message or "Unity CLI command failed", 500), payload=_redact_value(payload), **diagnostics)
         return CommandResult.ok(payload, **diagnostics)
 
-    def _project(self, project: str, timeout: float | None = None, *, deadline: Deadline | None = None) -> str:
+    def _project(self, project: str, timeout: float | None = None, *, deadline: Deadline | None = None, cache: bool = True) -> str:
         deadline = self._budget(timeout, deadline)
         cli = self.ensure_cli(deadline=deadline)
         remaining = deadline.require_remaining("Unity CLI preparation")
-        target = self.platform.cli_project_path(project, cli, timeout=remaining, deadline=deadline)
+        if not cache:
+            target = self.platform.cli_project_path(project, cli, timeout=remaining, deadline=deadline)
+            deadline.require_remaining("Unity CLI preparation")
+            return target
+        canonicalize = getattr(self.platform, "canonicalize_project", None)
+        canonical = canonicalize(project) if canonicalize is not None else project
+        key = (canonical, cli)
+        if key not in self._project_paths:
+            target = self.platform.cli_project_path(project, cli, timeout=remaining, deadline=deadline)
+            deadline.require_remaining("Unity CLI preparation")
+            self._project_paths[key] = target
+        target = self._project_paths[key]
         deadline.require_remaining("Unity CLI preparation")
         return target
 
@@ -181,7 +193,7 @@ class CliTransport:
             initial_budget = deadline.remaining()
             target_project = self._project(project, initial_budget, deadline=deadline)
             remaining = deadline.remaining()
-            target_output = self._project(output, remaining, deadline=deadline)
+            target_output = self._project(output, remaining, deadline=deadline, cache=False)
             remaining = deadline.remaining()
             host_budget = min(remaining, self.command_timeout)
             native_timeout = int(host_budget) - NATIVE_CLEANUP_RESERVE_SECONDS
@@ -396,7 +408,7 @@ class CliTransport:
             return CommandResult.failed("DIAGNOSTIC_STORAGE_FAILED", _bounded(f"The CLI launch diagnostic file could not be created: {exc}", 500))
         editor_log_path = root / f"editor-{pathlib.Path(log_path).stem}.log"
         try:
-            native_editor_log = self._project(str(editor_log_path), deadline=deadline)
+            native_editor_log = self._project(str(editor_log_path), deadline=deadline, cache=False)
         except subprocess.TimeoutExpired:
             os.close(fd)
             pathlib.Path(log_path).unlink(missing_ok=True)

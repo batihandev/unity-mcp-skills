@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
 import json
 import pathlib
+import re
 import tempfile
 import uuid
 from typing import Any
@@ -28,6 +30,125 @@ class ProbeWorkflow:
 
     def check(self, source, output):
         return self._execute(source, output, dry_run=True)
+
+    def check_many(self, source_paths, output_dir):
+        """Check independent sources in one exact-session native catalogue request."""
+        import time
+        started = time.monotonic()
+        deadline = self.session._deadline()
+        remaining = lambda: self.session._remaining(deadline)
+        owner = CompileWorkflow(self.project, self.session)
+        try:
+            remaining()
+            sources = owner._sources(source_paths)
+            remaining()
+            if not sources or any(p.suffix.lower() != '.cs' for p in sources):
+                raise ProbeRefusal('INVALID_ARGUMENT', 'Select a nonempty set of C# sources')
+            raw_dir = pathlib.Path(output_dir).expanduser().absolute()
+            if raw_dir.is_symlink() or not raw_dir.is_dir() or any(raw_dir.iterdir()):
+                raise ProbeRefusal('INVALID_ARGUMENT', 'Use an existing plain empty report directory')
+            directory = raw_dir.resolve()
+            outputs = [directory / f'{i+1:04d}-{p.stem}.json' for i,p in enumerate(sources)]
+            for output in outputs:
+                remaining()
+                with ReportTarget(self.project, output):
+                    pass
+            target = ReportTarget(self.project, directory / 'summary.json')
+        except (ReportPathError, WorkflowRefusal, SessionRefusal, ValueError) as error:
+            if isinstance(error, ProbeRefusal): raise
+            code = 'PROBE_TIMEOUT' if getattr(error, 'code', None) == 'ACTION_TIMEOUT' else getattr(error, 'code', 'INVALID_ARGUMENT')
+            raise ProbeRefusal(code, str(error)) from error
+        report = {'schemaVersion':1, 'action':'check-probes', 'ok':False, 'project':str(self.project),
+                  'commands':[], 'checks':[], 'restoration':{'ownedPlayTransition':False}}
+        error = None
+        try:
+            report['sources'] = owner._hash_sources(sources, check_budget=remaining)
+            with tempfile.TemporaryDirectory(prefix='unity-probe-catalogue-') as temporary:
+                stage = pathlib.Path(temporary)
+                staged = []
+                for index,(source,snapshot) in enumerate(zip(sources,report['sources'])):
+                    remaining()
+                    path = stage / f'{index:04d}' / source.name
+                    path.parent.mkdir()
+                    digest = hashlib.sha256()
+                    with source.open('rb') as original, path.open('wb') as copy:
+                        while True:
+                            remaining()
+                            block = original.read(1024 * 1024)
+                            remaining()
+                            if not block: break
+                            copy.write(block)
+                            digest.update(block)
+                    remaining()
+                    if digest.hexdigest() != snapshot['sha256']:
+                        raise ProbeRefusal('PROBE_SOURCE_CHANGED', 'Source changed while staging the catalogue')
+                    staged.append(path)
+                with self.session.workflow_session(deadline=deadline) as lease:
+                    report['editorIdentity'] = lease.identity.as_dict()
+                    state = self._state(lease,report)
+                    baseline = self._console(lease,report)
+                    report['baseline'] = {'cursor':baseline['cursor'],'session':baseline['session']}
+                    cli = self.session.transport.ensure_cli(timeout=lease.remaining(),deadline=lease.transport_deadline)
+                    convert = self.session.platform.cli_project_path
+                    manifest = {'schemaVersion':1,'sources':[{'id':str(i),'path':convert(str(path),cli,timeout=lease.remaining(),deadline=lease.transport_deadline),'sha256':snapshot['sha256']}
+                        for i,(path,snapshot) in enumerate(zip(staged,report['sources']))]}
+                    manifest_path = stage / 'manifest.json'
+                    manifest_path.write_bytes(json.dumps(manifest,sort_keys=True).encode())
+                    self._verify_sources(owner,sources,report,lease)
+                    result = self._invoke(lease,report,'cli_compile_probes',{
+                        'manifest':convert(str(manifest_path),cli,timeout=lease.remaining(),deadline=lease.transport_deadline),
+                        'manifest_sha256':hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+                        'time_budget_ms':max(1,int(lease.remaining()*1000))})
+                    if not isinstance(result,dict) or result.get('schemaVersion') != 1:
+                        raise ProbeRefusal('PROBE_BATCH_INVALID', 'Catalogue result schema is invalid')
+                    backend = result.get('editorIdentity')
+                    if not isinstance(backend,dict) or backend.get('pid') != lease.identity.pid or backend.get('startedAt') != lease.identity.started_at or self.session.platform.canonicalize_external_project(backend.get('project',''),deadline=lease.transport_deadline) != lease.identity.project:
+                        raise ProbeRefusal('PROCESS_IDENTITY_CHANGED', 'Catalogue result belongs to another Editor')
+                    items = result.get('items')
+                    if not isinstance(items,list) or len(items) != len(sources):
+                        raise ProbeRefusal('PROBE_BATCH_INVALID', 'Catalogue omitted source results')
+                    outcomes = []
+                    for index,(item,snapshot) in enumerate(zip(items,report['sources'])):
+                        if not isinstance(item,dict) or item.get('id') != str(index) or item.get('sha256') != snapshot['sha256']:
+                            raise ProbeRefusal('PROBE_BATCH_INVALID', 'Catalogue source identity is duplicated or mismatched')
+                        outcome = {'ok':True,'nativeResult':item.get('result')}
+                        try: self._script(item.get('result'),True)
+                        except ProbeRefusal as refusal:
+                            if refusal.code != 'PROBE_COMPILE_FAILED': raise
+                            outcome.update(ok=False,error=refusal.as_dict()['error'])
+                        outcomes.append(outcome)
+                    after = self._console(lease,report,baseline['cursor'],baseline['session'])
+                    if any(row['logType'] in {'Error','Assert','Exception'} for row in after['entries']):
+                        raise ProbeRefusal('PROBE_RUNTIME_FAILED','Catalogue observation contains a current console error')
+                    if after['groundTruth'] is not None and after['groundTruth']['compilationFailed']:
+                        raise ProbeRefusal('PROBE_SCRIPT_FAILED','Editor reports compilation failure')
+                    self._state(lease,report,expected=state['playMode'])
+                    self._verify_sources(owner,sources,report,lease)
+                    for source,snapshot,output,outcome in zip(sources,report['sources'],outputs,outcomes):
+                        remaining()
+                        per_file = dict(schemaVersion=1,action='probe-check',project=str(self.project),
+                            editorIdentity=report['editorIdentity'],sources=[snapshot],baseline=report['baseline'],
+                            restoration=report['restoration'],**outcome)
+                        payload = json.dumps(_redact_value(per_file),sort_keys=True).encode()
+                        with ReportTarget(self.project,output) as per_target:per_target.publish(payload)
+                        report['checks'].append({'source':str(source.relative_to(self.project)),'ok':outcome['ok'],
+                            'artifactPath':str(output),'artifactSha256':hashlib.sha256(payload).hexdigest()})
+                    remaining()
+                    report['ok'] = all(row['ok'] for row in report['checks'])
+        except (WorkflowRefusal,WorkflowConsoleRefusal,SessionRefusal,ReportPathError,OSError,ValueError) as failure:
+            code = 'PROBE_TIMEOUT' if getattr(failure,'code',None) in {'ACTION_TIMEOUT','READY_TIMEOUT'} else getattr(failure,'code','PROBE_BATCH_FAILED')
+            error = ProbeRefusal(code,str(failure),getattr(failure,'details',{}))
+            report['error'] = error.as_dict()['error']
+        finally:
+            report['wallSeconds'] = time.monotonic()-started
+            payload = json.dumps(_redact_value(report),sort_keys=True).encode()
+            try: target.publish(payload)
+            finally: target.close()
+        artifact = {'artifactPath':str(directory/'summary.json'),'artifactSha256':hashlib.sha256(payload).hexdigest()}
+        if error is not None:
+            error.details.update(artifact,artifactPreserved=True)
+            raise error
+        return {**{key:value for key,value in report.items() if key != 'commands'},**artifact}
 
     def _execute(self, source, output, *, entry=None, completion_text=None, enter_play=False, dry_run=False):
         try:
@@ -70,7 +191,7 @@ class ProbeWorkflow:
                     report['editorIdentity'] = lease.identity.as_dict()
                     # An owned transition needs time to restore after the probe's deadline.
                     reserve = min(5.0, lease.remaining() / 4) if enter_play else 0.0
-                    action_lease = WorkflowSessionLease(self.session, lease.identity, deadline - reserve) if isinstance(lease, WorkflowSessionLease) else lease
+                    action_lease = replace(lease, deadline=deadline - reserve) if isinstance(lease, WorkflowSessionLease) else lease
                     owned = False
                     try:
                         state = self._state(lease, report)
@@ -186,17 +307,32 @@ class ProbeWorkflow:
 
     @staticmethod
     def _script(value, dry_run):
-        if not isinstance(value, dict) or value.get('success') is not True:
-            categories = {'Compilation Failed': 'PROBE_COMPILE_FAILED',
-                          'Entry Point Not Found': 'PROBE_ENTRY_FAILED',
-                          'Runtime Error': 'PROBE_RUNTIME_FAILED'}
-            code = categories.get(value.get('error'), 'PROBE_SCRIPT_FAILED') if isinstance(value, dict) else 'PROBE_SCRIPT_FAILED'
-            raise ProbeRefusal(code, 'run_script did not report successful compilation and execution', {'result': value})
+        if not isinstance(value, dict) or type(value.get('success')) is not bool:
+            raise ProbeRefusal('PROBE_SCRIPT_RESPONSE_INVALID', 'run_script omitted a Boolean success field')
         if not isinstance(value.get('diagnostics'), list) or any(not ConsoleWorkflow._nonnegative_integer(value.get(key)) for key in ('compileMs', 'executeMs')):
             raise ProbeRefusal('PROBE_SCRIPT_RESPONSE_INVALID', 'run_script omitted structured diagnostics or timing evidence')
         for diagnostic in value['diagnostics']:
             if not isinstance(diagnostic, dict) or diagnostic.get('severity') not in {'error', 'warning', 'info'}:
                 raise ProbeRefusal('PROBE_SCRIPT_RESPONSE_INVALID', 'run_script returned an invalid compiler diagnostic')
+        if dry_run:
+            if 'assemblyName' not in value:
+                raise ProbeRefusal('PROBE_SCRIPT_RESPONSE_INVALID', 'Compile-only response omitted assembly evidence')
+            assembly = value['assemblyName']
+            if value['executeMs'] != 0 or (value['success'] is True and assembly is not None):
+                raise ProbeRefusal('PROBE_SCRIPT_RESPONSE_INVALID', 'Compile-only response reports loading or execution')
+            if value['success'] is False and assembly is not None:
+                # Native compile failures report the generated name before any assembly is loaded.
+                generated = isinstance(assembly, str) and re.fullmatch(r'PipelineRunScript_.+_[0-9a-f]{32}', assembly)
+                compiler_error = any(d['severity'] == 'error' for d in value['diagnostics'])
+                if value.get('error') != 'Compilation Failed' or not generated or not compiler_error:
+                    raise ProbeRefusal('PROBE_SCRIPT_RESPONSE_INVALID', 'Compile-only failure has invalid assembly evidence')
+        if value['success'] is not True:
+            categories = {'Compilation Failed': 'PROBE_COMPILE_FAILED',
+                          'Entry Point Not Found': 'PROBE_ENTRY_FAILED',
+                          'Runtime Error': 'PROBE_RUNTIME_FAILED'}
+            code = categories.get(value.get('error'), 'PROBE_SCRIPT_FAILED')
+            raise ProbeRefusal(code, 'run_script did not report successful compilation and execution', {'result': value})
+        for diagnostic in value['diagnostics']:
             if diagnostic['severity'] == 'error':
                 raise ProbeRefusal('PROBE_COMPILE_FAILED', 'run_script returned a compiler error diagnostic', {'diagnostic': diagnostic})
         if dry_run:

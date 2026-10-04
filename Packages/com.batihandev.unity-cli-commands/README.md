@@ -98,3 +98,13 @@ However, removing it may also remove those dependencies and end CLI access to Ed
 List them directly as shown in the recommended installation if you want them to remain installed.
 
 </details>
+
+## Independent probe compilation
+
+`cli_compile_probes` accepts a SHA-256-bound JSON manifest (`schemaVersion: 1`,
+`sources: [{id, path, sha256}]`) and a whole-catalogue `time_budget_ms`.
+Manifest and source paths must be absolute. The command invokes native
+`run_script` independently for each source with ephemeral compile-only settings.
+Its response retains every native result and the Editor PID, start identity and
+project. Use the skill's `ProbeWorkflow.check_many` to stage sources, validate
+session and source freshness, and publish durable per-source reports.

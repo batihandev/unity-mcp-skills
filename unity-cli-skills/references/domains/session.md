@@ -64,6 +64,22 @@ deadline, the helper retains a private pending marker and diagnostic path and re
 `OPEN_PENDING` until the target is observed. Inspect the reported marker and launcher output before clearing
 an unresolved launch manually. This lock does not control Editors started by other applications.
 
+## Workflow-owned identity checks
+
+Connected workflows discover and check endpoint ownership at their boundary.
+Windows and WSL then retain one bounded PowerShell observer for that exact
+PID, start identity and project. Its startup checks the command line and executable
+against an independent exact-PID OS query. Every subsequent request makes a fresh
+lifetime check through the retained native process handle; PID reuse cannot
+retarget it. Observer failure, invalid responses and deadline expiry refuse the
+workflow. The helper closes and reaps only its observer on exit.
+
+A transport retains its executable discovery and immutable project-path conversion.
+Source, report and log paths are converted independently. Compile, console, test,
+source-hash and play-state results remain fresh. Importer and UI-capture batches
+share one lease and one deadline while preserving each item's validation, readback
+or restoration. A new workflow or domain/package change requires fresh discovery.
+
 ## Close and restart
 
 `close` queries the selected Editor's open scenes first. Any dirty scene refuses the operation and reports the

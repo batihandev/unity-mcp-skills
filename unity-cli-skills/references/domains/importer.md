@@ -50,7 +50,9 @@ python scripts/unity_workflow.py importer --project "$PROJECT_PATH" \
   --settings '{"clipAnimations":[{"name":"Walk","takeName":"Stance","firstFrame":0,"lastFrame":150,"loopTime":true}]}'
 ```
 
-Independent assets can be submitted in one ordered nontransactional batch. Every outcome is attributed to its index, failures do not suppress later requests, and successful item captures are returned for separate restoration:
+Independent assets can be submitted in one ordered nontransactional batch. One exact
+Editor lease and timeout cover the whole batch; each asset gets its own fresh
+metadata, preflight, write and readback. Every outcome is attributed to its index, failures do not suppress later requests, and successful item captures are returned for separate restoration:
 
 ```bash
 python scripts/unity_workflow.py importer-batch --project "$PROJECT_PATH" --items \

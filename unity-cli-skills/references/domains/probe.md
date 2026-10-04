@@ -3,7 +3,8 @@
 Use `scripts/unity_probe.py` to run one project C# source through registered
 `run_script` and require an exact current console completion message. Discover
 `run_script`, `console`, and `editor_status` in the selected Editor's live catalog
-before using the helper. Explicit play ownership also requires `editor_play` and
+at the workflow boundary and after package/domain changes. Reuse that metadata while
+the selected session and command contract remain current. Explicit play ownership also requires `editor_play` and
 `editor_stop`.
 
 ```bash
@@ -41,7 +42,10 @@ python3 scripts/unity_probe.py --project "$PROJECT" \
 
 Compile-only mode invokes `run_script` with `dry_run=true` and `mode=ephemeral`.
 It requires structured success, zero execution time, and no loaded assembly.
-It preserves the current play state. This checks the selected ephemeral source
+Native failed compilations can report a generated `PipelineRunScript_<file>_<guid>`
+assembly name before any assembly is loaded; a successful dry-run must report null.
+Both cases require zero execution time and valid diagnostics. It preserves the
+current play state. This checks the selected ephemeral source
 against the Editor's loaded references and defines; project compilation is owned
 by the [compile workflow](editor.md).
 
@@ -65,3 +69,31 @@ Python callers use `ProbeWorkflow(project, session).run(source, entry,
 completion_text, output, enter_play=False)` or `.check(source, output)` with a
 `SessionController`. The session timeout bounds the operation. `ProbeRefusal`
 provides a structured code and retained artifact details.
+
+## Compile an independent catalogue
+
+`ProbeWorkflow(project, session).check_many(source_paths, output_dir)` requires
+`cli_compile_probes` from `com.batihandev.unity-cli-commands`. Select explicit
+project-contained C# sources and an existing empty plain report directory outside
+project-owned data directories. Discover the typed command once in the selected
+Editor before adopting this route.
+
+One request invokes the registered native `run_script` handler separately for every
+source with `mode=ephemeral` and `dry_run=true`. Each source uses the Editor's
+loaded references and defines; probes do not supply references to one another.
+The hash-bound manifest and staged sources use absolute native-host paths.
+The checker does not launch the Editor, enter play, load probe assemblies or run
+entry points. It refuses missing, duplicated, malformed or mismatched results.
+
+The session timeout covers preparation, discovery, compilation and acceptance of
+the whole catalogue. Each source keeps its complete native result in an individual
+report; the summary retains all command responses and report hashes. Ordinary
+compiler failures retain the remaining source outcomes and make the aggregate
+unsuccessful. Source, session, console or deadline failures refuse acceptance with
+the available raw evidence retained. There is no fallback to individual requests.
+
+Run the active probe for normal iteration: its execution includes compilation.
+Use the single-file dry-run for affected probes that will not execute. Run the
+catalogue once at final integration when changed APIs or references could break
+other probes. Repeated full checks add no evidence when source, references and
+Editor identity have not changed.

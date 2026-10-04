@@ -12,10 +12,12 @@ import subprocess
 import ctypes
 import struct
 import time
+from contextlib import contextmanager, nullcontext
 from typing import Any, Callable, Iterable
 
 from .model import Deadline, InventorySnapshot, ProcessRecord, SessionIdentity
 from .transport import _bounded
+from .windows_identity import IdentityObserverError, WindowsIdentityObserver, close_owned_observer_process
 
 
 Runner = Callable[..., Any]
@@ -255,6 +257,9 @@ class PlatformAdapter:
     def inventory(self, timeout: float | None = None) -> InventorySnapshot:
         raise NotImplementedError
 
+    def observe_identity(self, identity: SessionIdentity, deadline: Deadline):
+        return nullcontext(None)
+
     def _identity_is_current(self, identity: SessionIdentity | ProcessRecord, timeout: float | None = None) -> bool:
         snapshot = self.inventory(timeout=timeout)
         return snapshot.known and any(
@@ -381,6 +386,53 @@ class MacOSAdapter(PlatformAdapter):
 class WindowsAdapter(PlatformAdapter):
     name = "windows"
 
+    def __init__(self, command_runner: Runner = subprocess.run, *, observer_launcher=subprocess.Popen):
+        super().__init__(command_runner)
+        self._observer_launcher = observer_launcher
+
+    def _identity_observer_paths(self, identity: SessionIdentity, deadline: Deadline) -> tuple[str, str]:
+        return str(pathlib.Path(__file__).with_name("windows_identity.ps1")), identity.project
+
+    @contextmanager
+    def observe_identity(self, identity: SessionIdentity, deadline: Deadline):
+        observer = None
+        process = None
+        try:
+            try:
+                script, project = self._identity_observer_paths(identity, deadline)
+                remaining = deadline.require_remaining("Windows identity observer startup")
+                process = self._observer_launcher([
+                    self._powershell(), "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", script,
+                    "-ExpectedProcessId", str(identity.pid), "-ExpectedStart", identity.started_at,
+                    "-ExpectedProject", project, "-DeadlineUtcTicks",
+                    str(621355968000000000 + time.time_ns() // 100 + int(remaining * 10_000_000)),
+                ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                    text=True, encoding="utf-8", bufsize=1)
+                native_identity = SessionIdentity(project, identity.pid, identity.started_at, identity.executable)
+                def validate_startup(payload):
+                    command_line, executable = payload.get("commandLine"), payload.get("executable")
+                    if not isinstance(command_line, str) or not isinstance(executable, str):
+                        raise IdentityObserverError("PROCESS_OBSERVER_INVALID", "The workflow identity observer omitted startup process evidence")
+                    argv = _safe_argv(command_line, windows=True)
+                    observed_project = _project_from_argv(argv)
+                    if (not observed_project or ntpath.basename(executable).lower() != "unity.exe"
+                            or ntpath.normcase(ntpath.normpath(executable)) != ntpath.normcase(ntpath.normpath(identity.executable))
+                            or self.is_cli_process(argv, executable) or _process_role(argv) != "editor"
+                            or self.canonicalize_external_project(observed_project, deadline=deadline) != identity.project):
+                        raise IdentityObserverError("PROCESS_IDENTITY_CHANGED", "The observed process does not own the exact Editor project")
+                observer = WindowsIdentityObserver(process, native_identity, deadline, validate_startup)
+                observer.verify_current()
+            except IdentityObserverError:
+                raise
+            except (OSError, RuntimeError) as exc:
+                raise IdentityObserverError("PROCESS_OBSERVER_UNAVAILABLE", "The workflow identity observer could not start") from exc
+            yield observer
+        finally:
+            if observer is not None:
+                observer.close()
+            elif process is not None:
+                close_owned_observer_process(process)
+
     def canonicalize_project(self, project: str) -> str:
         return ntpath.normcase(ntpath.normpath(project))
 
@@ -462,6 +514,11 @@ class WindowsAdapter(PlatformAdapter):
 
 class WslAdapter(WindowsAdapter):
     name = "wsl"
+
+    def _identity_observer_paths(self, identity: SessionIdentity, deadline: Deadline) -> tuple[str, str]:
+        script = self._convert_path("-w", str(pathlib.Path(__file__).with_name("windows_identity.ps1")), deadline=deadline)
+        project = self._convert_path("-w", identity.project, deadline=deadline)
+        return script, project
 
     def canonicalize_project(self, project: str) -> str:
         if re.match(r"^[A-Za-z]:[\\/]", project) or project.startswith("\\\\"):

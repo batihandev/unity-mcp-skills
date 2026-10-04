@@ -8,12 +8,13 @@ import json
 import os
 import pathlib
 import tempfile
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
 from typing import Any
 
 from .model import Deadline, InventorySnapshot, ProcessRecord, RegistryObservation, SessionIdentity
 from .transport import CliMissing
+from .windows_identity import IdentityObserverError
 
 
 class SessionRefusal(RuntimeError):
@@ -40,6 +41,7 @@ class WorkflowSessionLease:
     controller: Any
     identity: SessionIdentity
     deadline: float
+    validator: Any = None
 
     @property
     def transport_deadline(self) -> Deadline:
@@ -49,7 +51,17 @@ class WorkflowSessionLease:
         return self.controller._remaining(self.deadline)
 
     def verify_current(self) -> None:
-        self.controller._require_identity_current(self.identity, self.deadline)
+        self.controller._remaining(self.deadline)
+        if self.validator is None:
+            self.controller._require_identity_current(self.identity, self.deadline)
+            return
+        try:
+            self.validator.verify_current(deadline=self.transport_deadline)
+        except IdentityObserverError as exc:
+            raise SessionRefusal(exc.code, str(exc), {"process": self.identity.as_dict()}) from exc
+        except subprocess.TimeoutExpired as exc:
+            self.controller._remaining(self.deadline)
+            raise SessionRefusal("PROCESS_OBSERVER_TIMEOUT", "The workflow identity observation timed out") from exc
 
 
 @dataclass(frozen=True)
@@ -338,19 +350,34 @@ class SessionController:
         deadline = deadline if deadline is not None else self._deadline()
         with self._launch_guard(deadline):
             identity = self._target(deadline)
-            self._require_identity_current(identity, deadline)
-            yield WorkflowSessionLease(self, identity, deadline)
+            with self._workflow_identity_lease(identity, deadline) as lease:
+                yield lease
 
     @contextmanager
     def observation_session(self, deadline: float | None = None):
         """Observe an exact Editor identity without waiting behind mutating project work."""
         deadline = deadline if deadline is not None else self._deadline()
         identity = self._target(deadline)
-        self._require_identity_current(identity, deadline)
+        with self._workflow_identity_lease(identity, deadline) as lease:
+            try:
+                yield lease
+            finally:
+                lease.verify_current()
+
+    @contextmanager
+    def _workflow_identity_lease(self, identity: SessionIdentity, deadline: float):
+        observe = getattr(self.platform, "observe_identity", None)
+        scope = observe(identity, Deadline(deadline, self.clock)) if observe is not None else nullcontext(None)
         try:
-            yield WorkflowSessionLease(self, identity, deadline)
-        finally:
-            self._require_identity_current(identity, deadline)
+            with scope as validator:
+                if validator is None:
+                    self._require_identity_current(identity, deadline)
+                yield WorkflowSessionLease(self, identity, deadline, validator)
+        except IdentityObserverError as exc:
+            raise SessionRefusal(exc.code, str(exc), {"process": identity.as_dict()}) from exc
+        except subprocess.TimeoutExpired as exc:
+            self._remaining(deadline)
+            raise SessionRefusal("PROCESS_OBSERVER_TIMEOUT", "The workflow identity observation timed out") from exc
 
     @contextmanager
     def offline_workflow_session(self, deadline: float | None = None):

@@ -283,23 +283,32 @@ return new {path=assetPath,guid=UnityEditor.AssetDatabase.AssetPathToGUID(assetP
         code = ui_code(item,canvas=canvas,root=root,canvas_id=canvas_id,root_id=root_id)
         try:
             with self.session.workflow_session() as lease:
-                self._ready(lease)
-                value = self._eval(lease,code)
-                if not isinstance(value,dict) or value.get('restored') is not True:
-                    raise CaptureRefusal('UI_RESTORATION_UNVERIFIED','UI capture did not verify scene restoration.')
-                result = self._publish(lease,value['capture'],item['path'],width,height,replace_sha256)
-                result.update(action='ui-capture',panel=panel,canvasId=value['canvasId'],rootId=value['rootId'],panelId=value['panelId'],sceneDirty=value['sceneDirty'],restored=True)
-                return result
+                return self._panel_with_lease(lease, item, code, replace_sha256=replace_sha256)
         except (SessionRefusal, WorkflowRefusal, authoring.Refusal) as exc:
             raise CaptureRefusal(exc.code,str(exc),exc.details) from exc
 
+    def _panel_with_lease(self, lease, item, code, *, replace_sha256=None):
+        self._ready(lease)
+        value = self._eval(lease,code)
+        if not isinstance(value,dict) or value.get('restored') is not True:
+            raise CaptureRefusal('UI_RESTORATION_UNVERIFIED','UI capture did not verify scene restoration.')
+        result = self._publish(lease,value['capture'],item['path'],item['width'],item['height'],replace_sha256)
+        result.update(action='ui-capture',panel=item['panel'],canvasId=value['canvasId'],rootId=value['rootId'],panelId=value['panelId'],sceneDirty=value['sceneDirty'],restored=True)
+        return result
+
     def panels(self, *, items, canvas='Canvas', root='UIRoot', canvas_id=None, root_id=None):
         prepared = panel_requests(items)
+        codes = [ui_code(item,canvas=canvas,root=root,canvas_id=canvas_id,root_id=root_id) for item in prepared]
         outcomes = []
-        for index, item in enumerate(prepared):
-            try:
-                result = self.panel(**item,canvas=canvas,root=root,canvas_id=canvas_id,root_id=root_id)
-                outcomes.append({'index':index,'ok':result.get('ok') is True,'result':result})
-            except CaptureRefusal as exc:
+        try:
+            with self.session.workflow_session() as lease:
+                for index, (item, code) in enumerate(zip(prepared, codes)):
+                    try:
+                        result = self._panel_with_lease(lease, item, code, replace_sha256=item.get('replace_sha256'))
+                        outcomes.append({'index':index,'ok':result.get('ok') is True,'result':result})
+                    except (CaptureRefusal, SessionRefusal, WorkflowRefusal, authoring.Refusal) as exc:
+                        outcomes.append({'index':index,'ok':False,'error':exc.as_dict()['error']})
+        except SessionRefusal as exc:
+            for index in range(len(outcomes), len(prepared)):
                 outcomes.append({'index':index,'ok':False,'error':exc.as_dict()['error']})
         return {'ok':all(row['ok'] for row in outcomes),'action':'ui-capture-batch','transactional':False,'outcomes':outcomes}
