@@ -1,0 +1,25 @@
+{
+  "name": "BatihanDev.UnityCliCommands.UGUI.Editor",
+  "rootNamespace": "BatihanDev.UnityCliCommands.UGUI",
+  "references": [
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.Pipeline",
+    "Unity.Pipeline.Editor",
+    "Unity.Pipeline.Attributes",
+    "Unity.ugui",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "defineConstraints": [
+    "BATIHANDEV_UGUI_2"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.ugui",
+      "expression": "[2.6.0,3.0.0)",
+      "define": "BATIHANDEV_UGUI_2"
+    }
+  ]
+}

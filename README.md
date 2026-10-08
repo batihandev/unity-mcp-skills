@@ -1,85 +1,154 @@
-# Unity MCP Skills Library
+# Unity CLI Skills
 
-A documentation-only skill pack for AI agents working inside Unity via the official Unity MCP. No C# plugin, no REST server, no Python client — just markdown that teaches your agent how Unity actually works.
+Unity workflows and verified recipes for coding agents, extending Unity’s official `unity-cli` skill
+with scene, asset, authoring, and testing guidance.
 
-It contains **skills** (per-system guardrails and routing) and **recipes** (ready-to-run C# `IRunCommand` templates) so the agent can act predictably without wrecking your scene.
+## Requirements
 
-> **Work in progress.** Things may be incomplete or rough around the edges — use with that expectation.
+| Component | Installation scope | Required? |
+|---|---|---|
+| Unity Editor and Unity CLI | Machine | Yes |
+| Official `unity-cli` skill | Agent skills directory | Recommended CLI reference |
+| This repository’s `unity-cli-skills` | Agent skills directory | Yes, for these workflows |
+| Unity Pipeline package | Unity project | Yes, for Editor commands |
+| `com.batihandev.unity-cli-commands` | Unity project | Optional; required by some recipes |
 
-**Requires:**
+Skill installation and Unity project configuration are separate steps.
 
-- **Unity's `com.unity.ai.assistant` package** with its **Unity MCP Server** enabled in *Project Settings → AI → Unity MCP Server* — the hard dependency that provides `Unity_RunCommand` and the `IRunCommand` contract every recipe targets. Nothing in this pack runs without it.
-- **Unity 6000+ (Unity 6).** Recipes use `FindFirstObjectByType` / `FindObjectsByType`; older versions are not supported.
-- **Per-domain package baselines** listed in each `skills/<domain>/SKILL.md` `## Requirements` block. Domain skills tell the agent how to install missing ones via `Unity_PackageManager_ExecuteAction`.
+## Machine setup
 
----
+### 1. Check Unity and the CLI
 
-## Install
+Use **Unity 6000.6.2f1** and **Unity CLI 1.0.0-beta.12**.
+If the CLI is already installed, check it:
 
-Clone this repo as a single folder inside your agent's skills directory. The whole repo is the install unit — domain skills depend on shared helpers (`recipes/_shared/`), tool routing (`mcp-tools.md`), and fallback docs (`references/`) that ship together.
-
-### Claude Code
-
-```bash
-git clone https://github.com/batihandev/unity-mcp-skills.git ~/.claude/skills/unity-mcp-skills
+```sh
+unity --version
 ```
 
-### Codex
+If the command is missing, follow [Unity's CLI installation instructions](https://github.com/Unity-Technologies/skills/blob/cb1dccb8f5adffcca43a5a26993fdeb8eae59433/skills/unity-cli/SKILL.md#install-the-cli-if-not-already-installed).
+The compatibility table identifies verified versions and platform routes; the optional package requires the exact Editor and package versions listed below.
 
-```bash
-git clone https://github.com/batihandev/unity-mcp-skills.git ~/.codex/skills/unity-mcp-skills
+### 2. Install Unity's official skill
+
+The CLI bundles the official `unity-cli` skill; installing it for your agent is a separate step.
+List supported agents and their installation paths:
+
+```sh
+unity skill install --list
 ```
 
-### Antigravity / Gemini CLI
+Then install for the agent you use, for example:
 
-```bash
-git clone https://github.com/batihandev/unity-mcp-skills.git ~/.gemini/antigravity/skills/unity-mcp-skills
+```sh
+unity skill install codex
 ```
 
-### Symlink alternative (for hacking on the library)
+Replace `codex` with your client ID from the list, such as `claude-code` or `cursor`.
+Run this in the environment where your agent runs. If a configuration manager already provides the
+skill, manage it there instead.
 
-```bash
-git clone https://github.com/batihandev/unity-mcp-skills.git ~/src/unity-mcp-skills
-ln -s ~/src/unity-mcp-skills ~/.claude/skills/unity-mcp-skills
+### 3. Install this repository's skill
+
+Clone the release branch:
+
+```sh
+git clone --branch main --single-branch https://github.com/batihandev/unity-cli-skills.git unity-cli-skills-release
+cd unity-cli-skills-release
 ```
 
-## Update
+`unity-cli-skills-release` is the local checkout folder.
+Copy the complete `unity-cli-skills` directory into your agent's documented skills directory.
+The installed entry point is `unity-cli-skills/SKILL.md`. Start a new agent session after installation.
+Configuration-manager users should install and update through their manager.
 
-```bash
-cd <your-skills-dir>/unity-mcp-skills && git pull
+Record `git rev-parse HEAD` to reproduce the installed skill revision. The optional Unity package
+uses a separate reviewed commit pin.
+
+## Project setup
+
+### 4. Enable Unity's built-in Editor commands
+
+Skip this step if the project already has the versions below.
+
+Open the project's **`Packages/manifest.json`** in a text editor. This is Unity's package dependency list.
+Inside its existing `dependencies` object, add or update these entries, preserving all other packages:
+
+```json
+"com.unity.pipeline": "0.8.0-exp.1",
+"com.unity.inputsystem": "1.20.0"
 ```
 
-## Uninstall
+These are entries to merge, not a replacement manifest. Preserve valid JSON.
+Open the project in Unity 6000.6.2f1 and let package installation and compilation finish.
 
-```bash
-rm -rf <your-skills-dir>/unity-mcp-skills
+### 5. Optional: install the command package
+
+Install `com.batihandev.unity-cli-commands` for the additional scene/asset,
+component, ScriptableObject, console, and profiler commands used by the skill's recipes.
+Without it, those particular recipes are unavailable; Unity's built-in commands remain usable.
+
+Follow the [command package installation guide](Packages/com.batihandev.unity-cli-commands/README.md).
+It is Editor-only: it does not ship in your built game.
+
+### 6. Check the connection
+
+Leave Unity open. Replace `PROJECT_PATH` below with the full path to your Unity project folder
+(the folder containing `Assets`, `Packages`, and `ProjectSettings`). Keep the quotes:
+
+```sh
+unity --json command list_open_scenes --project-path "PROJECT_PATH"
 ```
 
----
+Success means the output reports `success: true` and lists your project's open scene.
+From WSL, pass the Windows form of the project path to the Windows Unity CLI.
 
-## Prerequisites
+## Usage
 
-- A Unity MCP-compatible server running in your Unity Editor; the Editor must be open during use.
-- An AI agent that can read local files and execute MCP tools (e.g. `Unity_RunCommand`).
+Specify the target project and task:
 
-## How discovery works
+> Use unity-cli-skills with my open Unity project. Inspect the current scene and summarize its objects.
 
-Only the top-level `SKILL.md` is registered with your agent — under the name `unity-mcp-skills`. That skill routes to domain-specific skills under `skills/<domain>/SKILL.md` internally. You will **not** see `unity-scene`, `unity-physics`, etc. as separate skills in your agent — they are loaded on demand by the library.
+The [agent instructions](unity-cli-skills/SKILL.md) cover command discovery and execution.
+For Canvas widgets, layout and component edits, read the [uGUI guide](unity-cli-skills/references/domains/ui.md).
+For UXML/USS, UIDocument, PanelSettings and UI Toolkit starters, read the [UI Toolkit guide](unity-cli-skills/references/domains/uitoolkit.md).
 
-## What's in here
+## Update or uninstall
 
-- **`SKILL.md`** — the discoverable entry point; routes to the right domain.
-- **`skills/<domain>/`** — per-system guidance (UI, Physics, Animation, …) telling the agent when and how to approach a task.
-- **`recipes/<domain>/`** — C# `IRunCommand` templates the agent fills in and runs; designed to support Editor Undo/Redo.
-- **`recipes/_shared/`** — cross-domain C# helpers embedded by recipes.
-- **`tooling/<domain>/`** — install-once Editor script templates installed via `Unity_CreateScript`; persistent project tools (menu items, custom windows), no compile/run gate.
-- **`references/`** — offline reference dumps used as a tertiary fallback when skills and recipes lack detail.
-- **`mcp-tools.md`** — routing matrix for native MCP tools vs `Unity_RunCommand`.
+- **Official skill:** after updating the CLI, run `unity skill refresh` for CLI-managed installations.
+- **This skill:** run `git pull --ff-only` in the checkout, review the changes, and replace the
+  installed `unity-cli-skills` directory. Use your configuration manager for managed installations.
+- **Uninstall the skill:** remove only that installed folder. This leaves your Unity project untouched.
+- **Update/remove the command package:** follow its [package guide](Packages/com.batihandev.unity-cli-commands/README.md#update-or-remove).
 
-## Format
+## Compatibility
 
-Skills follow the [superpowers](https://github.com/obra/superpowers) skill format.
+Runtime evidence covers Unity **6000.6.2f1**, Pipeline **0.8.0-exp.1**, and
+Input System **1.20.0**. The semantic matrix uses CLI **1.0.0-beta.11**;
+Git installation lifecycle and baseline restoration use **1.0.0-beta.12**.
+The exercised route is a graphics-enabled Windows Editor controlled from a WSL/Linux shell.
+The host Python helpers require **Python 3.10+** and use the standard library.
 
-## Credits
+| Editor / CLI / Pipeline | OS and shell route | Renderer | Status |
+|---|---|---|---|
+| 6000.6.2f1 / 1.0.0-beta.11 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | Built-in core and seven isolated package integrations | semantic matrix verified |
+| 6000.6.2f1 / 1.0.0-beta.11 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | HDRP 17.6.0 and isolated URP 17.6.0 overlays | verified |
+| 6000.6.2f1 / 1.0.0-beta.12 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | Built-in; two Git installation ownership cases | lifecycle verified (22 passing tests per case) |
+| Same exact versions | Native Windows shell | Same renderer versions | expected-unverified |
+| Same exact versions | Native Linux or macOS Editor and shell | Same renderer versions | expected-unverified |
+| Other Editor, CLI, Pipeline or renderer versions | Any | Any | expected-unverified |
 
-Skill library structure and data originally curated by [Besty0728](https://github.com/Besty0728/Unity-Skills).
+The HDRP/URP row covers retained domain cases. The native fixture matrix records 40 passing core leaves and seven isolated package integration leaves under Built-in, including exact resolved pins and HDRP restoration reconciliation. The original fixture baseline restoration passed separately on CLI `1.0.0-beta.12`; the core/overlay tests retain beta.11 provenance. The Git-subdirectory installation lifecycle passed in two ownership cases on beta.12, with 21 foundation tests and one smoke test per case. The native matrix evidence records source bindings, removal behavior, and exact baseline restoration.
+Optional integrations require their own package and isolated verification; a core workflow
+passing does not verify an optional overlay. The optional command package's exact requirements
+and version are owned by its [package guide](Packages/com.batihandev.unity-cli-commands/README.md).
+No canonical renamed HTTPS package installation is claimed before the repository release.
+
+## Credits and license
+
+The initial skills and recipes were adapted from
+[Besty0728/Unity-Skills](https://github.com/Besty0728/Unity-Skills) for direct agent use through Unity MCP.
+This project is evolving that approach around Unity’s official CLI, with consolidated workflows,
+additional commands, and verification.
+
+Licensed under the [MIT License](LICENSE).

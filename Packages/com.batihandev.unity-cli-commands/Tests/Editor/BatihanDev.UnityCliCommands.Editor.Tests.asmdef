@@ -1,0 +1,19 @@
+{
+  "name": "BatihanDev.UnityCliCommands.Editor.Tests",
+  "rootNamespace": "BatihanDev.UnityCliCommands.Tests",
+  "references": [
+    "BatihanDev.UnityCliCommands.Editor",
+    "BatihanDev.UnityCliCommands.TestFixtures"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "Newtonsoft.Json.dll",
+    "nunit.framework.dll"
+  ]
+}

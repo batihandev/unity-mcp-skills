@@ -1,0 +1,15 @@
+{
+  "name": "BatihanDev.UnityCliCommands.Cinemachine.Editor",
+  "rootNamespace": "BatihanDev.UnityCliCommands.CinemachineAuthoring",
+  "references": [
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.Pipeline",
+    "Unity.Pipeline.Attributes",
+    "Unity.Cinemachine"
+  ],
+  "includePlatforms": ["Editor"],
+  "defineConstraints": ["BATIHANDEV_CINEMACHINE_6"],
+  "versionDefines": [
+    { "name": "com.unity.cinemachine", "expression": "[6.6.0,7.0.0)", "define": "BATIHANDEV_CINEMACHINE_6" }
+  ]
+}
