@@ -97,6 +97,20 @@ failures, start/end time, duration, and exact test identities. Missing or malfor
 an explicit report set, defines its malformed-file policy, de-duplicates failed identities, and sorts output
 deterministically; never choose a newest unrelated file or fall back across modes.
 
+## Diagnose simulated-physics variation
+
+For a physics test that varies with execution history, measure fixture-owned bodies, shared registries,
+physics settings and initial body state before blaming a predecessor. Trace the first divergent fixed
+step in repeated and predecessor/target runs. Compare the same fixture in a separately owned physics
+scene; assert that its `PhysicsScene` is valid and differs from the default world, move every owned
+collider/body into it, simulate it explicitly and close it in teardown. EditMode preview scenes require
+`EditorSceneManager.ClosePreviewScene`; `SceneManager.CreateScene` with local physics is a PlayMode route.
+Confirm that the bodies actually move and the original assertions still hold. Identical traces in one
+Editor/version establish that comparison only, not cross-platform determinism or the cause of a
+historical failure. Keep the original failure threshold while investigating.
+See [PhysicsScene.Simulate](https://docs.unity.com/en-us/engine/6000.5/script-reference/unityengine/physicsscene/simulate)
+and [preview-scene cleanup](https://docs.unity.com/en-us/engine/6000.3/script-reference/unityeditor/scenemanagement/editorscenemanager/newpreviewscene).
+
 ## Safe template creation
 
 New templates use the shared host authoring transaction from [console export](console.md#live-entries-and-export):

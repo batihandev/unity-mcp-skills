@@ -4,6 +4,17 @@ Read [foundation routing and safety](foundation.md) first. Discover every native
 
 Prefab work has two state surfaces. Scene instances are connected GameObjects whose reversible changes may be recorded in scene Undo. Prefab assets are persistent files; creating, overwriting, or changing their serialized data must be treated as asset work and verified after a reload. Read the selected instance and source asset before and after every mutation.
 
+## Persistent renderer dirty state
+
+If a loaded prefab becomes dirty without a serialized file diff, trace its `OnEnable`, `OnValidate`,
+and editor preview writers against a clean owned asset. Compare dirty component identities before and
+after each call and retain file hashes. On Unity 6000.6.2f1, `Renderer.SetPropertyBlock(null, index)`
+marked a persistent renderer dirty while a non-null block did not. Guard instance-only preview writes
+with `EditorUtility.IsPersistent`; verify scene-instance behavior separately. A save with no diff does
+not establish that the writer is harmless. `OnValidate` can run off the main thread; defer renderer
+preview work to an Editor main-thread callback and keep validation limited to data.
+See [Unity's OnValidate contract](https://docs.unity.com/en-us/engine/6000.6/script-reference/unityengine/monobehaviour/onvalidate).
+
 ## Create and instantiate
 
 Use `create_prefab(source,path)`. `source` is one selected scene GameObject reference; `path` is a path relative to the authoring root, with an optional `Assets/` prefix and an optional `.prefab` extension. It creates the asset and connects the source to it. Read the selected source and resulting asset back before continuing. The command takes no confirmation, dry-run, or overwrite parameter.
