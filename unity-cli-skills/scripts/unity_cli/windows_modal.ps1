@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Inspect', 'Cancel', 'Close')][string]$Action = 'Inspect',
+    [ValidateSet('Inspect', 'Cancel', 'Close', 'QuitSafeMode')][string]$Action = 'Inspect',
     [Parameter(Mandatory)][ValidateRange(1, 2147483647)][int]$ExpectedProcessId,
     [Parameter(Mandatory)][string]$ExpectedStart,
     [Parameter(Mandatory)][string]$ExpectedProject,
@@ -73,8 +73,8 @@ function Get-Dialogs {
     return @($dialogs)
 }
 
-function Get-CancelButtons {
-    param([Parameter(Mandatory)][IntPtr]$Dialog)
+function Get-Buttons {
+    param([Parameter(Mandatory)][IntPtr]$Dialog, [Parameter(Mandatory)][string]$Text)
     Initialize-NativeApi
     $buttons = [Collections.Generic.List[IntPtr]]::new()
     $callback = [UnitySessionModal.Native+EnumWindowsProc]{
@@ -83,21 +83,28 @@ function Get-CancelButtons {
         [void][UnitySessionModal.Native]::GetClassName($Handle, $className, $className.Capacity)
         $title = [Text.StringBuilder]::new(([UnitySessionModal.Native]::GetWindowTextLength($Handle) + 1))
         [void][UnitySessionModal.Native]::GetWindowText($Handle, $title, $title.Capacity)
-        if ($className.ToString() -ceq 'Button' -and $title.ToString() -ceq 'Cancel') { $buttons.Add($Handle) }
+        if ($className.ToString() -ceq 'Button' -and $title.ToString() -ceq $Text) { $buttons.Add($Handle) }
         return $true
     }
     [void][UnitySessionModal.Native]::EnumChildWindows($Dialog, $callback, [IntPtr]::Zero)
     return @($buttons)
 }
 
-function Get-SceneDialog {
+function Get-ExpectedDialog {
+    param([Parameter(Mandatory)][string]$Title)
     $dialogs = @(Get-Dialogs)
     if ($dialogs.Count -eq 0) { return @{ Ok = $false; Reason = 'modal-absent' } }
     if ($dialogs.Count -ne 1) { return @{ Ok = $false; Reason = 'multiple-dialogs' } }
-    if ($dialogs[0].Title -cne 'Scene(s) Have Been Modified') {
+    if ($dialogs[0].Title -cne $Title) {
         return @{ Ok = $false; Reason = 'other-dialog'; Title = $dialogs[0].Title }
     }
-    return @{ Ok = $true; Reason = 'scene-modal-found'; Handle = $dialogs[0].Handle }
+    return @{ Ok = $true; Reason = 'expected-modal-found'; Handle = $dialogs[0].Handle }
+}
+
+function Get-SceneDialog {
+    $dialog = Get-ExpectedDialog -Title 'Scene(s) Have Been Modified'
+    if ($dialog.Ok) { $dialog.Reason = 'scene-modal-found' }
+    return $dialog
 }
 
 function Invoke-Recovery {
@@ -113,13 +120,35 @@ function Invoke-Recovery {
         return Write-Result 'requested' 'close-main-window' @{ method = 'CloseMainWindow' }
     }
     if ([DateTime]::UtcNow -ge $deadline) { return Write-Result 'refused' 'deadline-expired' }
+    if ($Action -eq 'QuitSafeMode') {
+        $dialog = Get-ExpectedDialog -Title 'Enter Safe Mode?'
+        if (-not $dialog.Ok) {
+            $details = @{}
+            if ($dialog.ContainsKey('Title')) { $details.title = $dialog.Title }
+            return Write-Result 'refused' $dialog.Reason $details
+        }
+        $buttons = @(Get-Buttons -Dialog $dialog.Handle -Text 'Quit')
+        if ($buttons.Count -ne 1) { return Write-Result 'refused' 'quit-button-absent-or-ambiguous' }
+        if (-not (Test-ExpectedEditor)) { return Write-Result 'refused' 'process-identity-changed' }
+        $unchanged = Get-ExpectedDialog -Title 'Enter Safe Mode?'
+        if (-not $unchanged.Ok -or $unchanged.Handle -ne $dialog.Handle) { return Write-Result 'refused' 'dialog-changed-before-quit' }
+        $currentButtons = @(Get-Buttons -Dialog $dialog.Handle -Text 'Quit')
+        if ($currentButtons.Count -ne 1 -or $currentButtons[0] -ne $buttons[0]) { return Write-Result 'refused' 'quit-button-changed-before-click' }
+        if (-not (Test-ExpectedEditor)) { return Write-Result 'refused' 'process-identity-changed' }
+        $remainingMs = [long][Math]::Floor(($deadline - [DateTime]::UtcNow).TotalMilliseconds)
+        if ($remainingMs -le 0) { return Write-Result 'refused' 'deadline-expired' }
+        $nativeResult = [IntPtr]::Zero
+        $sent = [UnitySessionModal.Native]::SendMessageTimeout($buttons[0], 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero, 0x0002, [uint32][Math]::Min(1000, $remainingMs), [ref]$nativeResult)
+        if ($sent -eq [IntPtr]::Zero) { return Write-Result 'refused' 'quit-click-timeout-or-failure' }
+        return Write-Result 'requested' 'safe-mode-quit' @{ method = 'BM_CLICK'; title = 'Enter Safe Mode?' }
+    }
     $dialog = Get-SceneDialog
     if ($dialog.Ok) {
         if ($Action -eq 'Inspect') { return Write-Result 'inspected' 'scene-modal-found' @{ title = 'Scene(s) Have Been Modified' } }
         if (-not (Test-ExpectedEditor)) { return Write-Result 'refused' 'process-identity-changed' }
         $unchanged = Get-SceneDialog
         if (-not $unchanged.Ok -or $unchanged.Handle -ne $dialog.Handle) { return Write-Result 'refused' 'dialog-changed-before-cancel' }
-        $buttons = @(Get-CancelButtons -Dialog $dialog.Handle)
+        $buttons = @(Get-Buttons -Dialog $dialog.Handle -Text 'Cancel')
         if ($buttons.Count -ne 1) { return Write-Result 'refused' 'cancel-button-absent-or-ambiguous' }
         if (-not (Test-ExpectedEditor)) { return Write-Result 'refused' 'process-identity-changed' }
         $remainingMs = [int][Math]::Floor(($deadline - [DateTime]::UtcNow).TotalMilliseconds)

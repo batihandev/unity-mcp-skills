@@ -85,7 +85,7 @@ class CliTransport:
         if completed.stdout.strip():
             try:
                 payload = json.loads(completed.stdout)
-            except json.JSONDecodeError:
+            except (ValueError, RecursionError):
                 return CommandResult.failed(
                     "CLI_INVALID_JSON", "Unity CLI returned invalid JSON",
                     exitCode=completed.returncode, stdout=_bounded(completed.stdout), stderr=_bounded(completed.stderr),
@@ -326,7 +326,7 @@ class CliTransport:
         code = (
             "return System.Linq.Enumerable.Range(0, UnityEngine.SceneManagement.SceneManager.sceneCount)"
             ".Select(i => UnityEngine.SceneManagement.SceneManager.GetSceneAt(i))"
-            ".Where(s => s.isDirty).Select(s => new { path = s.path, saved = !string.IsNullOrEmpty(s.path) }).ToArray();"
+            ".Where(s => s.isDirty).Select(s => new { path = s.path, name = s.name, handle = s.handle.ToString(), saved = !string.IsNullOrEmpty(s.path) }).ToArray();"
         )
         deadline = self._budget(timeout, deadline)
         target_project, timeout = self._project_budget(identity.project, timeout, deadline=deadline)
@@ -349,23 +349,30 @@ class CliTransport:
         deadline = self._budget(timeout, deadline)
         target_project, timeout = self._project_budget(identity.project, timeout, deadline=deadline)
         guard = self._identity_code(identity, target_project)
-        dirty = (
-            "bool dirtyScene = System.Linq.Enumerable.Range(0, UnityEngine.SceneManagement.SceneManager.sceneCount)"
-            ".Any(i => UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).isDirty);"
+        inspection = (
+            "(string reason, object[] scenes, object prefabStage, object[] assets) InspectExit(){" + guard +
+            "if(!exact) return (\"identity\", new object[0], null, new object[0]);"
+            "var scenes = System.Linq.Enumerable.Range(0, UnityEngine.SceneManagement.SceneManager.sceneCount)"
+            ".Select(i => UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)).Where(s => s.isDirty)"
+            ".Select(s => (object)new { path = s.path, name = s.name, handle = s.handle.ToString(), saved = !string.IsNullOrEmpty(s.path) }).ToArray();"
             "var stage = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();"
-            "if(stage != null && stage.scene.isDirty) dirtyScene = true;"
-            "bool dirtyAsset = UnityEngine.Resources.FindObjectsOfTypeAll<UnityEngine.Object>().Any(o => {"
+            "object prefabStage = stage != null && stage.scene.isDirty ? (object)new { path = stage.assetPath, name = stage.scene.name, handle = stage.scene.handle.ToString() } : null;"
+            "var assets = UnityEngine.Resources.FindObjectsOfTypeAll<UnityEngine.Object>().Where(o => {"
             "if(!UnityEditor.EditorUtility.IsPersistent(o) || !UnityEditor.EditorUtility.IsDirty(o)) return false;"
             "var path = UnityEditor.AssetDatabase.GetAssetPath(o);"
             "if(path.StartsWith(\"Assets/\")) return true;"
             "if(!path.StartsWith(\"Packages/\")) return false;"
             "var info = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(path);"
             "return info != null && (info.source == UnityEditor.PackageManager.PackageSource.Embedded || info.source == UnityEditor.PackageManager.PackageSource.Local);"
-            "});"
+            "}).Select(o => (object)new { path = UnityEditor.AssetDatabase.GetAssetPath(o), name = o.name, globalObjectId = UnityEditor.GlobalObjectId.GetGlobalObjectIdSlow(o).ToString(), type = o.GetType().FullName }).ToArray();"
+            "return (scenes.Length > 0 || prefabStage != null || assets.Length > 0 ? \"dirty-state\" : null, scenes, prefabStage, assets); }"
         )
-        code = "bool SafeToExit(){" + guard + dirty + "return exact && !dirtyScene && !dirtyAsset;}" + (
+        code = inspection + "bool SafeToExit(){ return InspectExit().reason == null; }" + (
             f"var expires = new System.DateTime({expires_utc_ticks}, System.DateTimeKind.Utc);"
-            "if(System.DateTime.UtcNow >= expires || !SafeToExit()) return new { requested = false, reason = \"identity-dirty-or-deadline\" };"
+            "if(System.DateTime.UtcNow >= expires) return new { requested = false, reason = \"deadline\" };"
+            "var refusal = InspectExit();"
+            "if(refusal.reason != null) return new { requested = false, reason = refusal.reason, scenes = refusal.scenes, prefabStage = refusal.prefabStage, assets = refusal.assets };"
+            "if(System.DateTime.UtcNow >= expires) return new { requested = false, reason = \"deadline\" };"
             "UnityEditor.EditorApplication.CallbackFunction callback = null;"
             "callback = () => { UnityEditor.EditorApplication.update -= callback;"
             "if(System.DateTime.UtcNow < expires && SafeToExit() && System.DateTime.UtcNow < expires) UnityEditor.EditorApplication.Exit(0); };"
@@ -379,7 +386,9 @@ class CliTransport:
             return _authentication_refusal(result, identity, "editor_exit") or result
         value = _pipeline_result(result.data)
         if not isinstance(value, dict) or value.get("requested") is not True:
-            return CommandResult.failed("CLOSE_NOT_ACCEPTED", "The exact Editor did not accept a guarded close request", payload=_redact_value(result.data))
+            reasons = {"dirty-state": "DIRTY_EDITOR_STATE", "identity": "PROCESS_IDENTITY_CHANGED", "deadline": "CLI_TIMEOUT"}
+            reason = value.get("reason") if isinstance(value, dict) else None
+            return CommandResult.failed(reasons.get(reason, "CLOSE_NOT_ACCEPTED"), "The exact Editor refused the guarded close request", refusal=_redact_value(value), payload=_redact_value(result.data))
         return CommandResult.ok({"requested": True}, transport=result.diagnostics)
 
     def open(self, project: str, editor_version: str | None, timeout: float | None = None, batch_mode: bool = False, *, deadline: Deadline | None = None) -> CommandResult:
@@ -461,7 +470,7 @@ class CliTransport:
         for line in reversed(output.splitlines()):
             try:
                 parsed = json.loads(line)
-            except json.JSONDecodeError:
+            except (ValueError, RecursionError):
                 continue
             if isinstance(parsed, dict) and "success" in parsed:
                 payload = parsed

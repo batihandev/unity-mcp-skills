@@ -21,13 +21,14 @@ from .transport import _redact_value
 
 
 class WorkflowTestRefusal(RuntimeError):
-    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None):
+    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None, *, report: dict[str, Any] | None = None):
         super().__init__(message)
         self.code = code
         self.details = details or {}
+        self.report = report
 
     def as_dict(self) -> dict[str, Any]:
-        return {"ok": False, "error": {"code": self.code, "message": str(self), "details": self.details}}
+        return {**(self.report or {}), "ok": False, "error": {"code": self.code, "message": str(self), "details": self.details}}
 
 
 def exact_offline_filter(full_name: str) -> str:
@@ -542,11 +543,21 @@ class TestWorkflow:
             target.close()
 
     def _run_connected(self, target: ReportTarget, mode: str, selectors, source_paths, include_explicit: bool, deadline: float) -> dict[str, Any]:
+        report = {"schemaVersion": 1, "action": "test", "ok": False, "route": "connected",
+                  "project": str(self.project), "mode": mode, "selectors": selectors,
+                  "expectedFullName": selectors["testName"], "expectedTests": None,
+                  "editorIdentity": None, "sourceInputs": None, "nativeCommands": [],
+                  "polls": [], "terminal": None, "statusFile": None, "freshness": {}}
+        error = None
+        result = None
         try:
             with self.session.workflow_session(deadline=deadline) as lease:
-                compile_result = self.compile.run_with_lease(source_paths, lease)
+                report["editorIdentity"] = lease.identity.as_dict()
                 sources = self.compile._sources(source_paths)
                 before_sources = self.compile._hash_sources(sources, check_budget=lease.remaining)
+                report["sourceInputs"] = before_sources
+                compile_result = self.compile.run_with_lease(source_paths, lease)
+                report["compile"] = compile_result
                 dirty = self.session.transport.dirty_scenes(lease.identity, timeout=lease.remaining(), deadline=lease.transport_deadline)
                 lease.verify_current()
                 if not dirty.success or not isinstance(dirty.data, list):
@@ -555,31 +566,38 @@ class TestWorkflow:
                     raise WorkflowTestRefusal("DIRTY_SCENES", "Save or discard dirty scenes explicitly before running tests", {"scenes": dirty.data})
                 mode_arg = "editor" if mode == "EditMode" else "playmode"
                 discovery_result = self.session.transport.invoke_command(str(self.project), "list_tests", {"mode": mode_arg}, timeout=lease.remaining(), deadline=lease.transport_deadline)
+                report["nativeCommands"].append({"command": "list_tests", **vars(discovery_result)})
                 discovery_data = self._outer_result(discovery_result, "list_tests")["result"]
+                report["discovery"] = discovery_data
                 if not isinstance(discovery_data, dict) or discovery_data.get("success") is not True or discovery_data.get("Mode") != mode or not isinstance(discovery_data.get("Tests"), list):
                     raise WorkflowTestRefusal("TEST_DISCOVERY_INVALID", "Native test discovery response has an unexpected mode or shape")
                 expected = self._selection(discovery_data, mode, selectors, include_explicit)
+                report["expectedTests"] = expected
                 native_filter = self._connected_filter(discovery_data["Tests"], expected, selectors, include_explicit)
-                temp = self.project / "Temp"
                 status_path = self.project / self.STATUS_PATH
                 request_path = self.project / self.REQUEST_PATH
                 if request_path.exists():
                     raise WorkflowTestRefusal("TEST_REQUEST_ALREADY_RUNNING", "A native test request file already exists; inspect the current run before submitting another")
                 before_status = self._fingerprint(status_path)
+                report["freshness"]["statusFileBefore"] = before_status
                 args = {"mode": mode_arg, **native_filter, "async_tests": True, "include_explicit": include_explicit}
                 trigger = self.session.transport.invoke_command(str(self.project), "run_tests", args, timeout=lease.remaining(), deadline=lease.transport_deadline)
+                report["triggerEnvelope"] = trigger.data
+                report["nativeCommands"].append({"command": "run_tests", **vars(trigger)})
                 lease.verify_current()
                 trigger_data = self._outer_result(trigger, "run_tests")["result"]
+                report["trigger"] = trigger_data
                 if not isinstance(trigger_data, dict) or trigger_data.get("success") is not True or trigger_data.get("result") != "running" or trigger_data.get("Mode") != mode:
                     raise WorkflowTestRefusal("TEST_TRIGGER_INVALID", "Native test acknowledgement did not confirm the expected asynchronous run", {"acknowledgement": trigger.data})
                 expected_status_path = str(self.STATUS_PATH).replace("\\", "/")
                 if trigger_data.get("StatusPath") != expected_status_path:
                     raise WorkflowTestRefusal("TEST_TRIGGER_INVALID", "Native test acknowledgement returned an unexpected status path", {"statusPath": trigger_data.get("StatusPath")})
-                polls = []
+                polls = report["polls"]
                 terminal = None
                 while True:
                     lease.verify_current()
                     poll = self.session.transport.invoke_command(str(self.project), "test_status", {}, timeout=lease.remaining(), deadline=lease.transport_deadline)
+                    report["nativeCommands"].append({"command": "test_status", **vars(poll)})
                     if not poll.success:
                         if poll.code not in {"CLI_TIMEOUT", "CLI_EXEC_FAILED", "CLI_COMMAND_FAILED", "CONNECTION_RESET", "CONNECTION_REFUSED"}:
                             raise WorkflowTestRefusal("TEST_STATUS_UNAVAILABLE", "Native test status could not be read", {"code": poll.code, "message": poll.message})
@@ -588,11 +606,16 @@ class TestWorkflow:
                         continue
                     data = self._outer_result(poll, "test_status")["result"]
                     state = data
+                    report["lastStatus"] = state
                     if not isinstance(state, dict) or not isinstance(state.get("status"), str):
                         raise WorkflowTestRefusal("TEST_STATUS_INVALID", "Native test status omitted a string status")
                     polls.append({"ok": True, "status": state.get("status"), "invocation": poll.diagnostics.get("invocation")})
                     if state["status"] == "completed":
                         terminal = state
+                        report["terminal"] = terminal
+                        report["summary"] = terminal.get("summary")
+                        report["results"] = terminal.get("results")
+                        report["duration"] = terminal.get("duration")
                         break
                     if state["status"] in {"error", "no_tests"}:
                         raise WorkflowTestRefusal("TEST_RUN_FAILED", "Native test workflow ended without a completed run", {"status": state})
@@ -600,44 +623,102 @@ class TestWorkflow:
                         raise WorkflowTestRefusal("TEST_STATUS_INVALID", "Native test workflow returned an unsupported status", {"status": state["status"]})
                     self._sleep(lease)
                 after_status = self._fingerprint(status_path)
+                report["freshness"]["statusFileAfter"] = after_status
+                if after_status["exists"]:
+                    report["statusFile"] = self._read_json_file(status_path)
                 if not after_status["exists"] or after_status == before_status:
                     raise WorkflowTestRefusal("TEST_STATUS_NOT_FRESH", "Native test status file was not rewritten by this run", {"before": before_status, "after": after_status})
-                file_state = self._read_json_file(status_path)
-                if file_state != terminal:
-                    raise WorkflowTestRefusal("TEST_STATUS_MISMATCH", "Native test_status response does not match the fresh status file")
-                report = {"schemaVersion": 1, "route": "connected", "project": str(self.project), "mode": mode,
-                          "expectedFullName": selectors["testName"], "expectedTests": expected, "selectors": selectors, "editorIdentity": lease.identity.as_dict(),
-                          "compile": compile_result, "discovery": discovery_data, "trigger": trigger_data,
-                          "triggerEnvelope": trigger.data, "polls": polls, "terminal": terminal,
-                          "summary": terminal.get("summary") if isinstance(terminal, dict) else None,
-                          "results": terminal.get("results") if isinstance(terminal, dict) else None,
-                          "sourceInputs": before_sources,
-                          "freshness": {"statusFileBefore": before_status, "statusFileAfter": after_status,
-                                        "terminalMatchesStatusFile": True,
-                                        "writerLimitation": "Freshness is bound by the observed status rewrite and cooperating project lock; the native protocol has no run ID, so uncooperative external writers cannot be excluded."}}
-                payload = json.dumps(_redact_value(report), sort_keys=True, separators=(",", ":")).encode("utf-8")
-                self._publish_target(target, payload)
-                try:
-                    parsed = self._validate_connected_terminal(terminal, expected, mode)
-                except WorkflowTestRefusal as exc:
-                    raise WorkflowTestRefusal(exc.code, str(exc), {**exc.details, "reportPath": str(target.path), "reportPreserved": True}) from exc
-                try:
-                    final_compile, final_gt, final_editor = self._postflight(lease)
-                    after_sources = self.compile._hash_sources(sources, check_budget=lease.remaining)
-                    if before_sources != after_sources:
-                        raise WorkflowTestRefusal("SOURCE_INPUT_CHANGED", "An explicit source changed during the test workflow", {"before": before_sources, "after": after_sources})
-                except WorkflowTestRefusal as exc:
-                    raise WorkflowTestRefusal(exc.code, str(exc), {**exc.details, "reportPath": str(target.path), "reportPreserved": True}) from exc
-                return {"ok": True, "action": "test", "route": "connected", "mode": mode, "expectedFullName": selectors["testName"], "expectedTests": expected,
-                        "reportPath": str(target.path), "reportSha256": hashlib.sha256(payload).hexdigest(), "summary": parsed["summary"],
+                disagreements = self._compare_status_views(report["statusFile"], terminal)
+                report["freshness"].update(terminalMatchesStatusFile=report["statusFile"] == terminal,
+                    terminalProtocolMatchesStatusFile=True, durationDisagreements=disagreements,
+                    writerLimitation="Freshness is bound by the observed status rewrite and cooperating project lock; the native protocol has no run ID, so uncooperative external writers cannot be excluded.")
+                parsed = self._validate_connected_terminal(terminal, expected, mode)
+                report["postflight"] = {}
+                self._postflight(lease, observations=report["postflight"], native_commands=report["nativeCommands"])
+                after_sources = self.compile._hash_sources(sources, check_budget=lease.remaining)
+                report["sourceInputsAfter"] = after_sources
+                if before_sources != after_sources:
+                    raise WorkflowTestRefusal("SOURCE_INPUT_CHANGED", "An explicit source changed during the test workflow", {"before": before_sources, "after": after_sources})
+                result = {"ok": True, "action": "test", "route": "connected", "mode": mode, "expectedFullName": selectors["testName"], "expectedTests": expected,
+                        "reportPath": str(target.path), "summary": parsed["summary"],
                         "results": parsed["results"], "duration": terminal.get("duration"),
                         "sourceInputs": before_sources, "freshness": report["freshness"]}
-        except WorkflowTestRefusal:
-            raise
-        except SessionRefusal as exc:
-            if exc.code in {"ACTION_TIMEOUT", "READY_TIMEOUT"}:
-                raise WorkflowTestRefusal("TEST_RUN_TIMEOUT", "The connected test observation reached its deadline; the native run may still be active and was not cancelled", {"requestPath": str(self.project / self.REQUEST_PATH), "statusFingerprint": self._fingerprint(self.project / self.STATUS_PATH), "nativeMayStillBeRunning": True}) from exc
-            raise WorkflowTestRefusal(exc.code, str(exc), exc.details) from exc
+        except (WorkflowTestRefusal, WorkflowRefusal, SessionRefusal) as exc:
+            if isinstance(exc, SessionRefusal) and exc.code in {"ACTION_TIMEOUT", "READY_TIMEOUT"}:
+                error = WorkflowTestRefusal("TEST_RUN_TIMEOUT", "The connected test observation reached its deadline; the native run may still be active and was not cancelled", {"requestPath": str(self.project / self.REQUEST_PATH), "nativeMayStillBeRunning": True})
+            else:
+                error = WorkflowTestRefusal(exc.code, str(exc), exc.details)
+        if error is not None and report["statusFile"] is None:
+            try:
+                fingerprint = self._fingerprint(self.project / self.STATUS_PATH)
+                report["freshness"]["statusFileAfter"] = fingerprint
+                if error.code == "TEST_RUN_TIMEOUT":
+                    error.details["statusFingerprint"] = fingerprint
+                if fingerprint["exists"]:
+                    report["statusFile"] = self._read_json_file(self.project / self.STATUS_PATH)
+            except WorkflowTestRefusal as inspection_error:
+                report["statusFileInspectionError"] = inspection_error.as_dict()["error"]
+        report["ok"] = error is None
+        if error is not None:
+            report["error"] = error.as_dict()["error"]
+        payload = json.dumps(_redact_value(report), sort_keys=True, separators=(",", ":")).encode("utf-8")
+        try:
+            self._publish_target(target, payload)
+        except WorkflowTestRefusal as publication_error:
+            details = dict(publication_error.details)
+            if error is not None:
+                details["originalWorkflowError"] = report["error"]
+            raise WorkflowTestRefusal(publication_error.code, str(publication_error), details, report=report) from publication_error
+        report_sha256 = hashlib.sha256(payload).hexdigest()
+        if error is not None:
+            report["reportSha256"] = report_sha256
+            raise WorkflowTestRefusal(error.code, str(error), {**error.details, "reportPath": str(target.path), "reportSha256": report_sha256, "reportPreserved": True}, report=report) from error
+        result["reportSha256"] = report_sha256
+        return result
+
+    @staticmethod
+    def _valid_connected_duration(value):
+        if type(value) not in {int, float} or value < 0:
+            return False
+        try:
+            return math.isfinite(value)
+        except OverflowError:
+            return False
+
+    @staticmethod
+    def _compare_status_views(file_state, terminal):
+        disagreements = []
+        def duration(value, path, code):
+            if not TestWorkflow._valid_connected_duration(value):
+                raise WorkflowTestRefusal(code, "Connected duration must be finite and nonnegative", {"field": path})
+        for state in (file_state, terminal):
+            if not isinstance(state, dict):
+                raise WorkflowTestRefusal("TEST_STATUS_INVALID", "Native status must be an object")
+            if "duration" in state:
+                duration(state["duration"], "duration", "TEST_STATUS_INVALID")
+            for index, item in enumerate(state.get("results", []) if isinstance(state.get("results"), list) else []):
+                if isinstance(item, dict) and "Duration" in item:
+                    duration(item["Duration"], f"results[{index}].Duration", "TEST_RESULT_INVALID")
+        def compare(left, right, path=""):
+            metric = path == "duration" or re.fullmatch(r"results\[\d+\]\.Duration", path) is not None
+            if metric:
+                if left != right:
+                    disagreements.append({"path": path, "statusFile": left, "transport": right})
+                return
+            if type(left) is not type(right):
+                raise WorkflowTestRefusal("TEST_STATUS_MISMATCH", "Native test_status response does not match the fresh status file", {"field": path})
+            if isinstance(left, dict) and left.keys() == right.keys():
+                for key in left:
+                    compare(left[key], right[key], f"{path}.{key}" if path else key)
+                return
+            if isinstance(left, list) and len(left) == len(right):
+                for index, (a, b) in enumerate(zip(left, right)):
+                    compare(a, b, f"{path}[{index}]")
+                return
+            if left != right:
+                raise WorkflowTestRefusal("TEST_STATUS_MISMATCH", "Native test_status response does not match the fresh status file", {"field": path})
+        compare(file_state, terminal)
+        return disagreements
 
     def _run_offline(self, target: ReportTarget, mode: str, selectors, source_paths, editor_version: str | None, deadline: float, discovery) -> dict[str, Any]:
         try:
@@ -729,14 +810,14 @@ class TestWorkflow:
         if clean["total"] != sum(clean[key] for key in keys[1:]) or clean["total"] != len(results):
             raise WorkflowTestRefusal("TEST_SUMMARY_INVALID", "Connected test summary does not match the result array", {"summary": clean, "resultCount": len(results)})
         duration = payload.get("duration")
-        if duration is not None and (not isinstance(duration, (int, float)) or isinstance(duration, bool) or not math.isfinite(duration) or duration < 0):
+        if duration is not None and not self._valid_connected_duration(duration):
             raise WorkflowTestRefusal("TEST_STATUS_INVALID", "Connected test duration must be finite and nonnegative")
         names = []
         for item in results:
             if not isinstance(item, dict) or not isinstance(item.get("FullName"), str) or not isinstance(item.get("Status"), str):
                 raise WorkflowTestRefusal("TEST_RESULT_INVALID", "Connected test result omitted FullName or Status")
             item_duration = item.get("Duration")
-            if item_duration is not None and (not isinstance(item_duration, (int, float)) or isinstance(item_duration, bool) or not math.isfinite(item_duration) or item_duration < 0):
+            if item_duration is not None and not self._valid_connected_duration(item_duration):
                 raise WorkflowTestRefusal("TEST_RESULT_INVALID", "Connected result duration must be finite and nonnegative", {"fullName": item["FullName"]})
             for field in ("Message", "StackTrace"):
                 if field in item and item[field] is not None and not isinstance(item[field], str):
@@ -749,26 +830,38 @@ class TestWorkflow:
             raise WorkflowTestRefusal("TEST_RESULT_NOT_PASSED", "Every selected native test must pass without skipped or inconclusive results", {"summary": clean, "results": results})
         return {"summary": clean, "results": results}
 
-    def _postflight(self, lease):
-        final_compile = self._invoke_result(lease, "recompile_status")
-        state = final_compile
+    def _postflight(self, lease, *, observations=None, native_commands=None):
+        observations = {} if observations is None else observations
         try:
-            state = CompileWorkflow._validate_status(state)
-        except WorkflowRefusal as exc:
-            raise WorkflowTestRefusal(exc.code, str(exc), exc.details) from exc
-        if state["status"] not in {"completed", "up_to_date"} or state["failed"] or state["errors"] or state["compilationFailed"]:
-            raise WorkflowTestRefusal("COMPILATION_FAILED", "Post-test native compile status is not clean", {"status": state})
-        try:
-            _, ground_truth, _, _ = self.compile._fresh_ground_truth(lease)
-            editor = self.compile._editor_state(lease)[0]
-        except WorkflowRefusal as exc:
-            raise WorkflowTestRefusal(exc.code, str(exc), exc.details) from exc
-        lease.verify_current()
-        return state, ground_truth, editor
+            observations["lastPhase"] = "compile"
+            final_compile = self._invoke_result(lease, "recompile_status", observations=observations, native_commands=native_commands)
+            observations["compile"] = final_compile
+            state = CompileWorkflow._validate_status(final_compile)
+            if state["status"] not in {"completed", "up_to_date"} or state["failed"] or state["errors"] or state["compilationFailed"]:
+                raise WorkflowTestRefusal("COMPILATION_FAILED", "Post-test native compile status is not clean", {"status": state})
+            observations["lastPhase"] = "groundTruth"
+            _, ground_truth, _, _ = self.compile._fresh_ground_truth(lease, observations=observations)
+            observations["groundTruth"] = ground_truth
+            observations["lastPhase"] = "editor"
+            editor = self.compile._editor_state(lease, observations=observations, observation_key="editorObservation")[0]
+            observations["editor"] = editor
+            observations["lastPhase"] = "identity"
+            lease.verify_current()
+            observations["lastPhase"] = "completed"
+            return state, ground_truth, editor
+        except (WorkflowRefusal, WorkflowTestRefusal, SessionRefusal) as exc:
+            observations["error"] = {"code": exc.code, "message": str(exc), "details": exc.details}
+            if isinstance(exc, WorkflowRefusal):
+                raise WorkflowTestRefusal(exc.code, str(exc), exc.details) from exc
+            raise
 
-    def _invoke_result(self, lease, command: str) -> dict[str, Any]:
+    def _invoke_result(self, lease, command: str, *, observations=None, native_commands=None) -> dict[str, Any]:
         lease.verify_current()
         result = self.session.transport.invoke_command(str(self.project), command, {}, timeout=lease.remaining(), deadline=lease.transport_deadline)
+        if native_commands is not None:
+            native_commands.append({"command": command, **vars(result)})
+        if observations is not None:
+            observations["compileObservation"] = {"nativeEnvelope": result.data, "invocation": result.diagnostics.get("invocation")}
         data = CompileWorkflow._outer_result(result, command)["result"]
         return data
 

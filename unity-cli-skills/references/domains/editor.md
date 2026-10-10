@@ -100,6 +100,19 @@ status-file rewrite, matching clean native status, unchanged source hashes, fres
 ready/stopped final Editor readback. `up_to_date` is a successful native no-op and reports `compiled: false`;
 pass `--require-compiled` when the caller requires `compiling` followed by `completed`.
 
+Use `--sources-file /path/to/sources.json` for a plain UTF-8 JSON array of explicit source paths,
+for example `["Assets/Runtime/Player.cs", "Assets/Editor/Build tools.cs"]`. The list is bounded to
+one MiB and can be combined with repeated `--source`. Paths still pass the same confinement,
+existence, duplicate and hash checks. Keep deleted paths out of a compile input set; a Git rename
+needs the current path. Preserve spaces when deriving a reviewed list from version control.
+
+`--output /path/to/new-report.json` preserves the final compile verdict, source hashes, native
+observations, wall time and last phase on refusal. Its existing parent must be a plain directory
+outside the project's data trees; an existing report is never replaced. `--format summary`
+emits concise JSON on stdout while a requested saved report keeps full evidence. The default
+stdout format remains full JSON. A publication refusal retains the original workflow cause
+and available evidence in the full response; it does not claim an artifact was saved.
+
 The native status file has no run identifier. A changed pre/post file snapshot binds its result to the current
 trigger only for cooperating workflow callers; manual edits or another uncooperative Editor/CLI process can
 still race it. If file freshness or exact Editor identity cannot be established, rerun the gate after resolving

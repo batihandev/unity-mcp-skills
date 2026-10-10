@@ -34,7 +34,7 @@ def _windows_helper_response(completed: Any, action: str) -> dict[str, Any]:
         payload = json.loads(completed.stdout)
     except (json.JSONDecodeError, TypeError):
         return invalid
-    expected = {"Inspect": "inspected", "Cancel": "cancelled", "Close": "requested"}[action]
+    expected = {"Inspect": "inspected", "Cancel": "cancelled", "Close": "requested", "QuitSafeMode": "requested"}[action]
     if not isinstance(payload, dict) or payload.get("supported") is not True:
         return invalid
     state, reason = payload.get("state"), payload.get("reason")
@@ -51,6 +51,8 @@ def _windows_helper_response(completed: Any, action: str) -> dict[str, Any]:
     if action == "Cancel" and reason == "modal-dismissed":
         return payload
     if action == "Close" and reason == "close-main-window" and payload.get("method") == "CloseMainWindow":
+        return payload
+    if action == "QuitSafeMode" and reason == "safe-mode-quit" and payload.get("method") == "BM_CLICK":
         return payload
     return invalid
 
@@ -275,6 +277,9 @@ class PlatformAdapter:
 
     def cancel_safe_modal(self, identity: SessionIdentity, timeout: float) -> dict[str, Any]:
         return {"supported": False, "state": "unsupported", "reason": f"modal cancellation is unavailable on {self.name}"}
+
+    def quit_safe_mode(self, identity: SessionIdentity, timeout: float) -> dict[str, Any]:
+        return {"supported": False, "state": "unsupported", "reason": f"Safe Mode Quit is unavailable on {self.name}"}
 
     def request_graceful_close(self, identity: SessionIdentity, timeout: float) -> dict[str, Any]:
         return {"supported": False, "state": "unsupported", "reason": f"graceful window close is unavailable on {self.name}"}
@@ -507,6 +512,9 @@ class WindowsAdapter(PlatformAdapter):
 
     def cancel_safe_modal(self, identity: SessionIdentity, timeout: float) -> dict[str, Any]:
         return self._modal(identity, "Cancel", timeout)
+
+    def quit_safe_mode(self, identity: SessionIdentity, timeout: float) -> dict[str, Any]:
+        return self._modal(identity, "QuitSafeMode", timeout)
 
     def request_graceful_close(self, identity: SessionIdentity, timeout: float) -> dict[str, Any]:
         return self._modal(identity, "Close", timeout)

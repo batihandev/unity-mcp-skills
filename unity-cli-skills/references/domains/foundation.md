@@ -42,6 +42,21 @@ Use this route order:
 
 Pass method-body statements and local functions to `eval`/`eval_file`. Keep callback classes that must survive later invocations or domain reload in normally imported project source. Invoke an already compiled static entry point through a narrow `eval` call; do not recreate its callbacks in transient code. `run_script` compiles its input into an ephemeral assembly, so use it for bounded authoring whose code and state may be discarded after execution.
 
+For long authorized work, discover the installed CLI's native `command --detach` and
+`job status/wait/cancel` contract rather than adding a parallel job runner. Retain the returned
+job ID and exact project, and use a bounded wait such as:
+
+```bash
+unity job wait "$JOB_ID" --project-path "$PROJECT_PATH" --timeout 120 --format json
+```
+
+The CLI command timeout is in seconds; discovered eval `timeout` is in milliseconds.
+Pipeline 0.8 evaluates on the main thread directly and accepts larger eval timeout values.
+A client timeout still does not prove mutation stopped. Inspect the job and the operation's
+own completion/postconditions before resubmission; cancellation is not rollback. Use native
+status/dialog diagnostics when available, and the exact-process session recovery owner when
+startup is too early for Pipeline.
+
 There is no top-level `unity eval` verb. If no discovered route owns the whole operation, report the missing
 capability instead of composing a weaker approximation.
 

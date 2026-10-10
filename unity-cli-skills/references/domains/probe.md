@@ -26,7 +26,9 @@ exclusive authorship when other scripts can emit the same message. Prefer the
 run ID template for probes that need invocation-specific completion evidence.
 
 Execution requires an exact running Editor in playing state. `--enter-play`
-authorizes a stopped-to-playing transition owned by this helper. It restores
+authorizes a stopped-to-playing transition owned by this helper. Dirty scenes refuse before
+that request. The helper reserves time to restore even if the play request crosses the probe
+action deadline; an uncertain request remains owned for cleanup. It restores
 stopped state only for that transition and only while the leased Editor identity
 remains current. Existing playing state remains caller-owned. Paused state requires
 the caller to choose the desired state before execution. The helper never launches
@@ -60,7 +62,10 @@ The helper refuses unsuccessful or malformed command results, console reset or
 dropped history, Error/Assert/Exception entries after the initial cursor, source
 hash changes, Editor replacement, play-state changes, and deadline expiry. A stale,
 seeded, partial, or wrong completion message cannot establish success. Each poll
-uses the shared [console validator](console.md). Console evidence remains bounded
+uses the shared [console validator](console.md). A current unseeded message containing the
+marker with additional text refuses promptly as `PROBE_COMPLETION_MISMATCH` and retains
+`nearestLine`; copy the complete emitted message or emit the exact template. A restoration
+failure is recorded separately and does not replace the original probe failure. Console evidence remains bounded
 by the native buffer; a reported gap prevents acceptance. Probe code must emit
 completion only after its own assertions and asynchronous work finish. Exceptions
 or messages produced after that terminal boundary require a separate observation.

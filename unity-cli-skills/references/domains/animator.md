@@ -9,6 +9,20 @@ and update phase that produced it. For imported rigs, verify exporter axes, stab
 and the generated clip through real Animator playback. Compare measurements from the same frame
 and phase; a compensating root rotation does not establish that the import or retargeting is correct.
 
+For Humanoid validation, read the Avatar validity/type and resolve expected bones with
+[`Animator.GetBoneTransform`](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Animator.GetBoneTransform.html)
+after hierarchy changes. Record null mappings and actual Transform identities; a name match
+alone does not prove the runtime mapping. Inspect importer `humanDescription` twist shares
+when diagnosing forearm roll:
+[`lowerArmTwist`](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/HumanDescription-lowerArmTwist.html)
+controls how roll is distributed between elbow and wrist. Compare the actual rig's enabled
+and disabled outputs in the same update phase before attributing the result to a rig job.
+
+[`AnimationClip.SampleAnimation`](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/AnimationClip.SampleAnimation.html)
+writes sampled animated properties on an object. To validate gameplay pose, mirror, retargeting
+and root orientation, observe the intended Animator/controller path with the imported clip
+and avatar. A standalone sample cannot establish that complete runtime path's behavior.
+
 The Unity Pipeline package owns controller assets through six native commands. Discover their current schemas with `unity --json command --project-path "$PROJECT_PATH" --query animation/animator --detail full` before using them:
 
 | Intent | Native command | Contract |

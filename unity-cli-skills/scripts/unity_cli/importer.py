@@ -297,7 +297,7 @@ class ImportWorkflow:
         for field, value in values.items():
             if field in self.BOOL_FIELDS[kind] and not isinstance(value, bool):
                 self._invalid(field, value, "must be a Boolean")
-            if field in self.NUMBER_FIELDS[kind] and (isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value)):
+            if field in self.NUMBER_FIELDS[kind] and not self._finite_number(value):
                 self._invalid(field, value, "must be a finite number")
             if field in self.INTEGER_FIELDS[kind] and not self._integer(value):
                 self._invalid(field, value, "must be an integer")
@@ -465,7 +465,10 @@ class ImportWorkflow:
 
     @staticmethod
     def _finite_number(value):
-        return not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(value)
+        try:
+            return not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(value)
+        except OverflowError:
+            return False
 
     @staticmethod
     def _integer(value):

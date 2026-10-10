@@ -404,7 +404,9 @@ class ReportTarget:
             if not stat.S_ISREG(info.st_mode):
                 raise ReportPathError("TEST_OUTPUT_PATH_CHANGED", "The exclusively created report is not a regular file")
             file_identity = (info.st_dev, info.st_ino)
-            with os.fdopen(fd, "wb") as stream:
+            stream = os.fdopen(fd, "wb")
+            fd = None
+            with stream:
                 stream.write(payload)
                 stream.flush()
                 os.fsync(stream.fileno())
@@ -428,6 +430,9 @@ class ReportTarget:
                 except (OSError, ReportPathError):
                     pass
             raise ReportPathError("TEST_OUTPUT_PUBLISH_FAILED", "The report bytes could not be written", {"path": str(self.path), "reason": str(exc)}) from exc
+        finally:
+            if fd is not None:
+                os.close(fd)
         self._verify_parent()
         self.published_identity = file_identity
 

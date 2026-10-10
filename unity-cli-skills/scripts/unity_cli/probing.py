@@ -193,14 +193,26 @@ class ProbeWorkflow:
                     reserve = min(5.0, lease.remaining() / 4) if enter_play else 0.0
                     action_lease = replace(lease, deadline=deadline - reserve) if isinstance(lease, WorkflowSessionLease) else lease
                     owned = False
+                    primary_error = None
                     try:
                         state = self._state(lease, report)
                         if not dry_run and state['playMode'] != 'playing':
                             if not enter_play or state['playMode'] != 'stopped':
                                 raise ProbeRefusal('PROBE_PLAY_REQUIRED', 'Probe execution requires playing state; use enter_play to own a stopped-to-playing transition')
-                            self._invoke(action_lease, report, 'editor_play', {})
-                            owned = True
-                            report['restoration']['ownedPlayTransition'] = True
+                            action_lease.verify_current()
+                            dirty = self.session.transport.dirty_scenes(action_lease.identity, timeout=action_lease.remaining(), deadline=action_lease.transport_deadline)
+                            action_lease.verify_current()
+                            if not dirty.success:
+                                raise ProbeRefusal(dirty.code or 'DIRTY_STATE_UNKNOWN', dirty.message or 'Dirty-scene state could not be inspected', dirty.diagnostics)
+                            if not isinstance(dirty.data, list):
+                                raise ProbeRefusal('DIRTY_STATE_INVALID', 'Dirty-scene inspection returned an unexpected result')
+                            if dirty.data:
+                                raise ProbeRefusal('DIRTY_SCENES', 'Save or discard dirty scenes explicitly before entering play', {'scenes': dirty.data})
+                            def own_transition():
+                                nonlocal owned
+                                owned = True
+                                report['restoration']['ownedPlayTransition'] = True
+                            self._invoke(action_lease, report, 'editor_play', {}, before_dispatch=own_transition)
                             self._wait_play(action_lease, report, 'playing')
                         self._verify_sources(compile_owner, sources, report, action_lease)
                         baseline = self._console(action_lease, report)
@@ -229,11 +241,17 @@ class ProbeWorkflow:
                                 report['completion'] = matches[0]
                                 report['ok'] = True
                                 break
+                            nearest = [row for row in parsed['entries'] if row['seeded'] is False and marker in row['message']]
+                            if nearest:
+                                raise ProbeRefusal('PROBE_COMPLETION_MISMATCH', 'A current probe message contains the completion text but does not match it exactly', {'completionText': marker, 'nearestLine': nearest[0]})
                             cursor = parsed['cursor']
                             self.session.clock.sleep(min(0.1, action_lease.remaining()))
                         self._state(action_lease, report, expected=state['playMode'] if dry_run else 'playing')
                         action_lease.verify_current()
                         self._verify_sources(compile_owner, sources, report, action_lease)
+                    except BaseException as exc:
+                        primary_error = exc
+                        raise
                     finally:
                         if owned:
                             try:
@@ -241,9 +259,11 @@ class ProbeWorkflow:
                                 self._invoke(lease, report, 'editor_stop', {})
                                 self._wait_play(lease, report, 'stopped')
                                 report['restoration']['restored'] = True
-                            except (WorkflowRefusal, WorkflowConsoleRefusal, SessionRefusal) as exc:
-                                report['restoration'].update(restored=False, error=exc.as_dict()['error'])
-                                raise
+                            except Exception as exc:
+                                restoration_error = exc if isinstance(exc, (WorkflowRefusal, WorkflowConsoleRefusal, SessionRefusal)) else ProbeRefusal('PROBE_RESTORATION_FAILED', 'The owned play transition could not be restored', {'reason': str(exc), 'type': type(exc).__name__})
+                                report['restoration'].update(restored=False, error=restoration_error.as_dict()['error'])
+                                if primary_error is None:
+                                    raise restoration_error
             report['ok'] = True
         except (WorkflowRefusal, WorkflowConsoleRefusal, SessionRefusal) as exc:
             code = 'PROBE_TIMEOUT' if exc.code in {'ACTION_TIMEOUT', 'READY_TIMEOUT'} else exc.code
@@ -267,9 +287,12 @@ class ProbeWorkflow:
             raise error
         return {**{key: value for key, value in report.items() if key != 'commands'}, **artifact}
 
-    def _invoke(self, lease, report, command, arguments):
+    def _invoke(self, lease, report, command, arguments, *, before_dispatch=None):
         lease.verify_current()
-        result = self.session.transport.invoke_command(str(self.project), command, arguments, timeout=lease.remaining(), deadline=lease.transport_deadline)
+        timeout = lease.remaining()
+        if before_dispatch is not None:
+            before_dispatch()
+        result = self.session.transport.invoke_command(str(self.project), command, arguments, timeout=timeout, deadline=lease.transport_deadline)
         report['commands'].append({'command': command, 'arguments': arguments, 'nativeResponse': result.data,
                                    'transportSuccess': result.success, 'code': result.code, 'message': result.message, 'diagnostics': result.diagnostics})
         lease.verify_current()

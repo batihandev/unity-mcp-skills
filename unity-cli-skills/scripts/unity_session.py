@@ -66,6 +66,8 @@ def _parser() -> argparse.ArgumentParser:
         "--graceful-close", action="store_true",
         help="For recover only, request an exact PID-targeted OS window close if readiness is not restored.",
     )
+    parser.add_argument("--quit-safe-mode", action="store_true",
+                        help="For recover only, Quit the exact startup Safe Mode prompt and verify Editor exit.")
     return parser
 
 
@@ -73,8 +75,8 @@ def _validate(args: argparse.Namespace) -> pathlib.Path:
     if (args.expected_pid is None) != (args.expected_started_at is None):
         raise InputRefusal("INVALID_ARGUMENT", "--expected-pid and --expected-started-at must be provided together")
     if args.expected_pid is not None:
-        if args.action not in {"ready", "close"} or args.expected_pid <= 0 or not args.expected_started_at:
-            raise InputRefusal("INVALID_ARGUMENT", "Expected identity requires ready or close, a positive PID, and a nonempty started-at value")
+        if args.action not in {"ready", "close", "restart"} or args.expected_pid <= 0 or not args.expected_started_at:
+            raise InputRefusal("INVALID_ARGUMENT", "Expected identity requires ready, close or restart, a positive PID, and a nonempty started-at value")
     project = pathlib.Path(args.project).expanduser()
     if not project.is_dir():
         raise InputRefusal("PROJECT_NOT_FOUND", "The project directory does not exist", {"project": str(project)})
@@ -84,13 +86,17 @@ def _validate(args: argparse.Namespace) -> pathlib.Path:
         raise InputRefusal("INVALID_ARGUMENT", "--batch-mode is valid only with open or restart")
     if args.graceful_close and args.action != "recover":
         raise InputRefusal("INVALID_ARGUMENT", "--graceful-close is valid only with recover")
+    if args.quit_safe_mode and args.action != "recover":
+        raise InputRefusal("INVALID_ARGUMENT", "--quit-safe-mode is valid only with recover")
+    if args.quit_safe_mode and args.graceful_close:
+        raise InputRefusal("INVALID_ARGUMENT", "--quit-safe-mode and --graceful-close are mutually exclusive")
     return project.resolve()
 
 
 def _exit_code(code: str) -> int:
     if code in {"PROJECT_NOT_FOUND", "INVALID_TIMEOUT", "INVALID_ARGUMENT", "EDITOR_VERSION_UNKNOWN"}:
         return 2
-    if code in {"CLI_NOT_FOUND", "PROCESS_INVENTORY_UNKNOWN", "GRACEFUL_CLOSE_UNAVAILABLE"}:
+    if code in {"CLI_NOT_FOUND", "PROCESS_INVENTORY_UNKNOWN", "GRACEFUL_CLOSE_UNAVAILABLE", "SAFE_MODE_QUIT_UNAVAILABLE"}:
         return 3
     if code in {"DIRTY_SCENES", "MULTIPLE_PROJECT_EDITORS", "SESSION_NOT_RUNNING"}:
         return 4
@@ -127,9 +133,9 @@ def main(
         elif args.action == "close":
             result = controller.close(expected_identity=expected_identity)
         elif args.action == "restart":
-            result = controller.restart(editor_version=editor_version, batch_mode=args.batch_mode)
+            result = controller.restart(editor_version=editor_version, batch_mode=args.batch_mode, expected_identity=expected_identity)
         else:
-            result = controller.recover(graceful_close=args.graceful_close)
+            result = controller.recover(graceful_close=args.graceful_close, quit_safe_mode=args.quit_safe_mode)
         print(json.dumps(result, sort_keys=True), file=stdout)
         return 0 if result.get("ok", False) else 6
     except (InputRefusal, SessionRefusal) as exc:

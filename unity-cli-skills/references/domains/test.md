@@ -20,9 +20,12 @@ python3 unity-cli-skills/scripts/unity_workflow.py test --project <exact-project
   --test-class <namespace.class> --assembly <exact-assembly> --source <file.cs> --output <new-report.json>
 ```
 
-Use `--test-name <exact-FullName>` for a method, `--test-class <namespace.class>` for every discovered method
+Use `--test-name <exact-FullName>` for one discovered leaf, `--test-class <namespace.class>` for every discovered method
 in that class, and `--assembly <exact-assembly>` for an assembly. Name and class are mutually exclusive;
-either can combine with assembly. Repeat `--source` for each explicit source input. The connected route
+either can combine with assembly. Each selector may occur only once; repeated selectors refuse.
+For a parameterized test, copy the complete case fullname including its arguments from discovery;
+the method name alone does not select a group. Repeat `--source` for each explicit source input,
+or use the [JSON source list](editor.md#compile-freshness-gate). The connected route
 compiles and freezes a nonzero native discovery set, then submits one asynchronous native suite and polls to
 fresh terminal status. The SDK accepts one case-insensitive partial name or assembly filter. The gate refuses
 any selection that this filter would widen, including identical fullnames in separate assemblies: the native
@@ -58,8 +61,24 @@ Choose an initially absent report path in a persistent directory outside the pro
 `Library`, and `Temp` trees. The helper stages native output in a private sibling directory and publishes
 without replacing an existing target. Connected output is sanitized JSON. Offline output is the raw NUnit XML,
 which may contain test messages, stack traces, and project-local paths; treat it as local diagnostic data.
-Failures with a valid report preserve that report. Do not use Unity's temporary report location or select a
+Connected reports record the helper's final `ok/error`, both raw status views, source/freshness
+and available postflight observations. Refusals preserve partial evidence when publication is possible.
+`--format summary` emits canonical counts and nonpassing leaves once, with concise error fields
+and artifact references; full JSON remains the default. Offline files retain native NUnit XML,
+whose native pass result alone cannot prove the helper accepted its source, identity and lifecycle checks. Do not use Unity's temporary report location or select a
 newest report from a shared directory.
+
+Protocol identity, outcome, counts and messages must agree exactly between the connected status
+file and transport. Root `duration` and direct leaf `Duration` are independently validated as finite,
+nonnegative metrics. Differences in those metrics remain visible under `freshness.durationDisagreements`
+and both raw views; they do not alter outcome or identity checks. `terminalMatchesStatusFile`
+records raw equality, while `terminalProtocolMatchesStatusFile` records protocol agreement.
+
+Pipeline 0.8 discovery reads explicit status from each leaf. An inherited NUnit `[Explicit]`
+can be omitted from that metadata even though execution honors it. A default suite can therefore
+refuse on a skipped or missing expected leaf. Inspect the test and declaring fixture attributes;
+use `--include-explicit` only when intentionally authorizing those connected tests. Keep the
+native discovery and failure evidence; never silently treat skipped leaves as passed.
 
 Connected tests have no native run ID. Freshness is established through the rewritten status file, exact
 Editor/source checks, and a cooperating per-project host lock. An uncooperative writer outside that lock

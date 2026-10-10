@@ -126,6 +126,10 @@ For UXML/USS, UIDocument, PanelSettings and UI Toolkit starters, read the [UI To
 Runtime evidence covers Unity **6000.6.2f1**, Pipeline **0.8.0-exp.1**, and
 Input System **1.20.0**. The semantic matrix uses CLI **1.0.0-beta.11**;
 Git installation lifecycle and baseline restoration use **1.0.0-beta.12**.
+Focused workflow hardening also ran on CLI **1.0.0-beta.13**, with native compile,
+connected/offline test reports, owned-play probe restoration, dirty-scene guarded exit
+and a long eval. These checks supplement the retained semantic matrix; they do not
+reverify every renderer integration on beta.13.
 The exercised route is a graphics-enabled Windows Editor controlled from a WSL/Linux shell.
 The host Python helpers require **Python 3.10+** and use the standard library.
 
@@ -134,6 +138,7 @@ The host Python helpers require **Python 3.10+** and use the standard library.
 | 6000.6.2f1 / 1.0.0-beta.11 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | Built-in core and seven isolated package integrations | semantic matrix verified |
 | 6000.6.2f1 / 1.0.0-beta.11 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | HDRP 17.6.0 and isolated URP 17.6.0 overlays | verified |
 | 6000.6.2f1 / 1.0.0-beta.12 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | Built-in; two Git installation ownership cases | lifecycle verified (22 passing tests per case) |
+| 6000.6.2f1 / 1.0.0-beta.13 / 0.8.0-exp.1 | Windows Editor, WSL/Linux shell | Built-in; graphics-enabled batch-mode fixture | focused workflow hardening verified |
 | Same exact versions | Native Windows shell | Same renderer versions | expected-unverified |
 | Same exact versions | Native Linux or macOS Editor and shell | Same renderer versions | expected-unverified |
 | Other Editor, CLI, Pipeline or renderer versions | Any | Any | expected-unverified |

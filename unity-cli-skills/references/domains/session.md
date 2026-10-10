@@ -83,9 +83,12 @@ or restoration. A new workflow or domain/package change requires fresh discovery
 ## Close and restart
 
 `close` queries the selected Editor's open scenes first. Any dirty scene refuses the operation and reports the
-scene metadata returned by Unity; save or discard it explicitly, then retry. Its connected request checks
+scene path, name, exact handle string, and saved state returned by Unity; save or discard it explicitly, then retry. Its connected request checks
 the selected PID, start identity, project, dirty scenes, prefab stage, and loaded project or package assets.
-The single-shot Editor update callback unsubscribes before repeating those checks and expires at the action
+A guarded refusal separates dirty state, identity mismatch and deadline expiry, and retains
+the dirty prefab-stage identity and persistent asset path/name/type/global ID. Diagnose the
+writer before clearing a dirty flag or saving; loaded persistent objects can be dirty even when
+no disk content has changed. The single-shot Editor update callback unsubscribes before repeating those checks and expires at the action
 deadline; newly dirty work or a delayed callback keeps the Editor open. The helper reports `closed` only after the original PID and start identity
 disappear from the OS inventory and no replacement Editor claims the project.
 
@@ -103,6 +106,20 @@ ambiguous buttons, changed process identity, and changed dialog identity are rep
 Logs from a default per-user location have `attribution: unverified` because another Editor may write the
 same file. A log selected from the target process's `-logFile` launch argument has
 `attribution: launch-argument`.
+
+For an explicitly owned startup Safe Mode prompt on Windows or WSL, choose Quit through:
+
+```bash
+python scripts/unity_session.py recover --project /path/to/Project --quit-safe-mode --timeout 30
+```
+
+This opt-in requires one exact `Enter Safe Mode?` dialog with one `Quit` button and rechecks
+process identity, dialog/button handles and deadline before clicking. It verifies the original
+Editor exited and never reopens it. It refuses other or ambiguous prompts, and cannot combine
+with `--graceful-close`. It never selects Ignore or Enter Safe Mode. The Windows decision branch
+has mocked PowerShell/controller coverage; exact PID-bound Quit was exercised on one disposable
+Windows startup prompt reached from WSL. Other platforms return an unsupported refusal.
+Fix the reported compiler cause before another launch.
 
 Before writing scene files outside Unity, establish who owns the loaded scene and any unsaved edits.
 Save the intended Editor state or obtain the owner's explicit discard decision, then close and verify the
@@ -150,11 +167,11 @@ A dirty-scene refusal requires the project owner's save or revert decision.
 ## Bind readiness and close to an owned Editor
 
 Pass `--expected-pid <pid> --expected-started-at <startedAt>` together on
-`unity_session.py ready` or `close` to require the exact identity returned by the
+`unity_session.py ready` or `close` or `restart` to require the exact identity returned by the
 owned `open`. The PID must be positive; retain the native nonempty `startedAt`
 string verbatim. The expected project is the canonical `--project`. A mismatch
 returns `PROCESS_IDENTITY_CHANGED` before readiness, dirty-scene inspection or
 close requests. Clean-state checks and verified exit remain required. These
-options apply only to `ready` and `close`; omitting both preserves normal
+options apply only to `ready`, `close`, and `restart`; omitting both preserves normal
 current-project behavior. Keep the owned identity through failure cleanup and
 preserve dirty Editors when close refuses.

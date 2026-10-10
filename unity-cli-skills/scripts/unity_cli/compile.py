@@ -9,6 +9,8 @@ import subprocess
 from typing import Any
 
 from .lifecycle import SessionRefusal
+from .reports import ReportTarget, ReportPathError
+from .transport import _redact_value
 
 
 STATUS_RELATIVE_PATH = pathlib.Path("Temp/pipeline_recompile_status.json")
@@ -37,28 +39,69 @@ class CompileWorkflow:
         self.poll_interval = poll_interval
         self.clock = clock
 
-    def run(self, source_paths, require_compiled: bool = False) -> dict[str, Any]:
+    def run(self, source_paths, require_compiled: bool = False, *, output=None) -> dict[str, Any]:
         if not isinstance(require_compiled, bool):
             raise WorkflowRefusal("INVALID_ARGUMENT", "require_compiled must be Boolean")
+        target = None
+        started = self.clock.monotonic()
+        failure = None
         try:
-            with self.session.workflow_session() as lease:
-                return self.run_with_lease(source_paths, lease, require_compiled=require_compiled)
-        except WorkflowRefusal:
-            raise
-        except SessionRefusal as exc:
-            code = "COMPILE_TIMEOUT" if exc.code in {"ACTION_TIMEOUT", "READY_TIMEOUT"} else exc.code
-            raise WorkflowRefusal(code, str(exc), exc.details) from exc
+            if output is not None:
+                target = ReportTarget(self.project, output)
+            try:
+                with self.session.workflow_session() as lease:
+                    report = self.run_with_lease(source_paths, lease, require_compiled=require_compiled)
+            except SessionRefusal as exc:
+                code = "COMPILE_TIMEOUT" if exc.code in {"ACTION_TIMEOUT", "READY_TIMEOUT"} else exc.code
+                failure = WorkflowRefusal(code, str(exc), exc.details)
+                report = {"schemaVersion": 1, "action": "compile", "project": str(self.project), **failure.as_dict()}
+            except WorkflowRefusal as exc:
+                failure = exc
+                report = {"schemaVersion": 1, "action": "compile", "project": str(self.project), **exc.as_dict()}
+                source_inputs = exc.details.get("observations", {}).get("sourceInputs")
+                if source_inputs is not None:
+                    report["sourceInputs"] = source_inputs
+            report["wallSeconds"] = self.clock.monotonic() - started
+            if target is not None:
+                payload = json.dumps(_redact_value(report), sort_keys=True, separators=(",", ":")).encode("utf-8")
+                try:
+                    target.publish(payload)
+                except ReportPathError as exc:
+                    details = {**exc.details, "workflowReport": _redact_value(report)}
+                    if failure is not None:
+                        details["originalWorkflowError"] = _redact_value(failure.as_dict()["error"])
+                    raise WorkflowRefusal(exc.code, str(exc), details) from exc
+                artifact = {"reportPath": str(target.path), "reportSha256": hashlib.sha256(payload).hexdigest()}
+                if failure is not None:
+                    failure.details.update(artifact, reportPreserved=True)
+                else:
+                    report.update(artifact)
+            if failure is not None:
+                raise failure
+            return report
+        except ReportPathError as exc:
+            raise WorkflowRefusal(exc.code, str(exc), exc.details) from exc
+        finally:
+            if target is not None:
+                target.close()
 
     def run_with_lease(self, source_paths, lease, require_compiled: bool = False) -> dict[str, Any]:
         """Run the compile gate under a caller-owned project workflow lease."""
         if not isinstance(require_compiled, bool):
             raise WorkflowRefusal("INVALID_ARGUMENT", "require_compiled must be Boolean")
+        phase = "source-validation"
+        observations = {}
         try:
             sources = self._sources(source_paths)
             before_sources = self._hash_sources(sources, check_budget=lease.remaining)
+            observations["sourceInputs"] = before_sources
+            observations["editorIdentity"] = lease.identity.as_dict()
             status_path = self.project / STATUS_RELATIVE_PATH
             before_status = self._fingerprint(status_path)
-            preflight, preflight_invocation, preflight_attempts = self._editor_state(lease)
+            observations["statusFileBefore"] = before_status
+            phase = "editor-preflight"
+            preflight, preflight_invocation, preflight_attempts = self._editor_state(lease, observations=observations, observation_key="editorBefore")
+            phase = "compile-trigger"
             trigger = self._invoke(lease, "recompile", {"focus": False}, trigger=True)
             lease.verify_current()
             native = self._outer_result(trigger, "recompile")
@@ -67,6 +110,7 @@ class CompileWorkflow:
                 raise WorkflowRefusal("NATIVE_RESULT_INVALID", "Recompile trigger result must be an object", {"nativeEnvelope": trigger.data, "invocation": trigger.diagnostics.get("invocation")})
             trigger_status = trigger_result.get("status")
             trigger_evidence = self._command_evidence(trigger, trigger_result)
+            observations["trigger"] = trigger_evidence
             if not isinstance(trigger_status, str):
                 raise WorkflowRefusal("COMPILE_TRIGGER_INVALID", "Pipeline recompile trigger status must be a string", {"trigger": trigger_evidence, "statusType": type(trigger_status).__name__})
             if trigger_status == "failed":
@@ -76,14 +120,19 @@ class CompileWorkflow:
             if require_compiled and trigger_status == "up_to_date":
                 raise WorkflowRefusal("COMPILATION_NOT_RUN", "Pipeline reports a fresh no-op; this request requires an actual compile cycle", {"trigger": trigger_evidence})
             if trigger_status == "compiling":
-                self._wait_terminal_marker(lease, status_path, before_status)
+                phase = "waiting-for-compile-marker"
+                self._wait_terminal_marker(lease, status_path, before_status, observations=observations)
+                phase = "editor-readiness"
                 self.session.ready(expected_identity=lease.identity, deadline=lease.deadline)
+            phase = "compile-status"
             polls = []
+            observations["polls"] = polls
             terminal = None
             saw_compiling = trigger_status == "compiling"
             while True:
                 lease.verify_current()
                 status_result = self._invoke(lease, "recompile_status", {})
+                observations["lastStatusCommand"] = {"nativeEnvelope": status_result.data, "diagnostics": status_result.diagnostics, "code": status_result.code, "success": status_result.success}
                 if not status_result.success:
                     polls.append({"ok": False, "code": status_result.code, "message": status_result.message, "invocation": status_result.diagnostics.get("invocation")})
                     if status_result.code not in RETRYABLE_READ_CODES:
@@ -92,6 +141,7 @@ class CompileWorkflow:
                     continue
                 payload = self._outer_result(status_result, "recompile_status")["result"]
                 state = self._validate_status(payload)
+                observations["lastStatus"] = state
                 polls.append({"ok": True, "status": state, "invocation": status_result.diagnostics.get("invocation")})
                 if state["status"] == "compiling":
                     saw_compiling = True
@@ -107,6 +157,7 @@ class CompileWorkflow:
             if terminal["failed"] or terminal["errors"] or terminal["compilationFailed"]:
                 raise WorkflowRefusal("COMPILATION_FAILED", "Fresh terminal compile status is not clean", {"status": terminal})
             after_status = self._fingerprint(status_path)
+            observations["statusFileAfter"] = after_status
             if not after_status["exists"]:
                 raise WorkflowRefusal("COMPILE_STATUS_MISSING", "Pipeline compile status file is missing after the trigger")
             if not self._changed(before_status, after_status):
@@ -114,16 +165,20 @@ class CompileWorkflow:
             file_status = self._read_status_file(status_path)
             if file_status != terminal:
                 raise WorkflowRefusal("COMPILE_STATUS_MISMATCH", "Native status command and status file disagree", {"commandStatus": terminal, "fileStatus": file_status})
+            phase = "source-postflight"
             after_sources = self._hash_sources(sources, check_budget=lease.remaining)
             if before_sources != after_sources:
                 raise WorkflowRefusal("SOURCE_INPUT_CHANGED", "An explicit source input changed during the compile workflow", {"before": before_sources, "after": after_sources})
             if terminal["status"] != expected_terminal or (trigger_status == "compiling" and not saw_compiling):
                 raise WorkflowRefusal("COMPILE_STATUS_MISMATCH", "Trigger and terminal compile states do not form the required lifecycle", {"triggerStatus": trigger_status, "terminalStatus": terminal["status"], "sawCompiling": saw_compiling})
-            console, ground_truth, console_invocation, console_attempts = self._fresh_ground_truth(lease)
-            final_editor, final_editor_invocation, final_editor_attempts = self._editor_state(lease)
+            phase = "console-ground-truth"
+            console, ground_truth, console_invocation, console_attempts = self._fresh_ground_truth(lease, observations=observations)
+            phase = "editor-postflight"
+            final_editor, final_editor_invocation, final_editor_attempts = self._editor_state(lease, observations=observations, observation_key="editorAfter")
             lease.verify_current()
             return {
                 "ok": True,
+                "schemaVersion": 1,
                 "action": "compile",
                 "project": str(self.project),
                 "editorIdentity": lease.identity.as_dict(),
@@ -143,18 +198,21 @@ class CompileWorkflow:
                 },
                 "consoleObservation": {"result": console, "invocation": console_invocation, "groundTruth": ground_truth, "retries": console_attempts},
             }
-        except WorkflowRefusal:
+        except WorkflowRefusal as exc:
+            exc.details.update(lastPhase=phase, observations=observations)
             raise
         except SessionRefusal as exc:
             code = "COMPILE_TIMEOUT" if exc.code in {"ACTION_TIMEOUT", "READY_TIMEOUT"} else exc.code
-            raise WorkflowRefusal(code, str(exc), exc.details) from exc
+            raise WorkflowRefusal(code, str(exc), {**exc.details, "lastPhase": phase, "observations": observations}) from exc
 
-    def _wait_terminal_marker(self, lease, status_path, before_status):
+    def _wait_terminal_marker(self, lease, status_path, before_status, *, observations=None):
         while True:
             lease.verify_current()
             marker = self._fingerprint(status_path)
             if marker["exists"] and self._changed(before_status, marker):
                 state = self._read_status_file(status_path)
+                if observations is not None:
+                    observations["lastStatus"] = state
                 if state["failed"] or state["errors"] or state["compilationFailed"] or state["status"] in {"failed", "error"}:
                     raise WorkflowRefusal("COMPILATION_FAILED", "Fresh compile marker reports a failed compilation", {"status": state})
                 if state["status"] == "completed":
@@ -273,12 +331,14 @@ class CompileWorkflow:
         lease.verify_current()
         result = self.session.transport.invoke_command(str(self.project), command, arguments, timeout=lease.remaining(), deadline=lease.transport_deadline)
         if trigger and not result.success:
-            raise WorkflowRefusal("COMPILE_TRIGGER_FAILED", "Compile trigger did not return a successful CLI response; it was not retried", {"code": result.code, "message": result.message, "invocation": result.diagnostics.get("invocation")})
+            raise WorkflowRefusal("COMPILE_TRIGGER_FAILED", "Compile trigger did not return a successful CLI response; it was not retried", {"code": result.code, "message": result.message, "invocation": result.diagnostics.get("invocation"), "nativeEnvelope": result.data, "diagnostics": result.diagnostics})
         lease.verify_current()
         return result
 
-    def _editor_state(self, lease):
+    def _editor_state(self, lease, *, observations=None, observation_key="editorStatus"):
         result, retries = self._invoke_readonly(lease, "editor_status", {})
+        if observations is not None:
+            observations[observation_key] = {"nativeEnvelope": result.data, "invocation": result.diagnostics.get("invocation"), "retries": retries}
         data = self._outer_result(result, "editor_status")
         state = data["result"]
         if not isinstance(state, dict):
@@ -319,7 +379,7 @@ class CompileWorkflow:
             except SessionRefusal as exc:
                 raise WorkflowRefusal("COMPILE_TIMEOUT", f"Could not read Pipeline {command} state before the workflow deadline", {"retries": retries}) from exc
 
-    def _fresh_ground_truth(self, lease):
+    def _fresh_ground_truth(self, lease, *, observations=None):
         retries = []
         while True:
             try:
@@ -328,6 +388,8 @@ class CompileWorkflow:
             except SessionRefusal as exc:
                 raise WorkflowRefusal("GROUND_TRUTH_STALE", "A fresh, idle Editor groundTruth sample did not arrive before the workflow deadline", {"retries": retries}) from exc
             data = self._outer_result(result, "console_status")["result"]
+            if observations is not None:
+                observations["consoleObservation"] = {"nativeEnvelope": result.data, "invocation": result.diagnostics.get("invocation"), "retries": list(retries)}
             if not isinstance(data, dict):
                 raise WorkflowRefusal("GROUND_TRUTH_INVALID", "Console status result must be an object")
             ground_truth = data.get("groundTruth")

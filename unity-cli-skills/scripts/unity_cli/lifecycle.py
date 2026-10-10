@@ -439,28 +439,43 @@ class SessionController:
             "process": identity.as_dict(), "exitVerification": "identity-absent",
         }
 
-    def restart(self, editor_version: str | None = None, batch_mode: bool = False) -> dict[str, Any]:
+    def restart(self, editor_version: str | None = None, batch_mode: bool = False, expected_identity: SessionIdentity | None = None) -> dict[str, Any]:
         deadline = self._deadline()
         with self._launch_guard(deadline) as pending_path:
-            closed = self._close(deadline)
+            closed = self._close(deadline, expected_identity)
             opened = self._open_locked(editor_version, deadline, batch_mode, pending_path)
             return {
                 "ok": True, "action": "restart", "project": self.project, "state": "restart-requested",
                 "closedProcess": closed["process"], "open": opened,
             }
 
-    def recover(self, graceful_close: bool = False) -> dict[str, Any]:
+    def recover(self, graceful_close: bool = False, quit_safe_mode: bool = False) -> dict[str, Any]:
+        if graceful_close and quit_safe_mode:
+            raise SessionRefusal("INVALID_ARGUMENT", "--quit-safe-mode and --graceful-close are mutually exclusive")
         deadline = self._deadline()
         with self._launch_guard(deadline):
-            return self._recover_locked(graceful_close, deadline)
+            return self._recover_locked(graceful_close, deadline, quit_safe_mode)
 
-    def _recover_locked(self, graceful_close: bool, deadline: float) -> dict[str, Any]:
+    def _recover_locked(self, graceful_close: bool, deadline: float, quit_safe_mode: bool = False) -> dict[str, Any]:
         identity = self._target(deadline)
         logs = self.transport.diagnose_logs(self.project, identity.log_file, timeout=self._remaining(deadline), deadline=Deadline(deadline, self.clock))
         if logs.get("code") == "CLI_TIMEOUT":
             self._remaining(deadline)
             raise SessionRefusal("CLI_TIMEOUT", "Editor log diagnosis reached its local deadline", {"logs": logs})
         modal = self.platform.inspect_modal(identity, min(self._remaining(deadline), 10))
+        if quit_safe_mode:
+            request = self.platform.quit_safe_mode(identity, min(self._remaining(deadline), 10))
+            evidence = {"process": identity.as_dict(), "logs": logs, "modal": modal, "safeModeQuit": request}
+            if request.get("state") != "requested":
+                raise SessionRefusal("SAFE_MODE_QUIT_UNAVAILABLE", "The exact startup Safe Mode Quit could not be requested", {**evidence, "request": request})
+            try:
+                self._wait_identity_absent(identity, deadline)
+            except SessionRefusal as exc:
+                raise SessionRefusal(exc.code, str(exc), {**exc.details, **evidence}) from exc
+            return {
+                "ok": True, "action": "recover", "project": self.project, "state": "closed",
+                "exitVerification": "identity-absent", **evidence,
+            }
         cancelled = None
         if modal.get("state") in {"scene-modal", "inspected"} and (
             modal.get("reason") == "scene-modal-found" or modal.get("title") == "Scene(s) Have Been Modified"

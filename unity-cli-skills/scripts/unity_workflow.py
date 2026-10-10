@@ -5,6 +5,8 @@ import argparse
 import json
 import math
 import pathlib
+import os
+import stat
 import sys
 from typing import Sequence, TextIO
 
@@ -16,6 +18,7 @@ from unity_cli.testing import TestWorkflow, WorkflowTestRefusal
 from unity_cli.console import ConsoleWorkflow, WorkflowConsoleRefusal
 from unity_cli.importer import ImportWorkflow, ImportWorkflowRefusal
 from unity_cli.capture import CaptureWorkflow, CaptureRefusal
+from unity_cli.summaries import workflow_summary
 
 
 class InputRefusal(RuntimeError):
@@ -33,17 +36,25 @@ class JsonArgumentParser(argparse.ArgumentParser):
         raise InputRefusal("INVALID_ARGUMENT", message)
 
 
+class SingleSelection(argparse.Action):
+    def __call__(self, parser, namespace, value, option_string=None):
+        if getattr(namespace, self.dest, None) is not None:
+            raise InputRefusal("INVALID_ARGUMENT", f"Supply {option_string} only once; use one exact selection per run")
+        setattr(namespace, self.dest, value)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = JsonArgumentParser(description="Run native Unity compile, exact-test, console, and guarded importer workflows.")
     parser.add_argument("action", choices=("compile", "test", "test-plan", "console", "importer", "importer-restore", "importer-batch", "camera-capture", "ui-capture", "ui-capture-batch"))
     parser.add_argument("--project", required=True, metavar="PATH")
     parser.add_argument("--source", action="append", metavar="FILE", help="Explicit project-relative or absolute source file to include in the stable input snapshot; repeat as needed.")
+    parser.add_argument("--sources-file", action=SingleSelection, metavar="JSON", help="JSON array of explicit source paths; can combine with --source.")
     parser.add_argument("--require-compiled", action="store_true", help="Refuse a fresh native up_to_date no-op; require compiling then completed.")
     parser.add_argument("--route", choices=("connected", "offline"), help="Test route: connected exact Editor or top-level offline Unity CLI.")
     parser.add_argument("--mode", choices=("EditMode", "PlayMode"))
-    parser.add_argument("--test-name", metavar="FULLNAME", help="Exact NUnit FullName.")
-    parser.add_argument("--test-class", metavar="CLASS", help="Exact namespace-qualified test class.")
-    parser.add_argument("--assembly", metavar="ASSEMBLY", help="Exact test assembly; can combine with a name or class.")
+    parser.add_argument("--test-name", action=SingleSelection, metavar="FULLNAME", help="Exact NUnit FullName.")
+    parser.add_argument("--test-class", action=SingleSelection, metavar="CLASS", help="Exact namespace-qualified test class.")
+    parser.add_argument("--assembly", action=SingleSelection, metavar="ASSEMBLY", help="Exact test assembly; can combine with a name or class.")
     parser.add_argument("--discovery", metavar="PLAN-JSON", help="Bound test-plan report required for offline suite selection.")
     parser.add_argument("--output", metavar="FILE", help="Initially absent persistent report path outside project-owned data directories.")
     parser.add_argument("--editor-version", metavar="VERSION", help="Offline Editor version override; defaults to ProjectVersion.txt.")
@@ -75,6 +86,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--replace-sha256", metavar="AUTHORIZED-SHA256")
     parser.add_argument("--cli", metavar="PATH")
     parser.add_argument("--timeout", type=float, default=120.0, metavar="SECONDS")
+    parser.add_argument("--format", choices=("json", "summary"), default="json", help="Full JSON response or concise JSON summary; saved reports retain complete evidence.")
     return parser
 
 
@@ -84,6 +96,31 @@ def _validate(args: argparse.Namespace) -> pathlib.Path:
         raise InputRefusal("PROJECT_NOT_FOUND", "The project directory does not exist", {"project": str(project)})
     if not math.isfinite(args.timeout) or args.timeout <= 0:
         raise InputRefusal("INVALID_TIMEOUT", "--timeout must be finite and greater than zero")
+    if args.sources_file is not None:
+        if args.action not in {"compile", "test", "test-plan"}:
+            raise InputRefusal("INVALID_ARGUMENT", "--sources-file applies only to compile, test, and test-plan")
+        fd = None
+        try:
+            path = pathlib.Path(args.sources_file).expanduser()
+            if path.is_symlink():
+                raise ValueError("The source list must be a plain file")
+            fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0))
+            if not stat.S_ISREG(os.fstat(fd).st_mode):
+                raise ValueError("The source list must be a plain file")
+            with os.fdopen(fd, "rb") as stream:
+                fd = None
+                content = stream.read(1024 * 1024 + 1)
+            if len(content) > 1024 * 1024:
+                raise ValueError("The source list exceeds one MiB")
+            values = json.loads(content.decode("utf-8"))
+            if not isinstance(values, list) or not values or any(not isinstance(v, str) or not v.strip() for v in values):
+                raise ValueError("Supply a nonempty JSON array of nonempty source paths")
+            args.source = [*(args.source or []), *values]
+        except (OSError, UnicodeError, ValueError, RecursionError) as exc:
+            raise InputRefusal("SOURCE_INPUT_INVALID", str(exc)) from exc
+        finally:
+            if fd is not None:
+                os.close(fd)
     if args.action == "compile" and not args.source:
         raise InputRefusal("INVALID_ARGUMENT", "Compile requires at least one explicit --source FILE")
     if args.action not in {"test", "test-plan"} and (args.test_class or args.assembly or args.discovery):
@@ -116,7 +153,7 @@ def _validate(args: argparse.Namespace) -> pathlib.Path:
             raise InputRefusal("INVALID_ARGUMENT", "Arguments from another workflow cannot be combined with importer")
         try:
             args.settings = json.loads(args.settings)
-        except (TypeError, json.JSONDecodeError) as exc:
+        except (TypeError, ValueError, RecursionError) as exc:
             raise InputRefusal("INVALID_ARGUMENT", "--settings must contain a JSON object") from exc
         if not isinstance(args.settings, dict):
             raise InputRefusal("INVALID_ARGUMENT", "--settings must contain a JSON object")
@@ -127,7 +164,7 @@ def _validate(args: argparse.Namespace) -> pathlib.Path:
             raise InputRefusal("INVALID_ARGUMENT", "Importer restore requires --capture JSON")
         try:
             args.capture = json.loads(args.capture)
-        except (TypeError, json.JSONDecodeError) as exc:
+        except (TypeError, ValueError, RecursionError) as exc:
             raise InputRefusal("INVALID_ARGUMENT", "--capture must contain a JSON object") from exc
         if not isinstance(args.capture, dict):
             raise InputRefusal("INVALID_ARGUMENT", "--capture must contain a JSON object")
@@ -138,7 +175,7 @@ def _validate(args: argparse.Namespace) -> pathlib.Path:
             raise InputRefusal("INVALID_ARGUMENT", "Importer batch requires --items JSON")
         try:
             args.items = json.loads(args.items)
-        except (TypeError, json.JSONDecodeError) as exc:
+        except (TypeError, ValueError, RecursionError) as exc:
             raise InputRefusal("INVALID_ARGUMENT", "--items must contain a JSON array") from exc
         if not isinstance(args.items, list):
             raise InputRefusal("INVALID_ARGUMENT", "--items must contain a JSON array")
@@ -156,7 +193,7 @@ def _validate(args: argparse.Namespace) -> pathlib.Path:
             if not args.items or args.camera or args.panel or args.filename or args.save_path or args.replace_sha256 or args.panel_id:
                 raise InputRefusal("INVALID_ARGUMENT", "UI capture batch requires --items JSON")
             try: args.items = json.loads(args.items)
-            except (TypeError, json.JSONDecodeError) as exc:
+            except (TypeError, ValueError, RecursionError) as exc:
                 raise InputRefusal("INVALID_ARGUMENT", "--items must contain a JSON panel array") from exc
     return project.resolve()
 
@@ -182,7 +219,7 @@ def main(argv: Sequence[str] | None = None, *, stdout: TextIO = sys.stdout, plat
         session = SessionController(str(project), transport, adapter, timeout=args.timeout)
         if args.action == "compile":
             workflow = CompileWorkflow(project, session)
-            result = workflow.run(args.source, require_compiled=args.require_compiled)
+            result = workflow.run(args.source, require_compiled=args.require_compiled, **({"output": args.output} if args.output is not None else {}))
         else:
             if args.action in {"test", "test-plan"}:
                 workflow = TestWorkflow(project, session)
@@ -225,12 +262,15 @@ def main(argv: Sequence[str] | None = None, *, stdout: TextIO = sys.stdout, plat
                     result = workflow.restore(capture=args.capture, dry_run=args.dry_run)
                 else:
                     result = workflow.run_batch(items=args.items, platform=args.platform, quality_unit=args.quality_unit, profile=args.profile)
-        print(json.dumps(_redact_value(result), sort_keys=True), file=stdout)
+        print(json.dumps(_redact_value(workflow_summary(result) if args.format == "summary" else result), sort_keys=True), file=stdout)
         if result.get("ok") is False:
             return _exit_code("IMPORT_BATCH_FAILED")
         return 0
     except (InputRefusal, SessionRefusal, WorkflowRefusal, WorkflowTestRefusal, WorkflowConsoleRefusal, ImportWorkflowRefusal, CaptureRefusal) as exc:
-        print(json.dumps(_redact_value(exc.as_dict()), sort_keys=True), file=stdout)
+        result = exc.as_dict()
+        if "args" in locals() and args.format == "summary":
+            result = workflow_summary(result)
+        print(json.dumps(_redact_value(result), sort_keys=True), file=stdout)
         return _exit_code(exc.code)
 
 
