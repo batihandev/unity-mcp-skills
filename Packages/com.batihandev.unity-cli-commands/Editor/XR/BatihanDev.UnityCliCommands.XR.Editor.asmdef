@@ -1,0 +1,33 @@
+{
+  "name": "BatihanDev.UnityCliCommands.XR.Editor",
+  "rootNamespace": "BatihanDev.UnityCliCommands.XR",
+  "references": [
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.Pipeline",
+    "Unity.Pipeline.Attributes",
+    "Unity.XR.Interaction.Toolkit",
+    "Unity.XR.CoreUtils",
+    "Unity.InputSystem",
+    "Unity.ugui",
+    "Unity.Nuget.Newtonsoft-Json"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "defineConstraints": [
+    "BATIHANDEV_XRI_3",
+    "BATIHANDEV_XR_CORE_2"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.xr.interaction.toolkit",
+      "expression": "[3.6.1,4.0.0)",
+      "define": "BATIHANDEV_XRI_3"
+    },
+    {
+      "name": "com.unity.xr.core-utils",
+      "expression": "[2.6.0,3.0.0)",
+      "define": "BATIHANDEV_XR_CORE_2"
+    }
+  ]
+}

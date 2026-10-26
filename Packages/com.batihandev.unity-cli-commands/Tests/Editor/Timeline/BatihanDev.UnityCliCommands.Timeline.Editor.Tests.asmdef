@@ -1,0 +1,15 @@
+{
+  "name": "BatihanDev.UnityCliCommands.Timeline.Editor.Tests",
+  "rootNamespace": "BatihanDev.UnityCliCommands.Tests.Timeline",
+  "references": [
+    "BatihanDev.UnityCliCommands.Timeline.Editor",
+    "BatihanDev.UnityCliCommands.Editor",
+    "Unity.Timeline"
+  ],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "defineConstraints": ["BATIHANDEV_TIMELINE_6"],
+  "versionDefines": [
+    { "name": "com.unity.timeline", "expression": "[6.6.0,7.0.0)", "define": "BATIHANDEV_TIMELINE_6" }
+  ]
+}

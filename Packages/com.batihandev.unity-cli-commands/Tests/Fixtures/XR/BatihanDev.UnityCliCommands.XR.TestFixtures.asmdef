@@ -1,0 +1,17 @@
+{
+  "name": "BatihanDev.UnityCliCommands.XR.TestFixtures",
+  "rootNamespace": "BatihanDev.UnityCliCommands.Tests.XR",
+  "references": [
+    "Unity.XR.Interaction.Toolkit"
+  ],
+  "defineConstraints": [
+    "BATIHANDEV_XRI_3"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.xr.interaction.toolkit",
+      "expression": "[3.6.1,4.0.0)",
+      "define": "BATIHANDEV_XRI_3"
+    }
+  ]
+}

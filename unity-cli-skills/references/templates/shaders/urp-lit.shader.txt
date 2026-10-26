@@ -1,0 +1,129 @@
+Shader "{{SHADER_NAME}}"
+{
+    Properties
+    {
+        _BaseMap ("Base Map", 2D) = "white" {}
+        _BaseColor ("Base Color", Color) = (1,1,1,1)
+    }
+    SubShader
+    {
+        Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" "Queue"="Geometry" }
+
+        HLSLINCLUDE
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+        TEXTURE2D(_BaseMap);
+        SAMPLER(sampler_BaseMap);
+        CBUFFER_START(UnityPerMaterial)
+            float4 _BaseMap_ST;
+            half4 _BaseColor;
+        CBUFFER_END
+
+        struct Attributes
+        {
+            float4 positionOS : POSITION;
+            float3 normalOS : NORMAL;
+            float2 uv : TEXCOORD0;
+        };
+        ENDHLSL
+
+        Pass
+        {
+            Name "ForwardLit"
+            Tags { "LightMode"="UniversalForward" }
+            HLSLPROGRAM
+            #pragma vertex LitVertex
+            #pragma fragment LitFragment
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+
+            struct LitVaryings
+            {
+                float4 positionCS : SV_POSITION;
+                float3 positionWS : TEXCOORD0;
+                half3 normalWS : TEXCOORD1;
+                float2 uv : TEXCOORD2;
+                float4 shadowCoord : TEXCOORD3;
+            };
+
+            LitVaryings LitVertex(Attributes input)
+            {
+                LitVaryings output;
+                VertexPositionInputs position = GetVertexPositionInputs(input.positionOS.xyz);
+                output.positionCS = position.positionCS;
+                output.positionWS = position.positionWS;
+                output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+                output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
+                output.shadowCoord = GetShadowCoord(position);
+                return output;
+            }
+
+            half4 LitFragment(LitVaryings input) : SV_Target
+            {
+                half3 normalWS = normalize(input.normalWS);
+                #if defined(_MAIN_LIGHT_SHADOWS_SCREEN)
+                    float4 shadowCoord = input.shadowCoord;
+                #else
+                    float4 shadowCoord = TransformWorldToShadowCoord(input.positionWS);
+                #endif
+                Light mainLight = GetMainLight(shadowCoord);
+                half diffuse = saturate(dot(normalWS, mainLight.direction));
+                half3 illumination = SampleSH(normalWS) + mainLight.color * diffuse * mainLight.shadowAttenuation * mainLight.distanceAttenuation;
+                half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
+                return half4(albedo.rgb * illumination, albedo.a);
+            }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode"="ShadowCaster" }
+            ZWrite On
+            ZTest LEqual
+            ColorMask 0
+            HLSLPROGRAM
+            #pragma vertex ShadowVertex
+            #pragma fragment ShadowFragment
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+
+            float3 _LightDirection;
+            float3 _LightPosition;
+
+            float4 ShadowVertex(Attributes input) : SV_POSITION
+            {
+                float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
+                float3 lightDirectionWS = _LightDirection;
+                #if _CASTING_PUNCTUAL_LIGHT_SHADOW
+                    lightDirectionWS = normalize(_LightPosition - positionWS);
+                #endif
+                float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, lightDirectionWS));
+                return ApplyShadowClamping(positionCS);
+            }
+
+            half4 ShadowFragment() : SV_Target { return 0; }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "DepthOnly"
+            Tags { "LightMode"="DepthOnly" }
+            ZWrite On
+            ColorMask 0
+            HLSLPROGRAM
+            #pragma vertex DepthVertex
+            #pragma fragment DepthFragment
+
+            float4 DepthVertex(Attributes input) : SV_POSITION
+            {
+                return TransformObjectToHClip(input.positionOS.xyz);
+            }
+
+            half4 DepthFragment() : SV_Target { return 0; }
+            ENDHLSL
+        }
+    }
+}
