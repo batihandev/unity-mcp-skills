@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .model import Deadline, InventorySnapshot, ProcessRecord, RegistryObservation, SessionIdentity
-from .transport import CliMissing
+from .transport import CliMissing, TERMINAL_CLI_FAILURE_CODES
 from .windows_identity import IdentityObserverError
 
 
@@ -278,7 +278,7 @@ class SessionController:
     def _readiness_once(self, identity: SessionIdentity, deadline: float) -> bool:
         self._require_identity_current(identity, deadline)
         result = self.transport.readiness(identity, timeout=self._remaining(deadline), deadline=Deadline(deadline, self.clock))
-        if result.code == "PIPELINE_AUTHENTICATION_FAILED":
+        if result.code == "PIPELINE_AUTHENTICATION_FAILED" or result.code in TERMINAL_CLI_FAILURE_CODES:
             raise SessionRefusal(result.code, result.message or "Pipeline authentication failed", result.diagnostics)
         if not result.success or not isinstance(result.data, dict) or not result.data.get("ready"):
             return False

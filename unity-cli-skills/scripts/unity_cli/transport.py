@@ -15,6 +15,7 @@ from .model import Deadline, CommandResult, RegistryObservation, SessionIdentity
 
 
 NATIVE_CLEANUP_RESERVE_SECONDS = 15
+TERMINAL_CLI_FAILURE_CODES = frozenset({"CLI_PROCESS_FAILED", "CLI_INVALID_JSON", "CLI_INVALID_ENVELOPE", "CLI_NOT_FOUND"})
 
 
 class CliMissing(RuntimeError):
@@ -62,10 +63,10 @@ class CliTransport:
             requested = float(argv[timeout_index]) if timeout_index is not None else None
             limit = deadline.require_remaining("Unity CLI command")
             if args and args[0] == "command" and timeout_index is not None:
-                milliseconds = int(limit * 1000)
-                if milliseconds < 1:
+                seconds = int(min(requested, limit))
+                if seconds < 1:
                     raise subprocess.TimeoutExpired("Unity CLI command", limit)
-                argv[timeout_index] = str(min(requested, milliseconds / 1000))
+                argv[timeout_index] = str(seconds)
                 args[timeout_index - 1] = argv[timeout_index]
             elif args and args[0] == "test" and timeout_index is not None:
                 native_timeout = int(limit) - NATIVE_CLEANUP_RESERVE_SECONDS
@@ -86,6 +87,9 @@ class CliTransport:
             try:
                 payload = json.loads(completed.stdout)
             except (ValueError, RecursionError):
+                if completed.returncode != 0:
+                    return CommandResult.failed("CLI_PROCESS_FAILED", "Unity CLI refused the call without a command envelope",
+                        exitCode=completed.returncode, stdout=_bounded(completed.stdout), stderr=_bounded(completed.stderr))
                 return CommandResult.failed(
                     "CLI_INVALID_JSON", "Unity CLI returned invalid JSON",
                     exitCode=completed.returncode, stdout=_bounded(completed.stdout), stderr=_bounded(completed.stderr),
@@ -95,9 +99,13 @@ class CliTransport:
             "stderr": _bounded(completed.stderr),
         }
         if not isinstance(payload, dict) or not isinstance(payload.get("success"), bool) or (payload["success"] and not isinstance(payload.get("data"), dict)):
-            return CommandResult.failed("CLI_INVALID_ENVELOPE", "Unity CLI returned a malformed command envelope", stdout=_bounded(completed.stdout), **diagnostics)
+            return CommandResult.failed("CLI_PROCESS_FAILED" if completed.returncode != 0 else "CLI_INVALID_ENVELOPE",
+                "Unity CLI refused the call without a command envelope" if completed.returncode != 0 else "Unity CLI returned a malformed command envelope", stdout=_bounded(completed.stdout), **diagnostics)
         if completed.returncode != 0 or (isinstance(payload, dict) and payload.get("success") is False):
             code, message = _envelope_error(payload)
+            if completed.returncode != 0 and not (code or message):
+                return CommandResult.failed("CLI_PROCESS_FAILED", "Unity CLI refused the call without error details",
+                    payload=_redact_value(payload), **diagnostics)
             return CommandResult.failed(_bounded(code or "CLI_COMMAND_FAILED", 500), _bounded(message or "Unity CLI command failed", 500), payload=_redact_value(payload), **diagnostics)
         return CommandResult.ok(payload, **diagnostics)
 
@@ -160,11 +168,11 @@ class CliTransport:
             target_project = self._project(project, budget, deadline=deadline)
             cli = self.ensure_cli(deadline=deadline)
             budget = deadline.remaining()
-            cli_timeout_ms = int(budget * 1000)
-            if cli_timeout_ms < 1:
+            cli_timeout_seconds = int(budget)
+            if cli_timeout_seconds < 1:
                 return CommandResult.failed("CLI_TIMEOUT", "Unity CLI command cannot fit a positive timeout within its deadline",
                                             invocation={"command": command, "arguments": normalized, "project": project})
-            args = ["command", "--project-path", target_project, "--format", "json", "--timeout", str(cli_timeout_ms / 1000), command, "--", *args]
+            args = ["command", "--project-path", target_project, "--format", "json", "--timeout", str(cli_timeout_seconds), command, "--", *args]
         except subprocess.TimeoutExpired as exc:
             return CommandResult.failed("CLI_TIMEOUT", "Unity CLI preparation reached its deadline", stderr=_bounded(exc.stderr))
         except (CliMissing, OSError, RuntimeError, subprocess.SubprocessError) as exc:
@@ -254,7 +262,7 @@ class CliTransport:
         target_project, timeout = self._project_budget(identity.project, timeout, deadline=deadline)
         code = self._identity_code(identity, target_project) + "return new { ready = exact, pid = current.Id, project = currentProject, startedAt = start };"
         result = self._invoke(["command", "eval", code, "--project-path", target_project, "--format", "json"], timeout, deadline=deadline)
-        if result.code == "CLI_TIMEOUT":
+        if result.code == "CLI_TIMEOUT" or result.code in TERMINAL_CLI_FAILURE_CODES:
             return result
         authentication = _authentication_refusal(result, identity, "identity")
         if authentication is not None:
@@ -274,6 +282,8 @@ class CliTransport:
                                      "startedAt": identity.started_at}, identityObservation=identity_observation,
                                     identityTransport=result.diagnostics)
         status_result = self.invoke_command(identity.project, "editor_status", {}, deadline=deadline)
+        if status_result.code in TERMINAL_CLI_FAILURE_CODES:
+            return status_result
         authentication = _authentication_refusal(status_result, identity, "editor_status")
         if authentication is not None:
             return authentication
